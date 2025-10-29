@@ -104,9 +104,6 @@ func TestAuthenticate(t *testing.T) {
 }
 
 func TestRequireRoles(t *testing.T) {
-	logger := testutil.NewTestLogger(t)
-	jwtManager := NewJWTManager([]byte("test-secret"), 15*time.Minute, "test-issuer", logger)
-
 	tests := []struct {
 		name           string
 		userRoles      []string
@@ -148,10 +145,9 @@ func TestRequireRoles(t *testing.T) {
 
 			// Create user context
 			userInfo := &UserInfo{
-				ID:       "user-1",
-				Email:    "test@example.com",
-				Username: "testuser",
-				Roles:    tt.userRoles,
+				ID:    "user-1",
+				Email: "test@example.com",
+				Roles: tt.userRoles,
 			}
 
 			// Wrap with role middleware
@@ -207,10 +203,9 @@ func TestRequireAdmin(t *testing.T) {
 
 			// Create user context
 			userInfo := &UserInfo{
-				ID:       "user-1",
-				Email:    "test@example.com",
-				Username: "testuser",
-				Roles:    tt.userRoles,
+				ID:    "user-1",
+				Email: "test@example.com",
+				Roles: tt.userRoles,
 			}
 
 			// Wrap with admin middleware
@@ -314,18 +309,16 @@ func TestGetUserInfo(t *testing.T) {
 			name: "user info exists in context",
 			setupCtx: func() context.Context {
 				userInfo := &UserInfo{
-					ID:       "user-1",
-					Email:    "test@example.com",
-					Username: "testuser",
-					Roles:    []string{"student"},
+					ID:    "user-1",
+					Email: "test@example.com",
+					Roles: []string{"student"},
 				}
 				return context.WithValue(context.Background(), userInfoKey, userInfo)
 			},
 			expected: &UserInfo{
-				ID:       "user-1",
-				Email:    "test@example.com",
-				Username: "testuser",
-				Roles:    []string{"student"},
+				ID:    "user-1",
+				Email: "test@example.com",
+				Roles: []string{"student"},
 			},
 		},
 		{
@@ -348,7 +341,6 @@ func TestGetUserInfo(t *testing.T) {
 				require.NotNil(t, userInfo)
 				assert.Equal(t, tt.expected.ID, userInfo.ID)
 				assert.Equal(t, tt.expected.Email, userInfo.Email)
-				assert.Equal(t, tt.expected.Username, userInfo.Username)
 				assert.Equal(t, tt.expected.Roles, userInfo.Roles)
 			}
 		})

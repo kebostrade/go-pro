@@ -1,6 +1,6 @@
-# GO-PRO Learning Platform Backend - Makefile
+# GO-PRO Learning Platform - Makefile
 .DEFAULT_GOAL := help
-.PHONY: help build test clean dev docker docker-dev docker-prod lint security coverage setup install-tools
+.PHONY: help build test clean dev docker docker-dev docker-prod lint security coverage setup install-tools start-dev test-integration
 
 # Variables
 APP_NAME := go-pro-backend
@@ -43,6 +43,14 @@ version: ## Display version information
 
 setup: install-tools init-git ## Setup development environment
 	@echo "$(GREEN)Development environment setup complete!$(NC)"
+
+start-dev: ## Start backend and frontend development servers
+	@echo "$(YELLOW)Starting development environment...$(NC)"
+	@./scripts/start-dev.sh
+
+test-integration: ## Run integration tests
+	@echo "$(YELLOW)Running integration tests...$(NC)"
+	@./scripts/test-integration.sh
 
 install-tools: ## Install development tools
 	@echo "$(YELLOW)Installing development tools...$(NC)"

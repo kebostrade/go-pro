@@ -193,6 +193,12 @@ func GetUserFromContext(ctx context.Context) (*UserInfo, bool) {
 	return user, ok
 }
 
+// GetUserInfo extracts user information from context (returns nil if not found)
+func GetUserInfo(ctx context.Context) *UserInfo {
+	user, _ := GetUserFromContext(ctx)
+	return user
+}
+
 // GetClaimsFromContext extracts JWT claims from context
 func GetClaimsFromContext(ctx context.Context) (*security.Claims, bool) {
 	claims, ok := ctx.Value(ClaimsContextKey).(*security.Claims)
@@ -238,5 +244,159 @@ func (a *AuthMiddleware) writeErrorResponse(w http.ResponseWriter, r *http.Reque
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		a.logger.Error(ctx, "Failed to encode error response", "error", err)
+	}
+}
+
+// Helper functions for testing and simple usage
+
+// userInfoKey is used for storing user info in context (for tests)
+var userInfoKey = UserContextKey
+
+// TokenPair holds access and refresh tokens
+type TokenPair struct {
+	AccessToken  string
+	RefreshToken string
+}
+
+// JWTManager wraps security.JWTManager for testing convenience
+type JWTManager struct {
+	*security.JWTManager
+}
+
+// NewJWTManager creates a JWT manager with simplified parameters for testing
+func NewJWTManager(secret []byte, ttl time.Duration, issuer string, logger logger.Logger) *JWTManager {
+	config := security.JWTConfig{
+		Secret:          secret,
+		AccessTokenTTL:  ttl,
+		RefreshTokenTTL: ttl * 10, // Refresh token lives longer
+		Issuer:          issuer,
+		Audience:        "test-audience",
+	}
+	return &JWTManager{
+		JWTManager: security.NewJWTManager(config),
+	}
+}
+
+// GenerateToken generates a token pair (convenience method for tests)
+func (j *JWTManager) GenerateToken(userID, email, username string, roles []string) (*TokenPair, error) {
+	accessToken, refreshToken, err := j.JWTManager.GenerateTokens(userID, email, roles)
+	if err != nil {
+		return nil, err
+	}
+	return &TokenPair{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+// Authenticate creates an authentication middleware
+func Authenticate(jwtManager *JWTManager) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+
+			// Extract token from Authorization header
+			authHeader := r.Header.Get("Authorization")
+			if authHeader == "" {
+				http.Error(w, "missing authorization header", http.StatusUnauthorized)
+				return
+			}
+
+			// Validate Bearer token format
+			if !strings.HasPrefix(authHeader, "Bearer ") {
+				http.Error(w, "invalid authorization header format", http.StatusUnauthorized)
+				return
+			}
+
+			token := strings.TrimPrefix(authHeader, "Bearer ")
+			if token == "" {
+				http.Error(w, "empty token", http.StatusUnauthorized)
+				return
+			}
+
+			// Validate token
+			claims, err := jwtManager.JWTManager.ValidateToken(token)
+			if err != nil {
+				http.Error(w, "invalid token", http.StatusUnauthorized)
+				return
+			}
+
+			// Add user info to context
+			ctx = context.WithValue(ctx, UserContextKey, &UserInfo{
+				ID:    claims.UserID,
+				Email: claims.Email,
+				Roles: claims.Roles,
+			})
+
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+// RequireRoles creates a middleware that checks if user has required roles
+func RequireRoles(roles ...string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user, ok := GetUserFromContext(r.Context())
+			if !ok {
+				http.Error(w, "authentication required", http.StatusUnauthorized)
+				return
+			}
+
+			if !hasAnyRole(user.Roles, roles) {
+				http.Error(w, "insufficient permissions", http.StatusForbidden)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// RequireAdmin creates a middleware that checks if user has admin role
+func RequireAdmin() func(http.Handler) http.Handler {
+	return RequireRoles("admin")
+}
+
+// OptionalAuth creates a middleware that adds user info to context if token is present
+func OptionalAuth(jwtManager *JWTManager) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+
+			// Extract token from Authorization header
+			authHeader := r.Header.Get("Authorization")
+			if authHeader == "" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			if !strings.HasPrefix(authHeader, "Bearer ") {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			token := strings.TrimPrefix(authHeader, "Bearer ")
+			if token == "" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// Try to validate token
+			claims, err := jwtManager.JWTManager.ValidateToken(token)
+			if err != nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// Add user info to context
+			ctx = context.WithValue(ctx, UserContextKey, &UserInfo{
+				ID:    claims.UserID,
+				Email: claims.Email,
+				Roles: claims.Roles,
+			})
+
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
 	}
 }

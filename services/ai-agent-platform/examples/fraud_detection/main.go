@@ -18,7 +18,7 @@ import (
 
 func main() {
 	fmt.Println("🤖 FinAgent - Fraud Detection Example")
-	fmt.Println("=====================================\n")
+	fmt.Println("=====================================")
 
 	// Get API key from environment
 	apiKey := os.Getenv("OPENAI_API_KEY")

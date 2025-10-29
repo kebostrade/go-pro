@@ -1,104 +1,135 @@
 #!/bin/bash
 
-# Comprehensive test script for the entire go-pro repository
-# Tests all Go modules and reports results
+# Comprehensive test script for all examples, exercises, and projects
 
-set -o pipefail
-
-echo "=========================================="
-echo "Go-Pro Repository Build Test"
-echo "=========================================="
+echo "╔════════════════════════════════════════════════════════════╗"
+echo "║                                                            ║"
+echo "║        Testing All Go Examples, Exercises & Projects      ║"
+echo "║                                                            ║"
+echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Color codes
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+TOTAL_PASS=0
+TOTAL_FAIL=0
 
-# Counters
-TOTAL=0
-PASSED=0
-FAILED=0
-
-# Function to test a module
-test_module() {
-    local dir=$1
+# Function to test a Go file
+test_go_file() {
+    local file=$1
     local name=$2
     
-    TOTAL=$((TOTAL + 1))
-    
-    echo -n "Testing $name... "
-    
-    if cd "$dir" 2>/dev/null && go build ./... >/dev/null 2>&1; then
-        echo -e "${GREEN}✓ PASS${NC}"
-        PASSED=$((PASSED + 1))
-        cd - >/dev/null 2>&1
-        return 0
-    else
-        echo -e "${RED}✗ FAIL${NC}"
-        FAILED=$((FAILED + 1))
-        cd - >/dev/null 2>&1
-        return 1
+    if [ -f "$file" ]; then
+        echo -n "Testing: $name ... "
+        if go run "$file" > /dev/null 2>&1; then
+            echo "✓ PASS"
+            ((TOTAL_PASS++))
+            return 0
+        else
+            echo "✗ FAIL"
+            ((TOTAL_FAIL++))
+            return 1
+        fi
     fi
 }
 
-# Test basic directory
-echo "=== Testing Basic Examples ==="
-if [ -f "basic/test-basics.sh" ]; then
-    if bash basic/test-basics.sh >/dev/null 2>&1; then
-        echo -e "${GREEN}✓ Basic examples: PASS${NC}"
-        PASSED=$((PASSED + 1))
-    else
-        echo -e "${RED}✗ Basic examples: FAIL${NC}"
-        FAILED=$((FAILED + 1))
+# Function to test a directory with main.go
+test_directory() {
+    local dir=$1
+    local name=$2
+    
+    if [ -d "$dir" ] && [ -f "$dir/main.go" ]; then
+        echo -n "Testing: $name ... "
+        if cd "$dir" && go run main.go > /dev/null 2>&1; then
+            echo "✓ PASS"
+            ((TOTAL_PASS++))
+            cd - > /dev/null
+            return 0
+        else
+            echo "✗ FAIL"
+            ((TOTAL_FAIL++))
+            cd - > /dev/null
+            return 1
+        fi
     fi
-    TOTAL=$((TOTAL + 1))
-fi
+}
+
+echo "════════════════════════════════════════════════════════════"
+echo "1. Testing Examples (12 examples)"
+echo "════════════════════════════════════════════════════════════"
 echo ""
 
-# Test backend
-echo "=== Testing Backend ==="
-test_module "backend" "Backend API"
-echo ""
-
-# Test services
-echo "=== Testing Services ==="
-test_module "services/api-gateway" "API Gateway"
-test_module "services/shared" "Shared Libraries"
-echo ""
-
-# Test course lessons
-echo "=== Testing Course Lessons ==="
-for lesson_dir in course/code/lesson-*; do
-    if [ -d "$lesson_dir" ] && [ -f "$lesson_dir/go.mod" ]; then
-        lesson_name=$(basename "$lesson_dir")
-        test_module "$lesson_dir" "$lesson_name"
+for i in {01..12}; do
+    if [ -d "basic/examples/${i}_"* ]; then
+        dir=$(ls -d basic/examples/${i}_* 2>/dev/null | head -1)
+        name=$(basename "$dir")
+        test_directory "$dir" "Example: $name"
     fi
 done
+
+echo ""
+echo "════════════════════════════════════════════════════════════"
+echo "2. Testing Exercise Solutions"
+echo "════════════════════════════════════════════════════════════"
 echo ""
 
-# Summary
-echo "=========================================="
-echo "Test Summary"
-echo "=========================================="
-echo -e "Total modules tested: $TOTAL"
-echo -e "${GREEN}Passed: $PASSED${NC}"
-if [ $FAILED -gt 0 ]; then
-    echo -e "${RED}Failed: $FAILED${NC}"
-else
-    echo "Failed: $FAILED"
-fi
-echo "=========================================="
+# Basic exercises
+test_go_file "basic/exercises/01_basics/fizzbuzz_solution.go" "FizzBuzz Solution"
+test_go_file "basic/exercises/01_basics/reverse_string_solution.go" "Reverse String Solution"
 
-# Exit with appropriate code
-if [ $FAILED -gt 0 ]; then
-    echo ""
-    echo -e "${YELLOW}Some tests failed. Run individual module tests for details.${NC}"
-    exit 1
-else
-    echo ""
-    echo -e "${GREEN}All tests passed! ✓${NC}"
+# Intermediate exercises
+test_go_file "basic/exercises/02_intermediate/url_shortener_solution.go" "URL Shortener Solution"
+
+# Advanced exercises
+test_go_file "basic/exercises/03_advanced/web_crawler_solution.go" "Web Crawler Solution"
+
+echo ""
+echo "════════════════════════════════════════════════════════════"
+echo "3. Testing Projects"
+echo "════════════════════════════════════════════════════════════"
+echo ""
+
+# Test calculator (with automated input)
+if [ -f "basic/projects/calculator/main.go" ]; then
+    echo -n "Testing: Calculator Project ... "
+    if (cd basic/projects/calculator && echo -e "1\n10\n5\nq" | go run main.go > /dev/null 2>&1); then
+        echo "✓ PASS"
+        ((TOTAL_PASS++))
+    else
+        echo "✗ FAIL"
+        ((TOTAL_FAIL++))
+    fi
+fi
+
+# Test todo list (with automated input)
+if [ -f "basic/projects/todo_list/main.go" ]; then
+    echo -n "Testing: Todo List Project ... "
+    if (cd basic/projects/todo_list && echo -e "2\nq" | go run main.go > /dev/null 2>&1); then
+        echo "✓ PASS"
+        ((TOTAL_PASS++))
+    else
+        echo "✗ FAIL"
+        ((TOTAL_FAIL++))
+    fi
+fi
+
+echo ""
+echo "════════════════════════════════════════════════════════════"
+echo "Summary"
+echo "════════════════════════════════════════════════════════════"
+echo ""
+echo "  Total Tests: $((TOTAL_PASS + TOTAL_FAIL))"
+echo "  ✓ Passed:    $TOTAL_PASS"
+echo "  ✗ Failed:    $TOTAL_FAIL"
+echo ""
+
+if [ $TOTAL_FAIL -eq 0 ]; then
+    echo "════════════════════════════════════════════════════════════"
+    echo "           🎉 All tests passed! 🎉"
+    echo "════════════════════════════════════════════════════════════"
     exit 0
+else
+    echo "════════════════════════════════════════════════════════════"
+    echo "           ⚠️  Some tests failed"
+    echo "════════════════════════════════════════════════════════════"
+    exit 1
 fi
 

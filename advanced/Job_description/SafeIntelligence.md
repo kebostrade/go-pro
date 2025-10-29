@@ -50,22 +50,17 @@ Collaborative with, and respectful of others on the team.
 Honest, straightforward and caring about each other’s well being.
 
 
-Why Safe Intelligence is for you: 
-
+# Why Safe Intelligence is for you: 
 We strongly believe AI can empower individuals and society to be happier and more productive, but this can only be achieved if the systems we build are safe to use. To meet this need, we are developing advanced deep validation techniques and tools that allow AI/ML engineers world-wide to validate the robustness of their models, as well as repair the fragilities that they discover. 
-
 By joining us, you’ll be able to help advance the techniques, bring advanced technologies to AI/ML engineers worldwide and contribute to our shared mission to realise successful and reliable AI.
-
 
 Grow with us!
 
 If you think you can bring something special to this role, please apply even if you do not meet all listed criteria. Safe Intelligence is exploring uncharted waters, and finding the right crewmates is important to us. We support ongoing learning for the whole team, ranging from individual mentorship to internal seminars and support for sector and technology-specific upskilling. 
 
-Compensation & Benefits
+# Compensation & Benefits
 
 Safe Intelligence provides competitive compensation based on role and candidate experience. In addition, company benefits for all roles include:
-
-
 Stock option benefits 
 Mentoring, learning and development allowance 
 Regular team social and work events 
@@ -73,11 +68,7 @@ Flexible and generous holidays. We work hard and encourage everyone to take time
  
 Equality and Inclusion
 
-
-
 We are proud to be an equal-opportunity employer and work hard to create an environment where people of diverse backgrounds and life experiences can thrive. The team is highly collaborative and meritocratic. Great ideas come from everywhere, and we strive to make it easy for people to express themselves and be heard. 
-
-
 
 # Location & Office Culture
 

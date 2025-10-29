@@ -64,7 +64,7 @@ func main() {
 		middleware.RequestID,
 		middleware.Logging(log),
 		middleware.Recovery(log),
-		middleware.CORS([]string{"*"}), // Configure origins as needed
+		middleware.CORS(cfg.CORS.AllowedOrigins),
 		middleware.Security(),
 		middleware.ContentType("application/json"),
 		middleware.Timeout(30 * time.Second),

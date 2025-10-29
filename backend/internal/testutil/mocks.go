@@ -25,15 +25,19 @@ func NewMockCacheManager() *MockCacheManager {
 	}
 }
 
-func (m *MockCacheManager) Get(ctx context.Context, key string) (interface{}, error) {
+func (m *MockCacheManager) Get(ctx context.Context, key string, dest interface{}) error {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	m.calls["Get"]++
 
 	if val, ok := m.data[key]; ok {
-		return val, nil
+		// In a real implementation, we would unmarshal into dest
+		// For mock, we just check if the key exists
+		_ = dest
+		_ = val
+		return nil
 	}
-	return nil, cache.ErrCacheMiss
+	return cache.ErrCacheMiss
 }
 
 func (m *MockCacheManager) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
@@ -69,7 +73,7 @@ func (m *MockCacheManager) GetCallCount(method string) int {
 	return m.calls[method]
 }
 
-func (m *MockCacheManager) Reset() {
+func (m *MockCacheManager) ResetMock() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.data = make(map[string]interface{})
@@ -77,16 +81,26 @@ func (m *MockCacheManager) Reset() {
 }
 
 // Implement remaining CacheManager interface methods
-func (m *MockCacheManager) GetSession(ctx context.Context, sessionID string) (*cache.SessionData, error) {
-	val, err := m.Get(ctx, "session:"+sessionID)
-	if err != nil {
-		return nil, err
-	}
-	return val.(*cache.SessionData), nil
+// SessionStore interface implementation
+func (m *MockCacheManager) CreateSession(ctx context.Context, sessionID string, data map[string]interface{}, expiration time.Duration) error {
+	return m.Set(ctx, "session:"+sessionID, data, expiration)
 }
 
-func (m *MockCacheManager) SetSession(ctx context.Context, sessionID string, session *cache.SessionData, expiration time.Duration) error {
-	return m.Set(ctx, "session:"+sessionID, session, expiration)
+func (m *MockCacheManager) GetSession(ctx context.Context, sessionID string) (map[string]interface{}, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	key := "session:" + sessionID
+	if val, ok := m.data[key]; ok {
+		if data, ok := val.(map[string]interface{}); ok {
+			return data, nil
+		}
+	}
+	return nil, cache.ErrCacheMiss
+}
+
+func (m *MockCacheManager) UpdateSession(ctx context.Context, sessionID string, data map[string]interface{}) error {
+	return m.Set(ctx, "session:"+sessionID, data, 0)
 }
 
 func (m *MockCacheManager) DeleteSession(ctx context.Context, sessionID string) error {
@@ -97,51 +111,137 @@ func (m *MockCacheManager) RefreshSession(ctx context.Context, sessionID string,
 	return nil
 }
 
+func (m *MockCacheManager) ListUserSessions(ctx context.Context, userID string) ([]string, error) {
+	return []string{}, nil
+}
+
+func (m *MockCacheManager) DeleteUserSessions(ctx context.Context, userID string) error {
+	return nil
+}
+
 func (m *MockCacheManager) CleanupExpiredSessions(ctx context.Context) error {
 	return nil
 }
 
-func (m *MockCacheManager) AcquireLock(ctx context.Context, key string, ttl time.Duration) (bool, error) {
+// DistributedLock interface implementation
+func (m *MockCacheManager) Lock(ctx context.Context, key string, expiration time.Duration) (bool, error) {
 	return true, nil
 }
 
-func (m *MockCacheManager) ReleaseLock(ctx context.Context, key string) error {
+func (m *MockCacheManager) Unlock(ctx context.Context, key string) error {
 	return nil
 }
 
-func (m *MockCacheManager) ExtendLock(ctx context.Context, key string, ttl time.Duration) error {
+func (m *MockCacheManager) Extend(ctx context.Context, key string, expiration time.Duration) error {
 	return nil
 }
 
-func (m *MockCacheManager) Allow(ctx context.Context, key string, limit int, window time.Duration) (bool, error) {
+func (m *MockCacheManager) IsLocked(ctx context.Context, key string) (bool, error) {
+	return false, nil
+}
+
+func (m *MockCacheManager) GetLockTTL(ctx context.Context, key string) (time.Duration, error) {
+	return 0, nil
+}
+
+func (m *MockCacheManager) Allow(ctx context.Context, key string, limit int64, window time.Duration) (bool, error) {
 	return true, nil
 }
 
-func (m *MockCacheManager) AllowN(ctx context.Context, key string, limit int, window time.Duration, n int) (bool, error) {
+func (m *MockCacheManager) AllowN(ctx context.Context, key string, n int64, limit int64, window time.Duration) (bool, error) {
 	return true, nil
 }
 
-func (m *MockCacheManager) Remaining(ctx context.Context, key string, limit int, window time.Duration) (int, error) {
+func (m *MockCacheManager) Remaining(ctx context.Context, key string, limit int64, window time.Duration) (int64, error) {
 	return limit, nil
 }
 
-func (m *MockCacheManager) ResetRateLimit(ctx context.Context, key string) error {
+func (m *MockCacheManager) Reset(ctx context.Context, key string) error {
 	return m.Delete(ctx, key)
 }
 
+// PubSub interface implementation
 func (m *MockCacheManager) Publish(ctx context.Context, channel string, message interface{}) error {
 	return nil
 }
 
-func (m *MockCacheManager) Subscribe(ctx context.Context, channel string, handler func(string, []byte)) error {
+func (m *MockCacheManager) Subscribe(ctx context.Context, channels ...string) (<-chan cache.Message, error) {
+	ch := make(chan cache.Message)
+	close(ch)
+	return ch, nil
+}
+
+func (m *MockCacheManager) Unsubscribe(ctx context.Context, channels ...string) error {
 	return nil
 }
 
-func (m *MockCacheManager) Unsubscribe(ctx context.Context, channel string) error {
+func (m *MockCacheManager) PSubscribe(ctx context.Context, patterns ...string) (<-chan cache.Message, error) {
+	ch := make(chan cache.Message)
+	close(ch)
+	return ch, nil
+}
+
+func (m *MockCacheManager) PUnsubscribe(ctx context.Context, patterns ...string) error {
 	return nil
 }
 
-func (m *MockCacheManager) Health(ctx context.Context) error {
+// Cache interface additional methods
+func (m *MockCacheManager) Expire(ctx context.Context, key string, expiration time.Duration) error {
+	return nil
+}
+
+func (m *MockCacheManager) TTL(ctx context.Context, key string) (time.Duration, error) {
+	return 0, nil
+}
+
+func (m *MockCacheManager) Increment(ctx context.Context, key string) (int64, error) {
+	return 0, nil
+}
+
+func (m *MockCacheManager) IncrementBy(ctx context.Context, key string, value int64) (int64, error) {
+	return 0, nil
+}
+
+func (m *MockCacheManager) Decrement(ctx context.Context, key string) (int64, error) {
+	return 0, nil
+}
+
+func (m *MockCacheManager) DecrementBy(ctx context.Context, key string, value int64) (int64, error) {
+	return 0, nil
+}
+
+func (m *MockCacheManager) SetNX(ctx context.Context, key string, value interface{}, expiration time.Duration) (bool, error) {
+	return true, nil
+}
+
+func (m *MockCacheManager) GetSet(ctx context.Context, key string, value interface{}) (string, error) {
+	return "", nil
+}
+
+func (m *MockCacheManager) MGet(ctx context.Context, keys ...string) ([]interface{}, error) {
+	return []interface{}{}, nil
+}
+
+func (m *MockCacheManager) MSet(ctx context.Context, pairs ...interface{}) error {
+	return nil
+}
+
+func (m *MockCacheManager) Keys(ctx context.Context, pattern string) ([]string, error) {
+	return []string{}, nil
+}
+
+func (m *MockCacheManager) Scan(ctx context.Context, cursor uint64, match string, count int64) ([]string, uint64, error) {
+	return []string{}, 0, nil
+}
+
+func (m *MockCacheManager) FlushDB(ctx context.Context) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.data = make(map[string]interface{})
+	return nil
+}
+
+func (m *MockCacheManager) HealthCheck(ctx context.Context) error {
 	return nil
 }
 

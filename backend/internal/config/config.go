@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	Logger   LoggerConfig
+	CORS     CORSConfig
 }
 
 // ServerConfig holds HTTP server configuration
@@ -20,6 +22,11 @@ type ServerConfig struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 	IdleTimeout  time.Duration
+}
+
+// CORSConfig holds CORS configuration
+type CORSConfig struct {
+	AllowedOrigins []string
 }
 
 // DatabaseConfig holds database configuration
@@ -72,7 +79,18 @@ func Load() *Config {
 			Level:  getEnv("LOG_LEVEL", "info"),
 			Format: getEnv("LOG_FORMAT", "json"),
 		},
+		CORS: CORSConfig{
+			AllowedOrigins: getSliceEnv("CORS_ALLOWED_ORIGINS", []string{"http://localhost:3000"}),
+		},
 	}
+}
+
+// getSliceEnv reads a comma-separated environment variable or returns a default value
+func getSliceEnv(key string, defaultValue []string) []string {
+	if value := os.Getenv(key); value != "" {
+		return strings.Split(value, ",")
+	}
+	return defaultValue
 }
 
 // getEnv reads an environment variable or returns a default value

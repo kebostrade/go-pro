@@ -8,3 +8,5 @@ import (
 func main() {
 	fmt.Println(runtime.GOMAXPROCS(0))
 }
+
+
