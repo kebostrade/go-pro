@@ -393,7 +393,14 @@ export default function CurriculumPage() {
 
   return (
     <div className="min-h-screen animated-gradient">
-      <div className="container-responsive padding-responsive-y">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-full blur-3xl float-animation" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-cyan-500/20 to-primary/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/10 via-transparent to-blue-500/10 rounded-full blur-3xl float-animation" style={{ animationDelay: '2s' }} />
+      </div>
+
+      <div className="container-responsive padding-responsive-y relative z-10">
         {/* Header */}
         <div className="margin-responsive">
           <div className="glass-card p-6 lg:p-8 rounded-2xl mb-8 border-2 animate-in fade-in slide-in-bottom duration-700">

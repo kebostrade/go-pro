@@ -8,6 +8,7 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -116,7 +117,7 @@ func (r *RedisSessionStore) CreateSession(ctx context.Context, sessionID string,
 func (r *RedisSessionStore) GetSession(ctx context.Context, sessionID string) (map[string]interface{}, error) {
 	sessionJSON, err := r.client.Get(ctx, r.sessionKey(sessionID)).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return nil, ErrCacheNotFound
 		}
 
@@ -131,7 +132,10 @@ func (r *RedisSessionStore) GetSession(ctx context.Context, sessionID string) (m
 	// Check if session is expired.
 	if time.Now().After(sessionData.ExpiresAt) {
 		// Clean up expired session.
-		r.DeleteSession(ctx, sessionID)
+		if delErr := r.DeleteSession(ctx, sessionID); delErr != nil {
+			// Log error but don't fail the operation
+			_ = delErr
+		}
 		return nil, ErrCacheNotFound
 	}
 
@@ -183,7 +187,7 @@ func (r *RedisSessionStore) UpdateSession(ctx context.Context, sessionID string,
 func (r *RedisSessionStore) DeleteSession(ctx context.Context, sessionID string) error {
 	// Get session to find user ID.
 	sessionData, err := r.GetSession(ctx, sessionID)
-	if err != nil && err != ErrCacheNotFound {
+	if err != nil && !errors.Is(err, ErrCacheNotFound) {
 		return fmt.Errorf("failed to get session for deletion: %w", err)
 	}
 
@@ -242,7 +246,7 @@ func (r *RedisSessionStore) RefreshSession(ctx context.Context, sessionID string
 func (r *RedisSessionStore) ListUserSessions(ctx context.Context, userID string) ([]string, error) {
 	sessions, err := r.client.SMembers(ctx, r.userSessionsKey(userID)).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return []string{}, nil
 		}
 

@@ -274,6 +274,10 @@ func (r *CourseRepository) Search(ctx context.Context, query string, pagination 
 		courses = append(courses, &course)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("error iterating course rows: %w", err)
+	}
+
 	// Count total matching courses.
 	countQuery := `
 		SELECT COUNT(*) 

@@ -370,71 +370,97 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
-      <div className="container max-w-7xl mx-auto px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
-        {/* Header */}
-        <div className="mb-10 lg:mb-12">
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden animated-gradient">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-full blur-3xl float-animation" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-cyan-500/20 to-primary/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '1s' }} />
+        </div>
+
+        <div className="container max-w-7xl mx-auto px-4 py-12 sm:py-16 lg:py-20 relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 lg:mb-8">
-            <div className="mb-4 lg:mb-0">
-              <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Real-World Projects
+            <div className="mb-6 lg:mb-0">
+              <Badge variant="secondary" className="mb-4 text-sm pulse-badge animate-in fade-in slide-in-bottom duration-500">
+                🚀 Build Real Projects
+              </Badge>
+              <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight mb-3 animate-in fade-in slide-in-bottom duration-700">
+                <span className="go-gradient-text">Real-World Projects</span>
               </h1>
-              <p className="text-muted-foreground text-lg lg:text-xl max-w-2xl">
+              <p className="text-base lg:text-xl text-muted-foreground max-w-2xl leading-relaxed animate-in fade-in slide-in-bottom duration-1000">
                 Build production-ready applications and master Go through hands-on projects
               </p>
             </div>
-            <div className="text-left lg:text-right">
-              <div className="text-3xl lg:text-4xl font-bold text-primary">{projectStats.completedProjects}/{projectStats.totalProjects}</div>
-              <div className="text-sm lg:text-base text-muted-foreground">Projects Completed</div>
+            <div className="text-center lg:text-right p-6 rounded-xl glass-card border-2 border-primary/20 animate-in fade-in duration-1000">
+              <div className="text-3xl lg:text-4xl font-bold go-gradient-text">{projectStats.completedProjects}/{projectStats.totalProjects}</div>
+              <div className="text-sm lg:text-base text-muted-foreground mt-1">Projects Completed</div>
             </div>
           </div>
 
           {/* Project Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 mb-8">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Trophy className="h-6 w-6 text-yellow-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{projectStats.completedProjects}</div>
-              <div className="text-sm text-muted-foreground">Completed</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Zap className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{projectStats.inProgressProjects}</div>
-              <div className="text-sm text-muted-foreground">In Progress</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Clock className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{projectStats.totalHours}+</div>
-              <div className="text-sm text-muted-foreground">Total Hours</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Target className="h-6 w-6 text-green-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{projects.filter(p => !p.locked).length}</div>
-              <div className="text-sm text-muted-foreground">Available</div>
-            </CardContent>
-          </Card>
-        </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 mb-8 animate-in fade-in duration-1000">
+            <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-yellow-500/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 via-transparent to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-500/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <Trophy className="h-6 w-6 text-yellow-500 group-hover:animate-pulse" />
+                </div>
+                <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-yellow-500/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">{projectStats.completedProjects}</div>
+                <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">Completed</div>
+              </div>
+            </div>
+            <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <Zap className="h-6 w-6 text-blue-500 group-hover:animate-pulse" />
+                </div>
+                <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-blue-500/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">{projectStats.inProgressProjects}</div>
+                <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">In Progress</div>
+              </div>
+            </div>
+            <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <Clock className="h-6 w-6 text-purple-500 group-hover:animate-pulse" />
+                </div>
+                <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-purple-500/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">{projectStats.totalHours}+</div>
+                <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">Total Hours</div>
+              </div>
+            </div>
+            <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-green-500/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <Target className="h-6 w-6 text-green-500 group-hover:animate-pulse" />
+                </div>
+                <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-green-500/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">{projects.filter(p => !p.locked).length}</div>
+                <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">Available</div>
+              </div>
+            </div>
+          </div>
 
-        <Progress 
-          value={(projectStats.completedProjects / projectStats.totalProjects) * 100} 
-          className="h-2" 
-        />
-      </div>
+          <Progress
+            value={(projectStats.completedProjects / projectStats.totalProjects) * 100}
+            className="h-2 animate-in fade-in duration-1000"
+          />
+        </div>
+      </section>
 
       {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <div className="container max-w-7xl mx-auto px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-accent/5 to-background pointer-events-none" />
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 relative z-10 animate-in fade-in duration-1000">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <TabsList className="grid w-full grid-cols-4 md:w-[500px]">
-            <TabsTrigger value="all">All Projects</TabsTrigger>
-            <TabsTrigger value="available">Available</TabsTrigger>
-            <TabsTrigger value="in-progress">In Progress</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 md:w-[500px] bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg">
+            <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">All Projects</TabsTrigger>
+            <TabsTrigger value="available" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Available</TabsTrigger>
+            <TabsTrigger value="in-progress" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">In Progress</TabsTrigger>
+            <TabsTrigger value="completed" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Completed</TabsTrigger>
           </TabsList>
 
           <div className="flex gap-2">

@@ -265,7 +265,10 @@ func (rw *responseWriter) WriteHeader(code int) {
 // generateRequestID generates a random request ID.
 func generateRequestID() string {
 	bytes := make([]byte, 8)
-	rand.Read(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to timestamp-based ID if random generation fails
+		return strconv.FormatInt(time.Now().UnixNano(), 16)
+	}
 
 	return hex.EncodeToString(bytes)
 }
@@ -325,8 +328,13 @@ func WriteErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	w.WriteHeader(statusCode)
 
 	// Use a simple JSON encoder to avoid import cycles.
-	jsonResponse := `{"success":false,"error":{"type":"` + apiErr.Type + `","message":"` + apiErr.Message + `"},"request_id":"` + response.RequestID + `","timestamp":"` + response.Timestamp.Format(time.RFC3339) + `"}`
-	w.Write([]byte(jsonResponse))
+	jsonResponse := `{"success":false,"error":{"type":"` + apiErr.Type +
+		`","message":"` + apiErr.Message + `"},"request_id":"` + response.RequestID +
+		`","timestamp":"` + response.Timestamp.Format(time.RFC3339) + `"}`
+	if _, err := w.Write([]byte(jsonResponse)); err != nil {
+		// Log error but can't do much at this point
+		_ = err
+	}
 }
 
 // Pagination extracts pagination parameters from query string.

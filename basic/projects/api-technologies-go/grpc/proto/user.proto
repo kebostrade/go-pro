@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/DimaJoyti/go-pro/api-technologies-go/grpc/proto";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// User service definition
+service UserService {
+  // Unary RPC
+  rpc CreateUser(CreateUserRequest) returns (User);
+  rpc GetUser(GetUserRequest) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (User);
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  
+  // Server streaming RPC
+  rpc StreamUsers(StreamUsersRequest) returns (stream User);
+  
+  // Client streaming RPC
+  rpc CreateUsers(stream CreateUserRequest) returns (CreateUsersResponse);
+  
+  // Bidirectional streaming RPC
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+}
+
+// Messages
+message User {
+  int32 id = 1;
+  string username = 2;
+  string email = 3;
+  string role = 4;
+  bool active = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string email = 2;
+  string role = 3;
+}
+
+message GetUserRequest {
+  int32 id = 1;
+}
+
+message UpdateUserRequest {
+  int32 id = 1;
+  string username = 2;
+  string email = 3;
+  string role = 4;
+  bool active = 5;
+}
+
+message DeleteUserRequest {
+  int32 id = 1;
+}
+
+message ListUsersRequest {
+  string role = 1;
+  bool active = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message StreamUsersRequest {
+  string role = 1;
+}
+
+message CreateUsersResponse {
+  repeated User users = 1;
+  int32 count = 2;
+}
+
+message ChatMessage {
+  int32 user_id = 1;
+  string message = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+

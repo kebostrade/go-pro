@@ -8,6 +8,7 @@ package testutil
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -28,6 +29,7 @@ type TestDB struct {
 
 // NewTestDB creates a new test database connection.
 func NewTestDB(t *testing.T) *TestDB {
+	t.Helper()
 	config := &postgres.Config{
 		Host:            GetEnv("TEST_DB_HOST", "localhost"),
 		Port:            GetEnvAsInt("TEST_DB_PORT", 5432),
@@ -80,6 +82,7 @@ type TestLogger struct {
 
 // NewTestLogger creates a new test logger.
 func NewTestLogger(t *testing.T) logger.Logger {
+	t.Helper()
 	return &TestLogger{t: t}
 }
 
@@ -105,36 +108,43 @@ func (l *TestLogger) With(keysAndValues ...interface{}) logger.Logger {
 
 // AssertError asserts that an error occurred.
 func AssertError(t *testing.T, err error, msgAndArgs ...interface{}) {
+	t.Helper()
 	assert.Error(t, err, msgAndArgs...)
 }
 
 // AssertNoError asserts that no error occurred.
 func AssertNoError(t *testing.T, err error, msgAndArgs ...interface{}) {
+	t.Helper()
 	assert.NoError(t, err, msgAndArgs...)
 }
 
 // AssertEqual asserts that two values are equal.
 func AssertEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) {
+	t.Helper()
 	assert.Equal(t, expected, actual, msgAndArgs...)
 }
 
 // AssertNotNil asserts that a value is not nil.
 func AssertNotNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) {
+	t.Helper()
 	assert.NotNil(t, object, msgAndArgs...)
 }
 
 // AssertNil asserts that a value is nil.
 func AssertNil(t *testing.T, object interface{}, msgAndArgs ...interface{}) {
+	t.Helper()
 	assert.Nil(t, object, msgAndArgs...)
 }
 
 // RequireNoError requires that no error occurred.
 func RequireNoError(t *testing.T, err error, msgAndArgs ...interface{}) {
+	t.Helper()
 	require.NoError(t, err, msgAndArgs...)
 }
 
 // RequireEqual requires that two values are equal.
 func RequireEqual(t *testing.T, expected, actual interface{}, msgAndArgs ...interface{}) {
+	t.Helper()
 	require.Equal(t, expected, actual, msgAndArgs...)
 }
 
@@ -216,12 +226,14 @@ func CreateTestUser(id, username, email string) *domain.User {
 
 // WithTransaction executes a function within a test transaction that is rolled back.
 func WithTransaction(t *testing.T, db *sql.DB, fn func(*sql.Tx) error) {
+	t.Helper()
 	tx, err := db.Begin()
 	require.NoError(t, err, "Failed to begin transaction")
 
 	defer func() {
 		// Always rollback test transactions.
-		if rbErr := tx.Rollback(); rbErr != nil && rbErr != sql.ErrTxDone {
+		rbErr := tx.Rollback()
+		if rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
 			t.Logf("Failed to rollback transaction: %v", rbErr)
 		}
 	}()
@@ -244,6 +256,7 @@ func GetEnvAsInt(key string, defaultValue int) int {
 
 // WaitForCondition waits for a condition to be true with timeout.
 func WaitForCondition(t *testing.T, timeout time.Duration, condition func() bool) {
+	t.Helper()
 	deadline := time.Now().Add(timeout)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()

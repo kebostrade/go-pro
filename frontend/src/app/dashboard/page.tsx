@@ -160,35 +160,51 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
-      <div className="container-responsive padding-responsive-y">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between margin-responsive">
-          <div className="mb-4 lg:mb-0">
-            <h1 className="text-responsive-heading font-bold tracking-tight mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Dashboard
-            </h1>
-            <p className="text-responsive-body text-muted-foreground max-w-2xl">
-              Welcome back! Continue your Go learning journey.
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="icon">
-              <Bell className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </div>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden animated-gradient">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-full blur-3xl float-animation" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-cyan-500/20 to-primary/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '1s' }} />
         </div>
 
+        <div className="container-responsive py-12 sm:py-16 lg:py-20 relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="mb-6 lg:mb-0">
+              <Badge variant="secondary" className="mb-4 text-sm pulse-badge animate-in fade-in slide-in-bottom duration-500">
+                👋 Welcome Back
+              </Badge>
+              <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight mb-3 animate-in fade-in slide-in-bottom duration-700">
+                Your <span className="go-gradient-text">Learning Dashboard</span>
+              </h1>
+              <p className="text-base lg:text-xl text-muted-foreground max-w-2xl leading-relaxed animate-in fade-in slide-in-bottom duration-1000">
+                Continue your Go learning journey and track your progress
+              </p>
+            </div>
+            <div className="flex items-center space-x-2 animate-in fade-in duration-1000">
+              <Button variant="outline" size="icon" className="glass-card hover:shadow-lg transition-all duration-300">
+                <Bell className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="glass-card hover:shadow-lg transition-all duration-300">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Main Content */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="courses">Courses</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="explore">Explore</TabsTrigger>
+      <div className="container-responsive padding-responsive-y relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-accent/5 to-background pointer-events-none" />
+
+      <Tabs defaultValue="overview" className="space-y-6 relative z-10 animate-in fade-in duration-1000">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[400px] bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Overview</TabsTrigger>
+          <TabsTrigger value="courses" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Courses</TabsTrigger>
+          <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Analytics</TabsTrigger>
+          <TabsTrigger value="explore" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Explore</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -198,15 +214,25 @@ export default function Dashboard() {
             </div>
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 rounded-lg bg-primary/5 border border-primary/20">
-                  <TrendingUp className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">7</div>
-                  <div className="text-sm text-muted-foreground">Day Streak</div>
+                <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative z-10">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                      <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary group-hover:animate-pulse" />
+                    </div>
+                    <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-primary/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">7</div>
+                    <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">Day Streak</div>
+                  </div>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-green-50 border border-green-200 dark:bg-green-950 dark:border-green-800">
-                  <Trophy className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                  <div className="text-2xl font-bold">2</div>
-                  <div className="text-sm text-muted-foreground">Completed</div>
+                <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-green-500/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative z-10">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                      <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 group-hover:animate-pulse" />
+                    </div>
+                    <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-green-500/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">2</div>
+                    <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">Completed</div>
+                  </div>
                 </div>
               </div>
               

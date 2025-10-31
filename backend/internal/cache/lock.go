@@ -9,6 +9,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"time"
 
@@ -51,7 +52,10 @@ func (r *RedisDistributedLock) lockKey(key string) string {
 // generateLockValue generates a unique lock value.
 func (r *RedisDistributedLock) generateLockValue() string {
 	bytes := make([]byte, 16)
-	rand.Read(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to timestamp-based value if random generation fails
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
 
 	return hex.EncodeToString(bytes)
 }
@@ -71,7 +75,13 @@ func (r *RedisDistributedLock) Lock(ctx context.Context, key string, expiration 
 }
 
 // LockWithRetry acquires a lock with retry mechanism.
-func (r *RedisDistributedLock) LockWithRetry(ctx context.Context, key string, expiration time.Duration, maxRetries int, retryDelay time.Duration) (bool, error) {
+func (r *RedisDistributedLock) LockWithRetry(
+	ctx context.Context,
+	key string,
+	expiration time.Duration,
+	maxRetries int,
+	retryDelay time.Duration,
+) (bool, error) {
 	for i := 0; i < maxRetries; i++ {
 		acquired, err := r.Lock(ctx, key, expiration)
 		if err != nil {
@@ -225,7 +235,7 @@ func (r *RedisDistributedLock) GetLockInfo(ctx context.Context, key string) (*Lo
 
 	_, err := pipe.Exec(ctx)
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return nil, fmt.Errorf("lock not found")
 		}
 
@@ -335,7 +345,14 @@ func (r *RedisDistributedLock) WithLock(ctx context.Context, key string, expirat
 }
 
 // WithLockRetry executes a function while holding a lock with retry.
-func (r *RedisDistributedLock) WithLockRetry(ctx context.Context, key string, expiration time.Duration, maxRetries int, retryDelay time.Duration, fn func() error) error {
+func (r *RedisDistributedLock) WithLockRetry(
+	ctx context.Context,
+	key string,
+	expiration time.Duration,
+	maxRetries int,
+	retryDelay time.Duration,
+	fn func() error,
+) error {
 	// Acquire lock with retry.
 	acquired, err := r.LockWithRetry(ctx, key, expiration, maxRetries, retryDelay)
 	if err != nil {

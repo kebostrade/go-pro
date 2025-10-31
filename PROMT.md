@@ -19,10 +19,13 @@ Working with WebSockets in Go
 Working with Microservices in Go
 Working with Design Patterns in Go
 Working with Concurrency in Go
+Working with PostgreSQL and Redis
+Working RESTful APIs, gRPC, and GraphQL
 Web Architecture With Golang
 Doker Kubernetes and Teraform with go
 Kafka and RabbitMQ with go
 Ethical Hacking with Go
+GCP AWS CI/CD 
 
 ### Repository structure (high-level)
 - `backend/` — Go HTTP API (sample course data, exercises, progress)

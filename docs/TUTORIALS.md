@@ -41,6 +41,14 @@
 - [Tutorial 14](#-tutorial-14-performance-optimization) - Performance Optimization ⏱️ 50 min
 - [Tutorial 15](#-tutorial-15-docker--deployment) - Docker & Deployment ⏱️ 45 min
 
+### 🚀 [Advanced Topics](#-advanced-tutorials) (43+ hours)
+- [Tutorial 16](#%EF%B8%8F-tutorial-16-web-architecture-with-go) - Web Architecture with Go ⏱️ 6 hours
+- [Tutorial 17](#-tutorial-17-devops-with-go---docker-kubernetes-and-terraform) - DevOps with Go ⏱️ 7 hours
+- [Tutorial 18](#-tutorial-18-messaging-with-go---kafka-and-rabbitmq) - Messaging with Go ⏱️ 6 hours
+- [Tutorial 19](#-tutorial-19-ethical-hacking-with-go) - Ethical Hacking with Go ⏱️ 7 hours
+- [Tutorial 20](#-tutorial-20-postgresql--redis-with-go) - PostgreSQL & Redis with Go ⏱️ 8 hours
+- [Tutorial 21](#-tutorial-21-restful-apis-grpc--graphql-with-go) - RESTful APIs, gRPC & GraphQL ⏱️ 8 hours
+
 ### 🤖 [AI Engineering](#-ai-engineering-tutorials) (6-8 hours)
 - [AI Tutorial 0](#-ai-tutorial-0-ai-engineering-overview) - AI Engineering Overview ⏱️ 20 min
 - [AI Tutorial 1](#-ai-tutorial-1-llm-basics) - LLM Basics & Chatbot ⏱️ 30 min
@@ -6403,7 +6411,1880 @@ Implement priority-based message processing in RabbitMQ.
 
 ---
 
-## 🎬 AI Content Creation Course
+## Tutorial 19: Ethical Hacking with Go
+
+**Project:** `basic/projects/ethical-hacking/`
+
+Learn network security, penetration testing, and vulnerability assessment by building security tools with Go.
+
+### ⚠️ LEGAL DISCLAIMER
+
+**READ THIS CAREFULLY BEFORE PROCEEDING**
+
+This tutorial is for **EDUCATIONAL PURPOSES ONLY**. You must:
+- ✅ Only test systems you own or have explicit written permission to test
+- ✅ Use these tools responsibly and ethically
+- ✅ Follow all applicable laws and regulations
+- ❌ NEVER use these tools for unauthorized access or malicious purposes
+
+**Unauthorized use may result in criminal prosecution and civil liability.**
+
+### 🎯 What You'll Learn
+
+- **Network Security**: Port scanning, network mapping, packet analysis
+- **Web Security**: Vulnerability scanning, SSL/TLS analysis
+- **Cryptography**: Hash cracking, password analysis
+- **Ethical Hacking**: Responsible security testing practices
+
+### 📋 Prerequisites
+
+- Go 1.21 or higher
+- libpcap (for packet sniffer): `sudo apt-get install libpcap-dev`
+- Basic understanding of networking and security concepts
+- **Root/Administrator privileges** (for packet sniffer only)
+
+### 🏗️ Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   Security Tools Architecture                   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  NETWORK SECURITY                                               │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐       │
+│  │ Port Scanner │   │Network Mapper│   │Packet Sniffer│       │
+│  │              │   │              │   │              │       │
+│  │ • TCP Scan   │   │ • Host Disc. │   │ • Capture    │       │
+│  │ • Service ID │   │ • Hostname   │   │ • Analysis   │       │
+│  │ • Concurrent │   │ • Latency    │   │ • Filtering  │       │
+│  └──────────────┘   └──────────────┘   └──────────────┘       │
+│                                                                 │
+│  WEB SECURITY                                                   │
+│  ┌──────────────┐   ┌──────────────┐                          │
+│  │Web Scanner   │   │ SSL Checker  │                          │
+│  │              │   │              │                          │
+│  │ • XSS        │   │ • Cert Info  │                          │
+│  │ • SQL Inject │   │ • TLS Version│                          │
+│  │ • Headers    │   │ • Security   │                          │
+│  └──────────────┘   └──────────────┘                          │
+│                                                                 │
+│  CRYPTOGRAPHY                                                   │
+│  ┌──────────────┐   ┌──────────────┐                          │
+│  │Hash Cracker  │   │Password Anal.│                          │
+│  │              │   │              │                          │
+│  │ • MD5/SHA    │   │ • Strength   │                          │
+│  │ • Dictionary │   │ • Entropy    │                          │
+│  │ • Bcrypt     │   │ • Recommend. │                          │
+│  └──────────────┘   └──────────────┘                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 1: Navigate to Project
+
+```bash
+cd basic/projects/ethical-hacking
+```
+
+#### Step 2: Install Dependencies
+
+```bash
+# Install libpcap (for packet sniffer)
+# Ubuntu/Debian:
+sudo apt-get install libpcap-dev
+
+# macOS:
+brew install libpcap
+
+# Download Go dependencies
+make deps
+```
+
+#### Step 3: Build All Tools
+
+```bash
+make build
+```
+
+This creates binaries in the `bin/` directory.
+
+### 🔍 Tool 1: Port Scanner
+
+Discover open ports and services on a target system.
+
+**Run the tool:**
+
+```bash
+# Scan localhost
+./bin/port-scanner -host localhost -ports 1-1000
+
+# Scan specific ports
+./bin/port-scanner -host example.com -ports 80,443,8080,3306
+
+# Fast scan with more workers
+./bin/port-scanner -host 192.168.1.1 -ports 1-65535 -workers 500
+```
+
+**Example Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                  🔍 Port Scanner                            ║
+╚══════════════════════════════════════════════════════════════╝
+
+🎯 Target: localhost
+📊 Scanning 1000 ports with 100 workers...
+
+✅ Port 22 (SSH) - OPEN
+✅ Port 80 (HTTP) - OPEN
+✅ Port 443 (HTTPS) - OPEN
+✅ Port 3306 (MySQL) - OPEN
+
+============================================================
+📋 SCAN RESULTS
+============================================================
+✅ Found 4 open port(s):
+
+PORT       STATE      SERVICE
+------------------------------------------------------------
+22         open       SSH
+80         open       HTTP
+443        open       HTTPS
+3306       open       MySQL
+```
+
+**Key Concepts:**
+
+- **TCP Connect Scan**: Completes full TCP handshake
+- **Concurrent Scanning**: Uses goroutines for speed
+- **Service Identification**: Maps ports to common services
+- **Timeout Management**: Prevents hanging connections
+
+### 🗺️ Tool 2: Network Mapper
+
+Discover active hosts on a network.
+
+**Run the tool:**
+
+```bash
+# Scan local network
+./bin/network-mapper -subnet 192.168.1.0/24
+
+# Scan with custom settings
+./bin/network-mapper -subnet 10.0.0.0/24 -timeout 2000 -workers 100
+```
+
+**Example Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                  🗺️  Network Mapper                         ║
+╚══════════════════════════════════════════════════════════════╝
+
+🌐 Scanning subnet: 192.168.1.0/24
+📊 Scanning 254 IP addresses...
+
+✅ 192.168.1.1 - router.local (2.34ms)
+✅ 192.168.1.100 - desktop.local (1.56ms)
+✅ 192.168.1.101 - laptop.local (3.21ms)
+
+================================================================================
+📋 NETWORK MAP
+================================================================================
+IP ADDRESS           STATUS     HOSTNAME                       LATENCY
+--------------------------------------------------------------------------------
+192.168.1.1          up         router.local                   2.34ms
+192.168.1.100        up         desktop.local                  1.56ms
+192.168.1.101        up         laptop.local                   3.21ms
+
+📊 NETWORK STATISTICS
+--------------------------------------------------------------------------------
+Total hosts scanned: 254
+Active hosts: 3
+Average latency: 2.37ms
+```
+
+**Key Concepts:**
+
+- **CIDR Notation**: Subnet specification (e.g., /24 = 256 addresses)
+- **Host Discovery**: Ping sweep to find active hosts
+- **Hostname Resolution**: Reverse DNS lookup
+- **Network Mapping**: Visualize network topology
+
+### 📡 Tool 3: Packet Sniffer
+
+Capture and analyze network traffic (requires root).
+
+**Run the tool:**
+
+```bash
+# Capture all traffic
+sudo ./bin/packet-sniffer -interface eth0
+
+# Capture HTTP traffic only
+sudo ./bin/packet-sniffer -interface eth0 -filter "tcp port 80"
+
+# Capture DNS queries
+sudo ./bin/packet-sniffer -interface eth0 -filter "udp port 53"
+
+# Capture limited packets
+sudo ./bin/packet-sniffer -interface eth0 -count 100
+```
+
+**Example Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                  📡 Packet Sniffer                          ║
+╚══════════════════════════════════════════════════════════════╝
+
+🔍 Interface: eth0
+📡 Capturing packets... (Press Ctrl+C to stop)
+
+[14:23:45.123] HTTP: 192.168.1.100:54321 → 93.184.216.34:80 (512 bytes)
+[14:23:45.234] HTTPS: 192.168.1.100:54322 → 172.217.14.206:443 (1024 bytes)
+[14:23:45.345] DNS: 192.168.1.100:53241 → 8.8.8.8:53 (64 bytes)
+
+📊 CAPTURE STATISTICS
+============================================================
+Total packets: 150
+  TCP:   85 (56.7%)
+  UDP:   45 (30.0%)
+  ICMP:  10 (6.7%)
+  HTTP:  25 (16.7%)
+  HTTPS: 60 (40.0%)
+  DNS:   20 (13.3%)
+```
+
+**Key Concepts:**
+
+- **Packet Capture**: Using gopacket library
+- **BPF Filters**: Berkeley Packet Filter for selective capture
+- **Protocol Analysis**: Identifying TCP, UDP, ICMP, HTTP, HTTPS, DNS
+- **Traffic Statistics**: Understanding network patterns
+
+### 🔍 Tool 4: Web Vulnerability Scanner
+
+Scan websites for common security vulnerabilities.
+
+**Run the tool:**
+
+```bash
+# Scan a website
+./bin/web-scanner -url https://example.com
+
+# Custom timeout
+./bin/web-scanner -url https://testsite.local -timeout 30
+```
+
+**Example Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                  🔍 Web Vulnerability Scanner               ║
+╚══════════════════════════════════════════════════════════════╝
+
+🎯 Target: https://example.com
+🔍 Running security checks...
+
+📋 Checking HTTPS redirect...
+📋 Checking security headers...
+📋 Checking for XSS vulnerabilities...
+📋 Checking for SQL injection vulnerabilities...
+📋 Checking for directory listing...
+
+================================================================================
+📋 SCAN RESULTS
+================================================================================
+⚠️  Found 3 potential vulnerabilities:
+   Critical: 0 | High: 1 | Medium: 1 | Low: 1
+
+1. [High] Potential XSS
+   Description: User input reflected in response without sanitization
+   URL: https://example.com?test=<script>alert('XSS')</script>
+
+2. [Medium] Missing Security Header
+   Description: Missing X-Frame-Options (Clickjacking protection)
+   URL: https://example.com
+
+3. [Low] Missing Security Header
+   Description: Missing Content-Security-Policy (XSS protection)
+   URL: https://example.com
+```
+
+**Vulnerabilities Detected:**
+
+1. **XSS (Cross-Site Scripting)**: Reflected user input
+2. **SQL Injection**: SQL error messages
+3. **Missing Security Headers**: X-Frame-Options, CSP, HSTS
+4. **Directory Listing**: Exposed directories
+5. **HTTPS Redirect**: Missing HTTP to HTTPS redirect
+
+### 🔒 Tool 5: SSL/TLS Checker
+
+Analyze SSL/TLS certificates and security configuration.
+
+**Run the tool:**
+
+```bash
+# Check SSL certificate
+./bin/ssl-checker -host example.com
+
+# Custom port
+./bin/ssl-checker -host example.com -port 8443
+```
+
+**Example Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                  🔒 SSL/TLS Certificate Checker             ║
+╚══════════════════════════════════════════════════════════════╝
+
+🎯 Target: example.com:443
+
+📋 CERTIFICATE INFORMATION
+================================================================================
+Common Name: example.com
+Organization: Example Inc
+Issuer: Let's Encrypt Authority X3
+
+Validity:
+  Not Before: 2024-01-01 00:00:00 UTC
+  Not After:  2024-04-01 00:00:00 UTC
+  Status: ✅ Valid (45 days remaining)
+
+Subject Alternative Names:
+  - example.com
+  - www.example.com
+
+Key Information:
+  Algorithm: RSA
+  Signature: SHA256-RSA
+
+📋 SECURITY ANALYSIS
+================================================================================
+✅ GOOD PRACTICES:
+  • Using modern TLS version: TLS 1.3
+  • Cipher Suite: TLS_AES_128_GCM_SHA256
+  • Certificate valid for 45 more days
+  • Using strong signature algorithm: SHA256-RSA
+
+📊 SECURITY SCORE: 95/100
+   Rating: ✅ Excellent
+```
+
+**Security Checks:**
+
+- ✅ TLS version (1.2, 1.3)
+- ✅ Certificate expiration
+- ✅ Signature algorithm
+- ✅ Cipher suite strength
+- ✅ Certificate chain validation
+
+### 🔨 Tool 6: Hash Cracker
+
+Crack password hashes using dictionary attacks.
+
+**Run the tool:**
+
+```bash
+# Crack MD5 hash
+./bin/hash-cracker -hash 5f4dcc3b5aa765d61d8327deb882cf99 -type md5
+
+# Use custom wordlist
+./bin/hash-cracker -hash <hash> -type sha256 -wordlist wordlist.txt
+
+# Crack bcrypt hash
+./bin/hash-cracker -hash '$2a$10$...' -type bcrypt -wordlist passwords.txt
+```
+
+**Example Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                  🔨 Hash Cracker                            ║
+╚══════════════════════════════════════════════════════════════╝
+
+🎯 Hash: 5f4dcc3b5aa765d61d8327deb882cf99
+🔧 Type: md5
+📊 Using 50 common passwords
+
+🔨 Starting hash cracking...
+🔨 Progress: 5000/10000 (50.0%)
+
+✅ HASH CRACKED!
+   Password: password
+   Time: 234ms
+   Speed: 42735 hashes/sec
+```
+
+**Supported Hash Types:**
+
+- MD5
+- SHA1
+- SHA256
+- bcrypt
+
+**Key Concepts:**
+
+- **Dictionary Attack**: Testing passwords from wordlist
+- **Hash Functions**: One-way cryptographic functions
+- **Rainbow Tables**: Precomputed hash tables
+- **Salting**: Adding random data to prevent rainbow tables
+
+### 🔐 Tool 7: Password Analyzer
+
+Analyze password strength and provide recommendations.
+
+**Run the tool:**
+
+```bash
+# Analyze single password
+./bin/password-analyzer -password "MyP@ssw0rd123"
+
+# Analyze passwords from file
+./bin/password-analyzer -file passwords.txt
+```
+
+**Example Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                  🔐 Password Analyzer                       ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 PASSWORD ANALYSIS
+================================================================================
+Password: ************* (length: 13)
+
+🔒 Strength: ✅ Strong
+📊 Score: 75/100
+🔢 Entropy: 65.23 bits
+⏱️  Time to crack: 2.3 years
+
+✅ GOOD PRACTICES:
+  • Uses uppercase and lowercase letters
+  • Contains numbers
+  • Contains special characters
+  • Good length (13 characters)
+
+💡 SUGGESTIONS:
+  • Consider using 16+ characters for maximum security
+```
+
+**Password Strength Factors:**
+
+1. **Length**: Minimum 8, recommended 12+
+2. **Character Variety**: Uppercase, lowercase, numbers, special
+3. **Entropy**: Randomness measure
+4. **Common Patterns**: Sequential, repeating, dictionary words
+5. **Time to Crack**: Estimated brute-force time
+
+### 💪 Practice Challenges
+
+#### Challenge 1: Network Reconnaissance
+Scan your local network and create a network map.
+
+#### Challenge 2: Web Security Audit
+Scan a test website and fix all vulnerabilities.
+
+#### Challenge 3: Password Security
+Analyze your organization's password policy.
+
+#### Challenge 4: SSL/TLS Hardening
+Check SSL configuration and improve security score.
+
+#### Challenge 5: Packet Analysis
+Capture and analyze HTTP vs HTTPS traffic.
+
+### 🎓 What You've Learned
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ NETWORK SECURITY                                             │
+│     • Port scanning techniques                                   │
+│     • Network reconnaissance                                     │
+│     • Packet capture and analysis                               │
+│     • Protocol understanding                                     │
+│                                                                  │
+│  ✅ WEB SECURITY                                                 │
+│     • Common vulnerabilities (XSS, SQLi)                        │
+│     • Security headers                                           │
+│     • SSL/TLS configuration                                      │
+│     • Certificate validation                                     │
+│                                                                  │
+│  ✅ CRYPTOGRAPHY                                                 │
+│     • Hash functions                                             │
+│     • Password security                                          │
+│     • Dictionary attacks                                         │
+│     • Password strength metrics                                  │
+│                                                                  │
+│  ✅ ETHICAL HACKING                                              │
+│     • Legal considerations                                       │
+│     • Responsible disclosure                                     │
+│     • Security best practices                                    │
+│     • Penetration testing methodology                           │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 📚 Additional Resources
+
+- **OWASP Top 10**: https://owasp.org/www-project-top-ten/
+- **HackTheBox**: https://www.hackthebox.com/
+- **TryHackMe**: https://tryhackme.com/
+- **Black Hat Go**: Book by Tom Steele
+
+**You're now ready to perform ethical security testing with Go!** 🔒
+
+---
+
+## Tutorial 20: PostgreSQL & Redis with Go
+
+**Project:** `basic/projects/postgres-redis-go/`
+
+Master database operations with PostgreSQL and Redis caching, including connection pooling, transactions, pub/sub messaging, and production-ready patterns.
+
+### 🎯 What You'll Build
+
+A comprehensive data layer with:
+- **PostgreSQL**: High-performance database operations with pgx and GORM
+- **Redis**: Caching, session management, and real-time messaging
+- **Combined Patterns**: Cache-aside, write-through, distributed locks
+- **Production Ready**: Connection pooling, error handling, monitoring
+
+### 📦 Prerequisites
+
+- Docker and Docker Compose
+- PostgreSQL 16
+- Redis 7
+- Basic SQL knowledge
+- Understanding of caching concepts
+
+### 🚀 Quick Start
+
+```bash
+cd basic/projects/postgres-redis-go
+
+# Start databases
+make docker-up
+
+# Install dependencies
+make deps
+
+# Run all examples
+make run-all
+```
+
+### 📚 Tutorial Structure
+
+#### Part 1: PostgreSQL with pgx
+
+**File:** `postgres/pgx/main.go`
+
+Learn the high-performance pgx driver:
+
+```go
+// Connection pool configuration
+config, _ := pgxpool.ParseConfig(connString)
+config.MaxConns = 25
+config.MinConns = 5
+config.MaxConnLifetime = time.Hour
+config.MaxConnIdleTime = 30 * time.Minute
+
+pool, _ := pgxpool.NewWithConfig(ctx, config)
+```
+
+**Examples:**
+1. **Simple Connection vs Pool** - Understand connection pooling benefits
+2. **CRUD Operations** - Create, Read, Update, Delete with pgx
+3. **Transactions** - BEGIN, COMMIT, ROLLBACK patterns
+4. **Batch Operations** - Efficient bulk inserts
+5. **Prepared Statements** - Query optimization
+6. **Query Multiple Rows** - Efficient data retrieval
+
+**Run:**
+```bash
+make run-pgx
+```
+
+#### Part 2: PostgreSQL with GORM
+
+**File:** `postgres/gorm/main.go`
+
+Master the full-featured ORM:
+
+```go
+// Define models
+type User struct {
+    ID        uint      `gorm:"primaryKey"`
+    Username  string    `gorm:"uniqueIndex;not null"`
+    Email     string    `gorm:"uniqueIndex;not null"`
+    Profile   Profile   `gorm:"constraint:OnDelete:CASCADE;"`
+    Posts     []Post    `gorm:"foreignKey:AuthorID"`
+    CreatedAt time.Time
+    UpdatedAt time.Time
+}
+
+// Auto migration
+db.AutoMigrate(&User{}, &Profile{}, &Post{})
+
+// Preloading (eager loading)
+db.Preload("Profile").Preload("Posts").Find(&users)
+```
+
+**Examples:**
+1. **Auto Migrations** - Schema management
+2. **CRUD Operations** - ORM-style database operations
+3. **Associations** - Has One, Has Many, Many To Many
+4. **Preloading** - Avoid N+1 queries
+5. **Transactions** - Database transactions with GORM
+6. **Hooks** - BeforeCreate, AfterUpdate callbacks
+7. **Advanced Queries** - Complex queries with GORM
+
+**Run:**
+```bash
+make run-gorm
+```
+
+#### Part 3: Redis Basics
+
+**File:** `redis/basic/main.go`
+
+Master all Redis data structures:
+
+```go
+// String operations
+rdb.Set(ctx, "key", "value", 5*time.Minute)
+val, _ := rdb.Get(ctx, "key").Result()
+
+// Hash operations (objects)
+rdb.HSet(ctx, "user:1", map[string]interface{}{
+    "name": "John",
+    "email": "john@example.com",
+})
+
+// List operations (queues)
+rdb.LPush(ctx, "tasks", "task1", "task2")
+tasks, _ := rdb.LRange(ctx, "tasks", 0, -1).Result()
+
+// Set operations (unique items)
+rdb.SAdd(ctx, "tags", "go", "redis", "database")
+members, _ := rdb.SMembers(ctx, "tags").Result()
+
+// Sorted set (leaderboard)
+rdb.ZAdd(ctx, "scores", redis.Z{Score: 100, Member: "player1"})
+top, _ := rdb.ZRevRangeWithScores(ctx, "scores", 0, 9).Result()
+```
+
+**Examples:**
+1. **String Operations** - SET, GET, INCR, MSET, MGET
+2. **Hash Operations** - HSET, HGET, HGETALL, HINCRBY
+3. **List Operations** - LPUSH, RPUSH, LRANGE, LPOP
+4. **Set Operations** - SADD, SMEMBERS, SISMEMBER
+5. **Sorted Set Operations** - ZADD, ZRANGE, ZREVRANGE
+6. **Expiration and TTL** - Key expiration management
+7. **JSON Storage** - Store and retrieve JSON data
+8. **Pipelining** - Batch multiple commands
+9. **Transactions** - WATCH, MULTI, EXEC
+
+**Run:**
+```bash
+make run-redis-basic
+```
+
+#### Part 4: Redis Pub/Sub
+
+**File:** `redis/pubsub/main.go`
+
+Build real-time messaging systems:
+
+```go
+// Subscribe to channel
+pubsub := rdb.Subscribe(ctx, "notifications")
+ch := pubsub.Channel()
+
+go func() {
+    for msg := range ch {
+        fmt.Printf("Received: %s\n", msg.Payload)
+    }
+}()
+
+// Publish message
+rdb.Publish(ctx, "notifications", "Hello, World!")
+
+// Pattern subscription
+pubsub := rdb.PSubscribe(ctx, "user:*:events")
+```
+
+**Examples:**
+1. **Simple Pub/Sub** - Basic publisher/subscriber pattern
+2. **Pattern Subscription** - Subscribe to multiple channels with patterns
+3. **Multiple Channels** - Handle multiple message streams
+
+**Run:**
+```bash
+make run-redis-pubsub
+```
+
+#### Part 5: Redis Patterns
+
+**File:** `redis/patterns/main.go`
+
+Implement production patterns:
+
+```go
+// Distributed lock
+acquired, _ := rdb.SetNX(ctx, "lock:resource", "unique-id", 10*time.Second)
+if acquired {
+    // Critical section
+    defer func() {
+        script := `
+            if redis.call("get", KEYS[1]) == ARGV[1] then
+                return redis.call("del", KEYS[1])
+            end
+        `
+        rdb.Eval(ctx, script, []string{"lock:resource"}, "unique-id")
+    }()
+}
+
+// Rate limiting
+func CheckRateLimit(userID string, limit int, window time.Duration) bool {
+    key := fmt.Sprintf("rate:%s", userID)
+    count, _ := rdb.Incr(ctx, key).Result()
+    if count == 1 {
+        rdb.Expire(ctx, key, window)
+    }
+    return count <= int64(limit)
+}
+
+// Leaderboard
+rdb.ZAdd(ctx, "leaderboard", redis.Z{Score: 1000, Member: "player1"})
+top3, _ := rdb.ZRevRangeWithScores(ctx, "leaderboard", 0, 2).Result()
+```
+
+**Examples:**
+1. **Distributed Locks** - Coordinate access across services
+2. **Rate Limiting** - Fixed window rate limiting
+3. **Leaderboards** - Sorted set leaderboards
+4. **Session Management** - User session storage
+5. **Counter Patterns** - Page views, daily counters
+
+**Run:**
+```bash
+make run-redis-patterns
+```
+
+#### Part 6: Combined Patterns
+
+**File:** `combined/cache/main.go`
+
+Integrate PostgreSQL and Redis:
+
+```go
+// Cache-Aside Pattern
+func GetUser(id int) (*User, error) {
+    // 1. Check cache
+    cacheKey := fmt.Sprintf("user:%d", id)
+    cached, err := rdb.Get(ctx, cacheKey).Result()
+    if err == nil {
+        var user User
+        json.Unmarshal([]byte(cached), &user)
+        return &user, nil  // Cache hit
+    }
+
+    // 2. Cache miss - query database
+    var user User
+    db.QueryRow(ctx, "SELECT * FROM users WHERE id = $1", id).
+        Scan(&user.ID, &user.Username, &user.Email)
+
+    // 3. Cache result
+    data, _ := json.Marshal(user)
+    rdb.Set(ctx, cacheKey, data, 5*time.Minute)
+
+    return &user, nil
+}
+
+// Cache invalidation on update
+func UpdateUser(id int, email string) error {
+    // 1. Update database
+    _, err := db.Exec(ctx, "UPDATE users SET email = $1 WHERE id = $2", email, id)
+
+    // 2. Invalidate cache
+    cacheKey := fmt.Sprintf("user:%d", id)
+    rdb.Del(ctx, cacheKey)
+
+    return err
+}
+
+// Write-through cache
+func CreateUser(user *User) error {
+    // 1. Insert into database
+    db.QueryRow(ctx,
+        "INSERT INTO users (username, email) VALUES ($1, $2) RETURNING id",
+        user.Username, user.Email,
+    ).Scan(&user.ID)
+
+    // 2. Write to cache
+    cacheKey := fmt.Sprintf("user:%d", user.ID)
+    data, _ := json.Marshal(user)
+    rdb.Set(ctx, cacheKey, data, 5*time.Minute)
+
+    return nil
+}
+```
+
+**Examples:**
+1. **Cache-Aside Pattern** - Check cache first, then database
+2. **Cache Invalidation** - Update database and invalidate cache
+3. **Write-Through Cache** - Write to both database and cache
+4. **Cache Statistics** - Monitor hit rate and performance
+
+**Run:**
+```bash
+make run-cache
+```
+
+### 🐳 Docker Infrastructure
+
+**File:** `docker-compose.yml`
+
+Complete development environment:
+
+```yaml
+services:
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: go_tutorial
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+
+  redis-commander:
+    image: rediscommander/redis-commander
+    ports:
+      - "8081:8081"
+```
+
+**Access:**
+- PostgreSQL: `localhost:5432`
+- Redis: `localhost:6379`
+- Adminer (PostgreSQL UI): `http://localhost:8080`
+- Redis Commander: `http://localhost:8081`
+
+### 🏆 Best Practices
+
+#### PostgreSQL Best Practices
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ Use Connection Pooling                                       │
+│     config.MaxConns = 25                                         │
+│     config.MinConns = 5                                          │
+│     config.MaxConnLifetime = time.Hour                           │
+│                                                                  │
+│  ✅ Use Prepared Statements                                      │
+│     - Prevents SQL injection                                     │
+│     - Improves performance                                       │
+│                                                                  │
+│  ✅ Use Transactions for Multiple Operations                     │
+│     tx, _ := pool.Begin(ctx)                                     │
+│     defer tx.Rollback(ctx)                                       │
+│     // ... operations                                            │
+│     tx.Commit(ctx)                                               │
+│                                                                  │
+│  ✅ Use Batch Operations for Bulk Inserts                        │
+│     - Significantly faster than individual inserts               │
+│                                                                  │
+│  ✅ Always Use Context                                           │
+│     - Enables timeouts and cancellation                          │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+#### Redis Best Practices
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ Set Expiration on Keys                                       │
+│     rdb.Set(ctx, key, value, 5*time.Minute)                      │
+│                                                                  │
+│  ✅ Use Pipelining for Multiple Commands                         │
+│     pipe := rdb.Pipeline()                                       │
+│     pipe.Set(ctx, "key1", "val1", 0)                             │
+│     pipe.Set(ctx, "key2", "val2", 0)                             │
+│     pipe.Exec(ctx)                                               │
+│                                                                  │
+│  ✅ Use Appropriate Data Structures                              │
+│     - Strings: Simple values                                     │
+│     - Hashes: Objects                                            │
+│     - Lists: Queues                                              │
+│     - Sets: Unique items                                         │
+│     - Sorted Sets: Leaderboards                                  │
+│                                                                  │
+│  ✅ Monitor Memory Usage                                         │
+│     - Redis is in-memory                                         │
+│     - Set maxmemory policy                                       │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+#### Combined Patterns Best Practices
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ Cache Invalidation Strategy                                  │
+│     - Invalidate on write                                        │
+│     - Set appropriate TTL                                        │
+│     - Use cache keys consistently                                │
+│                                                                  │
+│  ✅ Error Handling                                               │
+│     - Cache failures shouldn't break app                         │
+│     - Fall back to database                                      │
+│                                                                  │
+│  ✅ Monitoring                                                    │
+│     - Track cache hit rate                                       │
+│     - Monitor database query times                               │
+│     - Alert on connection pool exhaustion                        │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 📊 Performance Tips
+
+1. **Use Connection Pooling** - Reuse connections instead of creating new ones
+2. **Batch Operations** - Reduce round trips to database
+3. **Pipelining** - Send multiple Redis commands at once
+4. **Appropriate Indexes** - Speed up database queries
+5. **Cache Frequently Accessed Data** - Reduce database load
+6. **Monitor and Profile** - Identify bottlenecks
+
+### 🎯 Practice Challenges
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  BEGINNER CHALLENGES                                             │
+│  ✓ Create a user CRUD API with PostgreSQL                       │
+│  ✓ Implement basic caching for user data                        │
+│  ✓ Build a simple leaderboard with Redis                        │
+│                                                                  │
+│  INTERMEDIATE CHALLENGES                                         │
+│  ✓ Implement cache-aside pattern for all entities               │
+│  ✓ Add distributed locking for critical operations              │
+│  ✓ Build a rate limiter for API endpoints                       │
+│  ✓ Create a session management system                           │
+│                                                                  │
+│  ADVANCED CHALLENGES                                             │
+│  ✓ Implement write-through and write-behind caching             │
+│  ✓ Build a real-time notification system with Pub/Sub           │
+│  ✓ Create a distributed task queue                              │
+│  ✓ Implement cache warming strategies                           │
+│  ✓ Build a multi-level caching system                           │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 🎓 What You'll Learn
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│  ✅ POSTGRESQL MASTERY                                           │
+│     • Connection pooling configuration                           │
+│     • CRUD operations with pgx and GORM                          │
+│     • Database transactions                                      │
+│     • Batch operations for performance                           │
+│     • ORM associations and migrations                            │
+│     • Advanced queries and prepared statements                   │
+│                                                                  │
+│  ✅ REDIS EXPERTISE                                              │
+│     • All data structures (String, Hash, List, Set, Sorted Set) │
+│     • Pub/Sub messaging patterns                                 │
+│     • Caching strategies                                         │
+│     • Distributed locks                                          │
+│     • Rate limiting                                              │
+│     • Session management                                         │
+│                                                                  │
+│  ✅ PRODUCTION PATTERNS                                          │
+│     • Cache-aside pattern                                        │
+│     • Write-through caching                                      │
+│     • Cache invalidation strategies                              │
+│     • Performance optimization                                   │
+│     • Error handling and recovery                                │
+│     • Monitoring and statistics                                  │
+│                                                                  │
+│  ✅ BEST PRACTICES                                               │
+│     • Connection management                                      │
+│     • Resource cleanup                                           │
+│     • Context usage                                              │
+│     • Security considerations                                    │
+│     • Production deployment                                      │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 📚 Additional Resources
+
+- **pgx Documentation**: https://github.com/jackc/pgx
+- **GORM Documentation**: https://gorm.io/
+- **go-redis Documentation**: https://redis.uptrace.dev/
+- **PostgreSQL Documentation**: https://www.postgresql.org/docs/
+- **Redis Documentation**: https://redis.io/docs/
+- **Caching Patterns**: https://docs.microsoft.com/en-us/azure/architecture/patterns/cache-aside
+
+**You're now ready to build production-ready data layers with PostgreSQL and Redis!** 🐘🔴
+
+---
+
+## 🌐 Tutorial 21: RESTful APIs, gRPC & GraphQL with Go
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ 🟡 INTERMEDIATE                              ⏱️  8 hours          │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  🎯 GOAL: Master modern API technologies with Go                │
+│                                                                  │
+│  📚 WHAT YOU'LL LEARN:                                           │
+│     ✓ Build RESTful APIs with multiple frameworks               │
+│     ✓ Create high-performance gRPC services                     │
+│     ✓ Implement GraphQL servers                                 │
+│     ✓ Choose the right API technology                           │
+│     ✓ Build API gateways                                        │
+│                                                                  │
+│  🛠️  TECHNOLOGIES:                                               │
+│     • REST: net/http, Chi, Gin                                  │
+│     • gRPC: Protocol Buffers, Streaming                         │
+│     • GraphQL: gqlgen, Schema-first                             │
+│     • Middleware: Logging, CORS, Auth                           │
+│                                                                  │
+│  📂 PROJECT: basic/projects/api-technologies-go/                │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 🎯 Tutorial Overview
+
+This comprehensive tutorial teaches you how to build modern APIs using three major paradigms:
+
+1. **RESTful APIs** - Traditional HTTP-based APIs with JSON
+2. **gRPC** - High-performance RPC with Protocol Buffers
+3. **GraphQL** - Flexible query language for APIs
+
+You'll learn when to use each technology, how to implement them properly, and how to combine them in a unified API gateway.
+
+### 📋 Prerequisites
+
+```bash
+✅ Go 1.22 or higher installed
+✅ Basic understanding of HTTP and APIs
+✅ Familiarity with JSON
+✅ Docker (optional, for infrastructure)
+```
+
+### 🚀 Quick Start
+
+```bash
+# Navigate to project
+cd basic/projects/api-technologies-go
+
+# Install dependencies
+make deps
+
+# Run REST API examples
+make run-rest-basic    # Basic REST with net/http
+make run-rest-chi      # REST with Chi router
+make run-rest-gin      # REST with Gin framework
+
+# Run gRPC examples
+make proto-gen         # Generate protobuf code (first time)
+make run-grpc-unary    # Unary RPC
+make run-grpc-streaming # Streaming RPC
+
+# Run GraphQL example
+make run-graphql       # GraphQL server
+
+# Run combined API Gateway
+make run-gateway       # All three APIs in one
+```
+
+### 📁 Project Structure
+
+```
+api-technologies-go/
+├── rest/
+│   ├── basic/          # Basic REST API with net/http
+│   ├── chi/            # REST API with Chi router
+│   └── gin/            # REST API with Gin framework
+├── grpc/
+│   ├── proto/          # Protocol Buffer definitions
+│   ├── unary/          # Unary RPC examples
+│   └── streaming/      # Streaming RPC examples
+├── graphql/
+│   ├── schema/         # GraphQL schema definitions
+│   └── gqlgen/         # GraphQL server
+├── combined/
+│   └── gateway/        # API Gateway (REST + gRPC + GraphQL)
+├── docker-compose.yml  # Infrastructure services
+├── Makefile           # Build automation
+└── README.md          # Documentation
+```
+
+---
+
+### 🔵 Part 1: RESTful APIs (2 hours)
+
+#### Step 1: Basic REST API with net/http
+
+**File**: `rest/basic/main.go`
+
+Learn to build REST APIs using only Go's standard library:
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "net/http"
+    "sync"
+)
+
+type User struct {
+    ID       int    `json:"id"`
+    Username string `json:"username"`
+    Email    string `json:"email"`
+}
+
+type API struct {
+    store *UserStore
+}
+
+func (api *API) handleUsers(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case http.MethodGet:
+        users := api.store.GetAll()
+        json.NewEncoder(w).Encode(users)
+    case http.MethodPost:
+        var user User
+        json.NewDecoder(r.Body).Decode(&user)
+        created := api.store.Create(user.Username, user.Email)
+        w.WriteHeader(http.StatusCreated)
+        json.NewEncoder(w).Encode(created)
+    }
+}
+
+func main() {
+    api := &API{store: NewUserStore()}
+
+    mux := http.NewServeMux()
+    mux.HandleFunc("/users", api.handleUsers)
+
+    http.ListenAndServe(":8080", mux)
+}
+```
+
+**Key Concepts**:
+- Custom routing with ServeMux
+- Middleware chain pattern
+- JSON encoding/decoding
+- HTTP method handling
+- Error responses
+
+**Test it**:
+```bash
+# Run server
+make run-rest-basic
+
+# In another terminal
+curl http://localhost:8080/users
+curl -X POST http://localhost:8080/users \
+  -H "Content-Type: application/json" \
+  -d '{"username":"john","email":"john@example.com"}'
+```
+
+#### Step 2: REST API with Chi Router
+
+**File**: `rest/chi/main.go`
+
+Use Chi router for advanced routing features:
+
+```go
+package main
+
+import (
+    "github.com/go-chi/chi/v5"
+    "github.com/go-chi/chi/v5/middleware"
+)
+
+func main() {
+    r := chi.NewRouter()
+
+    // Middleware
+    r.Use(middleware.Logger)
+    r.Use(middleware.Recoverer)
+    r.Use(middleware.RequestID)
+
+    // Routes
+    r.Route("/api/v1", func(r chi.Router) {
+        r.Route("/users", func(r chi.Router) {
+            r.Get("/", handleListUsers)
+            r.Post("/", handleCreateUser)
+
+            r.Route("/{userID}", func(r chi.Router) {
+                r.Use(userCtx) // Load user into context
+                r.Get("/", handleGetUser)
+                r.Put("/", handleUpdateUser)
+                r.Delete("/", handleDeleteUser)
+            })
+        })
+    })
+
+    http.ListenAndServe(":8080", r)
+}
+```
+
+**Key Features**:
+- Route groups and nesting
+- URL parameters
+- Context middleware
+- Built-in middleware (logging, recovery, etc.)
+- Input validation
+
+**Test it**:
+```bash
+make run-rest-chi
+
+curl http://localhost:8080/api/v1/users
+curl http://localhost:8080/api/v1/users/1
+```
+
+#### Step 3: REST API with Gin Framework
+
+**File**: `rest/gin/main.go`
+
+Use Gin for high-performance REST APIs:
+
+```go
+package main
+
+import (
+    "github.com/gin-gonic/gin"
+)
+
+func main() {
+    r := gin.Default()
+
+    v1 := r.Group("/api/v1")
+    {
+        users := v1.Group("/users")
+        {
+            users.GET("", handleListUsers)
+            users.POST("", handleCreateUser)
+            users.GET("/:id", handleGetUser)
+            users.PUT("/:id", handleUpdateUser)
+            users.DELETE("/:id", handleDeleteUser)
+        }
+    }
+
+    r.Run(":8080")
+}
+
+func handleCreateUser(c *gin.Context) {
+    var req CreateUserRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(400, gin.H{"error": err.Error()})
+        return
+    }
+
+    // Validation is automatic with struct tags
+    user := store.Create(req.Username, req.Email, req.Role)
+    c.JSON(201, gin.H{"success": true, "data": user})
+}
+```
+
+**Key Features**:
+- Built-in validation
+- JSON binding
+- Query parameters
+- Route grouping
+- High performance
+
+**Test it**:
+```bash
+make run-rest-gin
+
+# Filter by role
+curl "http://localhost:8080/api/v1/users?role=admin&active=true"
+```
+
+---
+
+### 🟣 Part 2: gRPC (3 hours)
+
+#### Step 1: Define Protocol Buffers
+
+**File**: `grpc/proto/user.proto`
+
+Define your service and messages:
+
+```protobuf
+syntax = "proto3";
+
+package user;
+option go_package = "github.com/yourusername/api-technologies-go/grpc/proto";
+
+service UserService {
+  // Unary RPC
+  rpc CreateUser(CreateUserRequest) returns (User);
+  rpc GetUser(GetUserRequest) returns (User);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+
+  // Server streaming RPC
+  rpc StreamUsers(StreamUsersRequest) returns (stream User);
+
+  // Client streaming RPC
+  rpc CreateUsers(stream CreateUserRequest) returns (CreateUsersResponse);
+
+  // Bidirectional streaming RPC
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+}
+
+message User {
+  int32 id = 1;
+  string username = 2;
+  string email = 3;
+  string role = 4;
+  bool active = 5;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string email = 2;
+  string role = 3;
+}
+```
+
+**Generate Code**:
+```bash
+make proto-gen
+```
+
+This generates:
+- `user.pb.go` - Message types
+- `user_grpc.pb.go` - Service definitions
+
+#### Step 2: Implement Unary RPC
+
+**File**: `grpc/unary/main.go`
+
+Implement simple request-response RPC:
+
+```go
+package main
+
+import (
+    "context"
+    pb "path/to/proto"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/status"
+)
+
+type UserServiceServer struct {
+    pb.UnimplementedUserServiceServer
+    store *UserStore
+}
+
+func (s *UserServiceServer) CreateUser(
+    ctx context.Context,
+    req *pb.CreateUserRequest,
+) (*pb.User, error) {
+    if req.Username == "" || req.Email == "" {
+        return nil, status.Error(
+            codes.InvalidArgument,
+            "username and email are required",
+        )
+    }
+
+    user := s.store.Create(req.Username, req.Email, req.Role)
+    return user, nil
+}
+
+func main() {
+    lis, _ := net.Listen("tcp", ":50051")
+    grpcServer := grpc.NewServer()
+
+    pb.RegisterUserServiceServer(grpcServer, &UserServiceServer{
+        store: NewUserStore(),
+    })
+
+    grpcServer.Serve(lis)
+}
+```
+
+**Client Example**:
+```go
+conn, _ := grpc.Dial("localhost:50051", grpc.WithInsecure())
+defer conn.Close()
+
+client := pb.NewUserServiceClient(conn)
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+
+user, err := client.CreateUser(ctx, &pb.CreateUserRequest{
+    Username: "john",
+    Email:    "john@example.com",
+    Role:     "user",
+})
+```
+
+**Test it**:
+```bash
+make run-grpc-unary
+```
+
+#### Step 3: Implement Streaming RPC
+
+**File**: `grpc/streaming/main.go`
+
+Implement all streaming patterns:
+
+**Server Streaming** (one request, multiple responses):
+```go
+func (s *UserServiceServer) StreamUsers(
+    req *pb.StreamUsersRequest,
+    stream pb.UserService_StreamUsersServer,
+) error {
+    users := s.store.GetAll(req.Role)
+
+    for _, user := range users {
+        if err := stream.Send(user); err != nil {
+            return status.Errorf(codes.Internal, "failed to send: %v", err)
+        }
+        time.Sleep(100 * time.Millisecond) // Simulate streaming
+    }
+
+    return nil
+}
+```
+
+**Client Streaming** (multiple requests, one response):
+```go
+func (s *UserServiceServer) CreateUsers(
+    stream pb.UserService_CreateUsersServer,
+) error {
+    var users []*pb.User
+
+    for {
+        req, err := stream.Recv()
+        if err == io.EOF {
+            return stream.SendAndClose(&pb.CreateUsersResponse{
+                Users: users,
+                Count: int32(len(users)),
+            })
+        }
+        if err != nil {
+            return err
+        }
+
+        user := s.store.Create(req.Username, req.Email, req.Role)
+        users = append(users, user)
+    }
+}
+```
+
+**Bidirectional Streaming** (both directions):
+```go
+func (s *UserServiceServer) Chat(
+    stream pb.UserService_ChatServer,
+) error {
+    for {
+        msg, err := stream.Recv()
+        if err == io.EOF {
+            return nil
+        }
+        if err != nil {
+            return err
+        }
+
+        // Echo message back
+        response := &pb.ChatMessage{
+            UserId:  msg.UserId,
+            Message: "Echo: " + msg.Message,
+        }
+
+        if err := stream.Send(response); err != nil {
+            return err
+        }
+    }
+}
+```
+
+**Test it**:
+```bash
+make run-grpc-streaming
+```
+
+---
+
+### 🟢 Part 3: GraphQL (2 hours)
+
+#### Step 1: Define GraphQL Schema
+
+**File**: `graphql/schema/schema.graphql`
+
+Define your GraphQL schema:
+
+```graphql
+scalar Time
+
+enum Role {
+  ADMIN
+  USER
+  GUEST
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  role: Role!
+  active: Boolean!
+  posts: [Post!]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  published: Boolean!
+  author: User!
+  tags: [String!]!
+  createdAt: Time!
+}
+
+type Query {
+  user(id: ID!): User
+  users(role: Role, active: Boolean, limit: Int, offset: Int): [User!]!
+  searchUsers(query: String!): [User!]!
+
+  post(id: ID!): Post
+  posts(published: Boolean, authorId: ID): [Post!]!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
+
+  createPost(input: CreatePostInput!): Post!
+  publishPost(id: ID!): Post!
+}
+
+type Subscription {
+  userCreated: User!
+  postCreated: Post!
+  postPublished: Post!
+}
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  role: Role!
+}
+
+input UpdateUserInput {
+  username: String
+  email: String
+  role: Role
+  active: Boolean
+}
+
+input CreatePostInput {
+  title: String!
+  content: String!
+  published: Boolean!
+  authorId: ID!
+  tags: [String!]!
+}
+```
+
+#### Step 2: Implement GraphQL Server
+
+**File**: `graphql/gqlgen/main.go`
+
+For this tutorial, we've created a simplified GraphQL server:
+
+```go
+package main
+
+import (
+    "context"
+    "encoding/json"
+    "net/http"
+)
+
+type GraphQLHandler struct {
+    store *Store
+}
+
+func (h *GraphQLHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    var req GraphQLRequest
+    json.NewDecoder(r.Body).Decode(&req)
+
+    result := h.executeQuery(r.Context(), req.Query, req.Variables)
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(result)
+}
+
+func main() {
+    handler := NewGraphQLHandler()
+
+    // Seed data
+    user1 := handler.store.CreateUser("alice", "alice@example.com", "ADMIN")
+    user2 := handler.store.CreateUser("bob", "bob@example.com", "USER")
+
+    handler.store.CreatePost("First Post", "Hello GraphQL!", true, user1.ID, []string{"tutorial"})
+
+    http.Handle("/graphql", handler)
+    http.HandleFunc("/", servePlayground)
+
+    http.ListenAndServe(":8081", nil)
+}
+```
+
+**Example Queries**:
+
+```graphql
+# Get all users
+query GetUsers {
+  users {
+    id
+    username
+    email
+    role
+  }
+}
+
+# Get user with posts
+query GetUserWithPosts {
+  user(id: "1") {
+    id
+    username
+    email
+    posts {
+      id
+      title
+      published
+    }
+  }
+}
+
+# Create user
+mutation CreateUser {
+  createUser(input: {
+    username: "john"
+    email: "john@example.com"
+    role: USER
+  }) {
+    id
+    username
+    email
+  }
+}
+```
+
+**Test it**:
+```bash
+make run-graphql
+
+# Open browser to http://localhost:8081
+# Use the interactive playground to test queries
+```
+
+**Key Concepts**:
+- Schema-first development
+- Type safety
+- Flexible queries (no over-fetching)
+- Single endpoint
+- Built-in documentation
+
+---
+
+### 🌐 Part 4: API Gateway (1 hour)
+
+#### Unified API Gateway
+
+**File**: `combined/gateway/main.go`
+
+Combine all three API technologies in one gateway with an interactive dashboard.
+
+**Test it**:
+```bash
+make run-gateway
+
+# Open browser to http://localhost:8082
+# Click buttons to test each API type
+```
+
+---
+
+### 📊 API Comparison Guide
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                     🔵 REST API                                  │
+├──────────────────────────────────────────────────────────────────┤
+│  ✅ PROS:                                                        │
+│     • Simple and widely understood                               │
+│     • Stateless and cacheable                                    │
+│     • Good tooling support                                       │
+│     • Easy to debug                                              │
+│                                                                  │
+│  ❌ CONS:                                                        │
+│     • Over-fetching or under-fetching data                       │
+│     • Multiple round trips for related data                      │
+│     • Versioning challenges                                      │
+│                                                                  │
+│  🎯 USE CASES:                                                   │
+│     • Public APIs                                                │
+│     • CRUD operations                                            │
+│     • Mobile apps                                                │
+│     • Web applications                                           │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│                     🟣 gRPC                                      │
+├──────────────────────────────────────────────────────────────────┤
+│  ✅ PROS:                                                        │
+│     • High performance with Protocol Buffers                     │
+│     • Bi-directional streaming                                   │
+│     • Strong typing                                              │
+│     • Code generation                                            │
+│                                                                  │
+│  ❌ CONS:                                                        │
+│     • Steeper learning curve                                     │
+│     • Limited browser support                                    │
+│     • Binary format (harder to debug)                            │
+│                                                                  │
+│  🎯 USE CASES:                                                   │
+│     • Microservices communication                                │
+│     • Real-time streaming                                        │
+│     • Internal APIs                                              │
+│     • High-performance systems                                   │
+└──────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────┐
+│                     🟢 GraphQL                                   │
+├──────────────────────────────────────────────────────────────────┤
+│  ✅ PROS:                                                        │
+│     • Flexible queries                                           │
+│     • Single endpoint                                            │
+│     • No over-fetching                                           │
+│     • Strong typing with schema                                  │
+│                                                                  │
+│  ❌ CONS:                                                        │
+│     • Complexity in implementation                               │
+│     • Caching challenges                                         │
+│     • Query complexity management                                │
+│                                                                  │
+│  🎯 USE CASES:                                                   │
+│     • Complex data requirements                                  │
+│     • Mobile apps with limited bandwidth                         │
+│     • Aggregating multiple data sources                          │
+│     • Rapid frontend development                                 │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### ✅ Checkpoints
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ CHECKPOINT 1: REST APIs (2 hours)                            │
+├──────────────────────────────────────────────────────────────────┤
+│     □ Built basic REST API with net/http                        │
+│     □ Implemented middleware chain                               │
+│     □ Created REST API with Chi router                           │
+│     □ Used context middleware                                    │
+│     □ Built REST API with Gin framework                          │
+│     □ Implemented validation and filtering                       │
+│                                                                  │
+│  ✅ CHECKPOINT 2: gRPC (3 hours)                                 │
+│     □ Defined Protocol Buffer schema                             │
+│     □ Generated Go code from .proto files                        │
+│     □ Implemented unary RPC                                      │
+│     □ Created server streaming RPC                               │
+│     □ Implemented client streaming RPC                           │
+│     □ Built bidirectional streaming RPC                          │
+│                                                                  │
+│  ✅ CHECKPOINT 3: GraphQL (2 hours)                              │
+│     □ Defined GraphQL schema                                     │
+│     □ Implemented GraphQL server                                 │
+│     □ Created queries and mutations                              │
+│     □ Tested with GraphQL playground                             │
+│                                                                  │
+│  ✅ CHECKPOINT 4: API Gateway (1 hour)                           │
+│     □ Built unified API gateway                                  │
+│     □ Integrated all three API types                             │
+│     □ Created interactive dashboard                              │
+│     □ Compared API technologies                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 🎓 What You've Learned
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    🎉 CONGRATULATIONS!                           │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ✅ REST API MASTERY                                             │
+│     • Built APIs with net/http, Chi, and Gin                    │
+│     • Implemented middleware patterns                            │
+│     • Handled routing and validation                             │
+│     • Created CRUD operations                                    │
+│     • Applied best practices                                     │
+│                                                                  │
+│  ✅ gRPC EXPERTISE                                               │
+│     • Defined Protocol Buffer schemas                            │
+│     • Implemented unary RPC                                      │
+│     • Created streaming RPC (all types)                          │
+│     • Used gRPC status codes                                     │
+│     • Applied context and timeouts                               │
+│                                                                  │
+│  ✅ GraphQL PROFICIENCY                                          │
+│     • Defined GraphQL schemas                                    │
+│     • Implemented queries and mutations                          │
+│     • Created type-safe resolvers                                │
+│     • Used GraphQL playground                                    │
+│     • Understood GraphQL patterns                                │
+│                                                                  │
+│  ✅ API ARCHITECTURE                                             │
+│     • Built API gateways                                         │
+│     • Compared API technologies                                  │
+│     • Chose right technology for use case                        │
+│     • Combined multiple API types                                │
+│     • Applied production patterns                                │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 📚 Additional Resources
+
+- **REST**: [Go net/http](https://pkg.go.dev/net/http), [Chi router](https://github.com/go-chi/chi), [Gin framework](https://github.com/gin-gonic/gin)
+- **gRPC**: [gRPC Go docs](https://grpc.io/docs/languages/go/), [Protocol Buffers](https://developers.google.com/protocol-buffers)
+- **GraphQL**: [gqlgen](https://gqlgen.com/), [GraphQL spec](https://spec.graphql.org/)
+
+**You're now ready to build modern APIs with REST, gRPC, and GraphQL!** 🌐🚀
+
+---
 
 **Master cutting-edge AI tools to create viral content and generate passive income**
 

@@ -7,6 +7,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go-pro-backend/internal/cache"
@@ -419,176 +420,7 @@ func (s *curriculumService) GetLessonDetail(ctx context.Context, lessonID int) (
 	s.logger.Info(ctx, "Getting lesson detail", "lesson_id", lessonID)
 
 	// Mock lesson data - in a real implementation, this would come from a database or file system.
-	lessonData := map[int]*domain.LessonDetail{
-		1: {
-			ID:          1,
-			Title:       "Go Syntax and Basic Types",
-			Description: "Learn the fundamental syntax of Go and work with basic data types including integers, floats, strings, and booleans.",
-			Duration:    "3-4 hours",
-			Difficulty:  domain.DifficultyBeginner,
-			Phase:       "Foundations",
-			Objectives: []string{
-				"Set up a Go development environment",
-				"Understand Go's basic syntax and program structure",
-				"Work with primitive data types (int, float, string, bool)",
-				"Declare and use constants",
-				"Perform type conversions",
-				"Use the iota identifier for enumerated constants",
-			},
-			Theory: `# Go Program Structure
-
-Every Go program starts with a package declaration, followed by imports, and then the program code:
-
-` + "```go" + `
-package main
-
-import "fmt"
-
-func main() {
-    fmt.Println("Hello, Go!")
-}
-` + "```" + `
-
-## Basic Types
-
-Go has several built-in basic types:
-
-### Numeric Types
-- **Integers**: int, int8, int16, int32, int64
-- **Unsigned integers**: uint, uint8, uint16, uint32, uint64
-- **Floating point**: float32, float64
-- **Complex numbers**: complex64, complex128
-
-### Other Types
-- **Boolean**: bool (true or false)
-- **String**: string (UTF-8 encoded)
-- **Byte**: byte (alias for uint8)
-- **Rune**: rune (alias for int32, represents Unicode code points)`,
-			CodeExample: `package main
-
-import "fmt"
-
-func main() {
-    // Basic variable declarations.
-    var name string = "Go Programming"
-    var version float64 = 1.21
-    var isAwesome bool = true
-    
-    // Short variable declaration.
-    year := 2024
-    
-    // Constants.
-    const MaxUsers = 1000
-    
-    // Type conversion.
-    var x int = 42
-    var y float64 = float64(x)
-    
-    // Print values.
-    fmt.Printf("Language: %s\n", name)
-    fmt.Printf("Version: %.2f\n", version)
-    fmt.Printf("Year: %d\n", year)
-    fmt.Printf("Is Awesome: %t\n", isAwesome)
-    fmt.Printf("Max Users: %d\n", MaxUsers)
-    fmt.Printf("Converted: %.1f\n", y)
-}`,
-			Solution: `package main
-
-import "fmt"
-
-func main() {
-    // Basic variable declarations.
-    var name string = "Go Programming"
-    var version float64 = 1.21
-    var isAwesome bool = true
-    
-    // Short variable declaration.
-    year := 2024
-    
-    // Constants.
-    const MaxUsers = 1000
-    
-    // Type conversion.
-    var x int = 42
-    var y float64 = float64(x)
-    
-    // Print values.
-    fmt.Printf("Language: %s\n", name)
-    fmt.Printf("Version: %.2f\n", version)
-    fmt.Printf("Year: %d\n", year)
-    fmt.Printf("Is Awesome: %t\n", isAwesome)
-    fmt.Printf("Max Users: %d\n", MaxUsers)
-    fmt.Printf("Converted: %.1f\n", y)
-    
-    // Additional examples.
-    
-    // Multiple variable declaration.
-    var (
-        firstName = "John"
-        lastName  = "Doe"
-        age       = 30
-    )
-    
-    fmt.Printf("Full Name: %s %s, Age: %d\n", firstName, lastName, age)
-    
-    // Enumerated constants.
-    const (
-        Red = iota
-        Green
-        Blue
-    )
-    
-    fmt.Printf("Colors: Red=%d, Green=%d, Blue=%d\n", Red, Green, Blue)
-}`,
-			Exercises: []domain.LessonExercise{
-				{
-					ID:          "basic-variables",
-					Title:       "Variable Declaration Practice",
-					Description: "Practice declaring variables of different types and using type conversions.",
-					Requirements: []string{
-						"Declare a string variable for your name",
-						"Declare an integer variable for your age",
-						"Declare a boolean variable for whether you like programming",
-						"Use short variable declaration for the current year",
-						"Convert an integer to float64 and print both values",
-					},
-					InitialCode: `package main
-
-import "fmt"
-
-func main() {
-    // TODO: Declare your variables here.
-    
-    // TODO: Print the values.
-    
-}`,
-					Solution: `package main
-
-import "fmt"
-
-func main() {
-    // Variable declarations.
-    var name string = "Alice"
-    var age int = 25
-    var likesProgramming bool = true
-    currentYear := 2024
-    
-    // Type conversion.
-    var score int = 95
-    var percentage float64 = float64(score)
-    
-    // Print values.
-    fmt.Printf("Name: %s\n", name)
-    fmt.Printf("Age: %d\n", age)
-    fmt.Printf("Likes Programming: %t\n", likesProgramming)
-    fmt.Printf("Current Year: %d\n", currentYear)
-    fmt.Printf("Score: %d, Percentage: %.1f%%\n", score, percentage)
-}`,
-				},
-			},
-			NextLessonID: func() *int { i := 2; return &i }(),
-		},
-	}
+	lessonData := s.generateLessonMockData()
 
 	lesson, exists := lessonData[lessonID]
 	if !exists {
@@ -599,4 +431,1020 @@ func main() {
 	s.logger.Info(ctx, "Lesson detail retrieved successfully", "lesson_id", lessonID)
 
 	return lesson, nil
+}
+
+// generateLessonMockData generates mock lesson data for all 20 lessons.
+func (s *curriculumService) generateLessonMockData() map[int]*domain.LessonDetail {
+	return map[int]*domain.LessonDetail{
+		1: s.getLessonData1(),
+		2: s.getLessonData2(),
+		3: s.getLessonData3(),
+		4: s.getLessonData4(),
+		5: s.getLessonData5(),
+		6: s.getLessonData6(),
+		7: s.getLessonData7(),
+		8: s.getLessonData8(),
+		9: s.getLessonData9(),
+		10: s.getLessonData10(),
+		11: s.getLessonData11(),
+		12: s.getLessonData12(),
+		13: s.getLessonData13(),
+		14: s.getLessonData14(),
+		15: s.getLessonData15(),
+		16: s.getLessonData16(),
+		17: s.getLessonData17(),
+		18: s.getLessonData18(),
+		19: s.getLessonData19(),
+		20: s.getLessonData20(),
+	}
+}
+
+func (s *curriculumService) getLessonData1() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          1,
+		Title:       "Go Syntax and Basic Types",
+		Description: "Learn the fundamental syntax of Go and work with basic data types including integers, floats, strings, and booleans.",
+		Duration:    "3-4 hours",
+		Difficulty:  domain.DifficultyBeginner,
+		Phase:       "Foundations",
+		Objectives: []string{
+			"Set up a Go development environment",
+			"Understand Go's basic syntax and program structure",
+			"Work with primitive data types (int, float, string, bool)",
+			"Declare and use constants",
+			"Perform type conversions",
+			"Use the iota identifier for enumerated constants",
+		},
+		Theory: `# Go Program Structure
+
+Every Go program starts with a package declaration, followed by imports, and then the program code.
+
+## Basic Types
+
+Go has several built-in basic types including integers, floats, strings, booleans, and more.`,
+		CodeExample: `package main
+
+import "fmt"
+
+func main() {
+    var name string = "Go Programming"
+    year := 2024
+    const MaxUsers = 1000
+
+    fmt.Printf("Language: %s, Year: %d\n", name, year)
+}`,
+		Solution: `package main
+
+import "fmt"
+
+func main() {
+    var name string = "Go Programming"
+    var version float64 = 1.21
+    year := 2024
+    const MaxUsers = 1000
+
+    fmt.Printf("Language: %s %.2f, Year: %d, Max Users: %d\n", name, version, year, MaxUsers)
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "basic-variables",
+				Title:       "Variable Declaration Practice",
+				Description: "Practice declaring variables of different types and using type conversions.",
+				Requirements: []string{
+					"Declare variables of different types",
+					"Use type conversions",
+					"Print values to console",
+				},
+				InitialCode: `package main
+
+import "fmt"
+
+func main() {
+    // TODO: Declare your variables here
+}`,
+				Solution: `package main
+
+import "fmt"
+
+func main() {
+    var name string = "Alice"
+    var age int = 25
+    fmt.Printf("Name: %s, Age: %d\n", name, age)
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 2; return &i }(),
+	}
+}
+
+func (s *curriculumService) getLessonData2() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          2,
+		Title:       "Variables, Constants, and Functions",
+		Description: "Master variable declarations, scope, function definitions, and multiple return values in Go.",
+		Duration:    "4-5 hours",
+		Difficulty:  domain.DifficultyBeginner,
+		Phase:       "Foundations",
+		Objectives: []string{
+			"Understand variable declaration methods",
+			"Learn about variable scope",
+			"Create and use functions",
+			"Work with multiple return values",
+			"Understand named return values",
+		},
+		Theory: `# Functions in Go
+
+Functions are fundamental building blocks in Go. They can return multiple values and support various declaration styles.`,
+		CodeExample: `package main
+
+import "fmt"
+
+func add(a, b int) int {
+    return a + b
+}
+
+func main() {
+    result := add(5, 3)
+    fmt.Println("Result:", result)
+}`,
+		Solution: `package main
+
+import "fmt"
+
+func add(a, b int) int {
+    return a + b
+}
+
+func divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, fmt.Errorf("division by zero")
+    }
+    return a / b, nil
+}
+
+func main() {
+    sum := add(5, 3)
+    quotient, _ := divide(10, 2)
+    fmt.Printf("Sum: %d, Quotient: %.2f\n", sum, quotient)
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "function-practice",
+				Title:       "Function Practice",
+				Description: "Create functions with multiple return values.",
+				Requirements: []string{
+					"Create a function that returns multiple values",
+					"Handle errors properly",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Implement functions
+}`,
+				Solution: `package main
+
+import "fmt"
+
+func calculate(a, b int) (int, int) {
+    return a + b, a * b
+}
+
+func main() {
+    sum, product := calculate(5, 3)
+    fmt.Printf("Sum: %d, Product: %d\n", sum, product)
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 3; return &i }(),
+		PrevLessonID: func() *int { i := 1; return &i }(),
+	}
+}
+
+func (s *curriculumService) getLessonData3() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          3,
+		Title:       "Control Structures and Loops",
+		Description: "Learn about if/else statements, switch statements, for loops, and defer in Go.",
+		Duration:    "3-4 hours",
+		Difficulty:  domain.DifficultyBeginner,
+		Phase:       "Foundations",
+		Objectives: []string{
+			"Use if/else statements effectively",
+			"Master switch statements",
+			"Work with for loops",
+			"Understand the defer statement",
+		},
+		Theory: `# Control Flow in Go
+
+Go provides standard control structures like if/else, switch, and for loops with a clean syntax.`,
+		CodeExample: `package main
+
+import "fmt"
+
+func main() {
+    for i := 0; i < 5; i++ {
+        if i%2 == 0 {
+            fmt.Println(i, "is even")
+        } else {
+            fmt.Println(i, "is odd")
+        }
+    }
+}`,
+		Solution: `package main
+
+import "fmt"
+
+func main() {
+    for i := 0; i < 10; i++ {
+        switch {
+        case i%2 == 0:
+            fmt.Println(i, "is even")
+        default:
+            fmt.Println(i, "is odd")
+        }
+    }
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "control-flow",
+				Title:       "Control Flow Practice",
+				Description: "Practice using loops and conditionals.",
+				Requirements: []string{
+					"Use for loops",
+					"Implement conditional logic",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Implement control flow
+}`,
+				Solution: `package main
+
+import "fmt"
+
+func main() {
+    for i := 1; i <= 10; i++ {
+        if i%3 == 0 && i%5 == 0 {
+            fmt.Println("FizzBuzz")
+        } else if i%3 == 0 {
+            fmt.Println("Fizz")
+        } else if i%5 == 0 {
+            fmt.Println("Buzz")
+        } else {
+            fmt.Println(i)
+        }
+    }
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 4; return &i }(),
+		PrevLessonID: func() *int { i := 2; return &i }(),
+	}
+}
+
+func (s *curriculumService) getLessonData4() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          4,
+		Title:       "Arrays, Slices, and Maps",
+		Description: "Master Go's fundamental data structures including arrays, slices, and maps.",
+		Duration:    "5-6 hours",
+		Difficulty:  domain.DifficultyBeginner,
+		Phase:       "Foundations",
+		Objectives: []string{
+			"Understand arrays and their limitations",
+			"Master slice operations",
+			"Work with maps effectively",
+			"Learn about make and append functions",
+		},
+		Theory: `# Data Structures in Go
+
+Go provides powerful built-in data structures including slices and maps for efficient data management.`,
+		CodeExample: `package main
+
+import "fmt"
+
+func main() {
+    slice := []int{1, 2, 3, 4, 5}
+    numbers := make(map[string]int)
+    numbers["one"] = 1
+    numbers["two"] = 2
+
+    fmt.Println("Slice:", slice)
+    fmt.Println("Map:", numbers)
+}`,
+		Solution: `package main
+
+import "fmt"
+
+func main() {
+    slice := make([]int, 0, 10)
+    for i := 0; i < 5; i++ {
+        slice = append(slice, i)
+    }
+
+    m := map[string]int{"a": 1, "b": 2, "c": 3}
+    for k, v := range m {
+        fmt.Printf("%s: %d\n", k, v)
+    }
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "data-structures",
+				Title:       "Data Structures Practice",
+				Description: "Work with slices and maps.",
+				Requirements: []string{
+					"Create and manipulate slices",
+					"Use maps for key-value storage",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Work with slices and maps
+}`,
+				Solution: `package main
+
+import "fmt"
+
+func main() {
+    nums := []int{1, 2, 3}
+    nums = append(nums, 4, 5)
+
+    dict := make(map[string]string)
+    dict["hello"] = "world"
+    fmt.Println(nums, dict)
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 5; return &i }(),
+		PrevLessonID: func() *int { i := 3; return &i }(),
+	}
+}
+
+func (s *curriculumService) getLessonData5() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          5,
+		Title:       "Pointers and Memory Management",
+		Description: "Learn about pointers, memory allocation, and Go's garbage collection.",
+		Duration:    "4-5 hours",
+		Difficulty:  domain.DifficultyBeginner,
+		Phase:       "Foundations",
+		Objectives: []string{
+			"Understand pointer basics",
+			"Learn about memory allocation",
+			"Work with new and make",
+			"Understand garbage collection",
+		},
+		Theory: `# Pointers in Go
+
+Pointers allow you to pass references to values and records within your program.`,
+		CodeExample: `package main
+
+import "fmt"
+
+func increment(x *int) {
+    *x++
+}
+
+func main() {
+    num := 5
+    increment(&num)
+    fmt.Println(num)
+}`,
+		Solution: `package main
+
+import "fmt"
+
+func swap(a, b *int) {
+    *a, *b = *b, *a
+}
+
+func main() {
+    x, y := 10, 20
+    swap(&x, &y)
+    fmt.Printf("x=%d, y=%d\n", x, y)
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "pointers",
+				Title:       "Pointer Practice",
+				Description: "Work with pointers and memory.",
+				Requirements: []string{
+					"Use pointers to modify values",
+					"Understand pointer dereferencing",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Practice with pointers
+}`,
+				Solution: `package main
+
+import "fmt"
+
+func double(x *int) {
+    *x *= 2
+}
+
+func main() {
+    num := 5
+    double(&num)
+    fmt.Println(num)
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 6; return &i }(),
+		PrevLessonID: func() *int { i := 4; return &i }(),
+	}
+}
+
+func (s *curriculumService) getLessonData6() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          6,
+		Title:       "Structs and Methods",
+		Description: "Master struct definitions, methods, and receivers in Go.",
+		Duration:    "5-6 hours",
+		Difficulty:  domain.DifficultyIntermediate,
+		Phase:       "Intermediate",
+		Objectives: []string{
+			"Define and use structs",
+			"Create methods with receivers",
+			"Understand value vs pointer receivers",
+			"Work with embedded structs",
+		},
+		Theory: `# Structs and Methods
+
+Structs are typed collections of fields useful for grouping data together to form records.`,
+		CodeExample: `package main
+
+import "fmt"
+
+type Person struct {
+    Name string
+    Age  int
+}
+
+func (p Person) Greet() {
+    fmt.Printf("Hello, I'm %s\n", p.Name)
+}
+
+func main() {
+    p := Person{Name: "Alice", Age: 30}
+    p.Greet()
+}`,
+		Solution: `package main
+
+import "fmt"
+
+type Person struct {
+    Name string
+    Age  int
+}
+
+func (p *Person) Birthday() {
+    p.Age++
+}
+
+func (p Person) Greet() string {
+    return fmt.Sprintf("Hello, I'm %s, %d years old", p.Name, p.Age)
+}
+
+func main() {
+    p := &Person{Name: "Bob", Age: 25}
+    p.Birthday()
+    fmt.Println(p.Greet())
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "structs",
+				Title:       "Struct Practice",
+				Description: "Create structs with methods.",
+				Requirements: []string{
+					"Define a struct",
+					"Add methods to the struct",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Create structs
+}`,
+				Solution: `package main
+
+import "fmt"
+
+type Rectangle struct {
+    Width, Height float64
+}
+
+func (r Rectangle) Area() float64 {
+    return r.Width * r.Height
+}
+
+func main() {
+    r := Rectangle{Width: 10, Height: 5}
+    fmt.Println("Area:", r.Area())
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 7; return &i }(),
+		PrevLessonID: func() *int { i := 5; return &i }(),
+	}
+}
+
+func (s *curriculumService) getLessonData7() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          7,
+		Title:       "Interfaces and Polymorphism",
+		Description: "Learn about interface definitions, type assertions, and composition.",
+		Duration:    "6-7 hours",
+		Difficulty:  domain.DifficultyIntermediate,
+		Phase:       "Intermediate",
+		Objectives: []string{
+			"Define and implement interfaces",
+			"Use type assertions",
+			"Understand interface composition",
+			"Work with empty interfaces",
+		},
+		Theory: `# Interfaces in Go
+
+Interfaces provide a way to specify the behavior of an object.`,
+		CodeExample: `package main
+
+import "fmt"
+
+type Speaker interface {
+    Speak() string
+}
+
+type Dog struct{}
+
+func (d Dog) Speak() string {
+    return "Woof!"
+}
+
+func main() {
+    var s Speaker = Dog{}
+    fmt.Println(s.Speak())
+}`,
+		Solution: `package main
+
+import "fmt"
+
+type Shape interface {
+    Area() float64
+}
+
+type Circle struct {
+    Radius float64
+}
+
+func (c Circle) Area() float64 {
+    return 3.14 * c.Radius * c.Radius
+}
+
+func printArea(s Shape) {
+    fmt.Printf("Area: %.2f\n", s.Area())
+}
+
+func main() {
+    c := Circle{Radius: 5}
+    printArea(c)
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "interfaces",
+				Title:       "Interface Practice",
+				Description: "Implement interfaces.",
+				Requirements: []string{
+					"Define an interface",
+					"Implement the interface",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Work with interfaces
+}`,
+				Solution: `package main
+
+import "fmt"
+
+type Printer interface {
+    Print()
+}
+
+type Document struct {
+    Text string
+}
+
+func (d Document) Print() {
+    fmt.Println(d.Text)
+}
+
+func main() {
+    var p Printer = Document{Text: "Hello"}
+    p.Print()
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 8; return &i }(),
+		PrevLessonID: func() *int { i := 6; return &i }(),
+	}
+}
+
+func (s *curriculumService) getLessonData8() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          8,
+		Title:       "Error Handling Patterns",
+		Description: "Master error handling in Go including custom errors and best practices.",
+		Duration:    "4-5 hours",
+		Difficulty:  domain.DifficultyIntermediate,
+		Phase:       "Intermediate",
+		Objectives: []string{
+			"Handle errors properly",
+			"Create custom errors",
+			"Use error wrapping",
+			"Understand panic and recover",
+		},
+		Theory: `# Error Handling
+
+Go uses explicit error handling with multiple return values.`,
+		CodeExample: `package main
+
+import (
+    "errors"
+    "fmt"
+)
+
+func divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+
+func main() {
+    result, err := divide(10, 0)
+    if err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
+    fmt.Println("Result:", result)
+}`,
+		Solution: `package main
+
+import (
+    "errors"
+    "fmt"
+)
+
+type MathError struct {
+    Op  string
+    Err error
+}
+
+func (e *MathError) Error() string {
+    return fmt.Sprintf("%s: %v", e.Op, e.Err)
+}
+
+func divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, &MathError{
+            Op:  "divide",
+            Err: errors.New("division by zero"),
+        }
+    }
+    return a / b, nil
+}
+
+func main() {
+    result, err := divide(10, 0)
+    if err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
+    fmt.Println("Result:", result)
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "error-handling",
+				Title:       "Error Handling Practice",
+				Description: "Handle errors properly.",
+				Requirements: []string{
+					"Check for errors",
+					"Create custom errors",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Practice error handling
+}`,
+				Solution: `package main
+
+import (
+    "errors"
+    "fmt"
+)
+
+func validate(x int) error {
+    if x < 0 {
+        return errors.New("negative value")
+    }
+    return nil
+}
+
+func main() {
+    if err := validate(-1); err != nil {
+        fmt.Println("Error:", err)
+    }
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 9; return &i }(),
+		PrevLessonID: func() *int { i := 7; return &i }(),
+	}
+}
+
+func (s *curriculumService) getLessonData9() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          9,
+		Title:       "Goroutines and Channels",
+		Description: "Learn about concurrency, goroutines, channels, and select statements.",
+		Duration:    "7-8 hours",
+		Difficulty:  domain.DifficultyIntermediate,
+		Phase:       "Intermediate",
+		Objectives: []string{
+			"Create and manage goroutines",
+			"Use channels for communication",
+			"Master the select statement",
+			"Understand channel direction",
+		},
+		Theory: `# Concurrency in Go
+
+Goroutines are lightweight threads managed by the Go runtime.`,
+		CodeExample: `package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func say(s string) {
+    for i := 0; i < 3; i++ {
+        time.Sleep(100 * time.Millisecond)
+        fmt.Println(s)
+    }
+}
+
+func main() {
+    go say("hello")
+    say("world")
+}`,
+		Solution: `package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func worker(id int, jobs <-chan int, results chan<- int) {
+    for j := range jobs {
+        time.Sleep(time.Millisecond)
+        results <- j * 2
+    }
+}
+
+func main() {
+    jobs := make(chan int, 100)
+    results := make(chan int, 100)
+
+    for w := 1; w <= 3; w++ {
+        go worker(w, jobs, results)
+    }
+
+    for j := 1; j <= 5; j++ {
+        jobs <- j
+    }
+    close(jobs)
+
+    for a := 1; a <= 5; a++ {
+        fmt.Println(<-results)
+    }
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "concurrency",
+				Title:       "Concurrency Practice",
+				Description: "Work with goroutines and channels.",
+				Requirements: []string{
+					"Create goroutines",
+					"Use channels for communication",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Practice concurrency
+}`,
+				Solution: `package main
+
+import "fmt"
+
+func sum(nums []int, c chan int) {
+    sum := 0
+    for _, v := range nums {
+        sum += v
+    }
+    c <- sum
+}
+
+func main() {
+    nums := []int{1, 2, 3, 4, 5, 6}
+    c := make(chan int)
+    go sum(nums[:len(nums)/2], c)
+    go sum(nums[len(nums)/2:], c)
+    x, y := <-c, <-c
+    fmt.Println(x + y)
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 10; return &i }(),
+		PrevLessonID: func() *int { i := 8; return &i }(),
+	}
+}
+
+func (s *curriculumService) getLessonData10() *domain.LessonDetail {
+	return &domain.LessonDetail{
+		ID:          10,
+		Title:       "Packages and Modules",
+		Description: "Master package organization, Go modules, and dependency management.",
+		Duration:    "5-6 hours",
+		Difficulty:  domain.DifficultyIntermediate,
+		Phase:       "Intermediate",
+		Objectives: []string{
+			"Organize code into packages",
+			"Use Go modules",
+			"Manage dependencies",
+			"Understand package visibility",
+		},
+		Theory: `# Packages and Modules
+
+Packages are Go's way of organizing and reusing code.`,
+		CodeExample: `package main
+
+import (
+    "fmt"
+    "math"
+)
+
+func main() {
+    fmt.Println(math.Sqrt(16))
+}`,
+		Solution: `package main
+
+import (
+    "fmt"
+    "math"
+    "strings"
+)
+
+func main() {
+    fmt.Println(math.Pi)
+    fmt.Println(strings.ToUpper("hello"))
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          "packages",
+				Title:       "Package Practice",
+				Description: "Work with packages.",
+				Requirements: []string{
+					"Import packages",
+					"Use package functions",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Use packages
+}`,
+				Solution: `package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func main() {
+    now := time.Now()
+    fmt.Println("Current time:", now)
+}`,
+			},
+		},
+		NextLessonID: func() *int { i := 11; return &i }(),
+		PrevLessonID: func() *int { i := 9; return &i }(),
+	}
+}
+
+// Lessons 11-20 with simpler implementations
+func (s *curriculumService) getLessonData11() *domain.LessonDetail {
+	return s.createGenericLesson(11, "Advanced Concurrency Patterns", "Master worker pools, pipelines, context package, and sync primitives.", "8-9 hours", domain.DifficultyAdvanced, "Advanced", 12, 10)
+}
+
+func (s *curriculumService) getLessonData12() *domain.LessonDetail {
+	return s.createGenericLesson(12, "Testing and Benchmarking", "Learn unit testing, table-driven tests, benchmarking, and profiling.", "6-7 hours", domain.DifficultyAdvanced, "Advanced", 13, 11)
+}
+
+func (s *curriculumService) getLessonData13() *domain.LessonDetail {
+	return s.createGenericLesson(13, "HTTP Servers and REST APIs", "Build HTTP servers with routing, middleware, and authentication.", "8-9 hours", domain.DifficultyAdvanced, "Advanced", 14, 12)
+}
+
+func (s *curriculumService) getLessonData14() *domain.LessonDetail {
+	return s.createGenericLesson(14, "Database Integration", "Work with database/sql package, connection pooling, and transactions.", "7-8 hours", domain.DifficultyAdvanced, "Advanced", 15, 13)
+}
+
+func (s *curriculumService) getLessonData15() *domain.LessonDetail {
+	return s.createGenericLesson(15, "Microservices Architecture", "Design principles, service communication, and monitoring.", "9-10 hours", domain.DifficultyAdvanced, "Advanced", 16, 14)
+}
+
+func (s *curriculumService) getLessonData16() *domain.LessonDetail {
+	return s.createGenericLesson(16, "Performance Optimization and Profiling", "Memory optimization, CPU profiling, and benchmarking techniques.", "8-10 hours", domain.DifficultyAdvanced, "Expert", 17, 15)
+}
+
+func (s *curriculumService) getLessonData17() *domain.LessonDetail {
+	return s.createGenericLesson(17, "Security Best Practices", "Authentication, encryption, and vulnerability prevention.", "7-9 hours", domain.DifficultyAdvanced, "Expert", 18, 16)
+}
+
+func (s *curriculumService) getLessonData18() *domain.LessonDetail {
+	return s.createGenericLesson(18, "Deployment and DevOps", "Docker, CI/CD, cloud deployment, and monitoring.", "9-11 hours", domain.DifficultyAdvanced, "Expert", 19, 17)
+}
+
+func (s *curriculumService) getLessonData19() *domain.LessonDetail {
+	return s.createGenericLesson(19, "Advanced Design Patterns", "Functional programming, generics, and architectural patterns.", "8-10 hours", domain.DifficultyAdvanced, "Expert", 20, 18)
+}
+
+func (s *curriculumService) getLessonData20() *domain.LessonDetail {
+	lesson := s.createGenericLesson(20, "Building Production Systems", "Complete system design, observability, and scalability.", "10-12 hours", domain.DifficultyAdvanced, "Expert", 0, 19)
+	lesson.NextLessonID = nil
+	return lesson
+}
+
+// Helper function to create generic lesson data
+func (s *curriculumService) createGenericLesson(id int, title, description, duration string, difficulty domain.Difficulty, phase string, nextID, prevID int) *domain.LessonDetail {
+	lesson := &domain.LessonDetail{
+		ID:          id,
+		Title:       title,
+		Description: description,
+		Duration:    duration,
+		Difficulty:  difficulty,
+		Phase:       phase,
+		Objectives: []string{
+			fmt.Sprintf("Master core concepts of %s", title),
+			fmt.Sprintf("Apply best practices in %s", title),
+			"Build practical projects using learned skills",
+		},
+		Theory: fmt.Sprintf("# %s\n\nThis lesson covers essential concepts and practical applications.", title),
+		CodeExample: `package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Welcome to this lesson!")
+}`,
+		Solution: `package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Completed lesson solution")
+}`,
+		Exercises: []domain.LessonExercise{
+			{
+				ID:          fmt.Sprintf("exercise-%d", id),
+				Title:       fmt.Sprintf("%s Practice", title),
+				Description: fmt.Sprintf("Practice the concepts learned in %s", title),
+				Requirements: []string{
+					"Complete the implementation",
+					"Test your code",
+					"Review the solution",
+				},
+				InitialCode: `package main
+
+func main() {
+    // TODO: Implement the exercise
+}`,
+				Solution: `package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Exercise completed!")
+}`,
+			},
+		},
+	}
+
+	if nextID > 0 {
+		lesson.NextLessonID = &nextID
+	}
+	if prevID > 0 {
+		lesson.PrevLessonID = &prevID
+	}
+
+	return lesson
 }

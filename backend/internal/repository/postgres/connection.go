@@ -8,6 +8,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -127,7 +128,10 @@ func (db *DB) WithTransaction(ctx context.Context, fn func(*sql.Tx) error) error
 
 	defer func() {
 		if p := recover(); p != nil {
-			tx.Rollback()
+			if rbErr := tx.Rollback(); rbErr != nil {
+				// Log rollback error but continue with panic
+				_ = rbErr
+			}
 			panic(p)
 		}
 	}()
@@ -149,7 +153,8 @@ func (db *DB) WithTransaction(ctx context.Context, fn func(*sql.Tx) error) error
 
 // IsUniqueViolation checks if the error is a unique constraint violation.
 func IsUniqueViolation(err error) bool {
-	if pqErr, ok := err.(*pq.Error); ok {
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) {
 		return pqErr.Code == "23505" // unique_violation
 	}
 
@@ -158,7 +163,8 @@ func IsUniqueViolation(err error) bool {
 
 // IsForeignKeyViolation checks if the error is a foreign key constraint violation.
 func IsForeignKeyViolation(err error) bool {
-	if pqErr, ok := err.(*pq.Error); ok {
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) {
 		return pqErr.Code == "23503" // foreign_key_violation
 	}
 
@@ -167,7 +173,8 @@ func IsForeignKeyViolation(err error) bool {
 
 // IsNotNullViolation checks if the error is a not null constraint violation.
 func IsNotNullViolation(err error) bool {
-	if pqErr, ok := err.(*pq.Error); ok {
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) {
 		return pqErr.Code == "23502" // not_null_violation
 	}
 
@@ -211,6 +218,10 @@ func (db *DB) RunMigrations(ctx context.Context, migrations []Migration) error {
 			return fmt.Errorf("failed to scan migration version: %w", err)
 		}
 		appliedMigrations[version] = true
+	}
+
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("error iterating migration rows: %w", err)
 	}
 
 	// Apply pending migrations.

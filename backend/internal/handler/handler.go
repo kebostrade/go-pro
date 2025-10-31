@@ -469,7 +469,9 @@ func (h *Handler) handleAPIDocumentation(w http.ResponseWriter, r *http.Request)
 </html>`
 
 	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	if _, err := w.Write([]byte(html)); err != nil {
+		h.logger.Error(r.Context(), "Failed to write HTML response", "error", err)
+	}
 }
 
 // Helper methods.

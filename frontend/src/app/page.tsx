@@ -215,178 +215,178 @@ export default function Home() {
       </section>
 
       {/* Learning Path Section */}
-      <section className="py-20 sm:py-32 relative overflow-hidden">
+      <section className="py-16 sm:py-20 lg:py-32 relative overflow-hidden">
         <div className="absolute inset-0 animated-gradient opacity-50" />
 
-        <div className="container max-w-screen-2xl px-4 relative z-10">
-          <div className="mx-auto max-w-2xl text-center mb-16">
+        <div className="container-responsive relative z-10">
+          <div className="mx-auto max-w-2xl text-center margin-responsive">
             <Badge variant="outline" className="mb-4 animate-in fade-in duration-500">
               📚 Curriculum
             </Badge>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 animate-in fade-in slide-in-bottom duration-700">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl mb-4 animate-in fade-in slide-in-bottom duration-700">
               Your <span className="go-gradient-text">Learning Journey</span>
             </h2>
-            <p className="text-lg text-muted-foreground animate-in fade-in slide-in-bottom duration-1000">
+            <p className="text-base sm:text-lg text-muted-foreground animate-in fade-in slide-in-bottom duration-1000">
               Structured curriculum that takes you from beginner to Go expert
             </p>
           </div>
 
           <Tabs defaultValue="beginner" className="max-w-4xl mx-auto animate-in fade-in duration-1000">
-            <TabsList className="grid w-full grid-cols-3 bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg">
-              <TabsTrigger value="beginner" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Zap className="mr-2 h-4 w-4" />
-                Beginner
+            <TabsList className="grid w-full grid-cols-3 bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg h-auto">
+              <TabsTrigger value="beginner" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-col sm:flex-row gap-1 sm:gap-2 py-2 sm:py-2.5 text-xs sm:text-sm">
+                <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>Beginner</span>
               </TabsTrigger>
-              <TabsTrigger value="intermediate" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Target className="mr-2 h-4 w-4" />
-                Intermediate
+              <TabsTrigger value="intermediate" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-col sm:flex-row gap-1 sm:gap-2 py-2 sm:py-2.5 text-xs sm:text-sm">
+                <Target className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>Intermediate</span>
               </TabsTrigger>
-              <TabsTrigger value="advanced" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Trophy className="mr-2 h-4 w-4" />
-                Advanced
+              <TabsTrigger value="advanced" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground flex-col sm:flex-row gap-1 sm:gap-2 py-2 sm:py-2.5 text-xs sm:text-sm">
+                <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>Advanced</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="beginner" className="mt-8">
+            <TabsContent value="beginner" className="mt-6 sm:mt-8">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Zap className="mr-2 h-5 w-5 text-primary" />
+                  <CardTitle className="flex items-center text-base sm:text-lg">
+                    <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                     Go Fundamentals
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-sm sm:text-base">
                     Master the basics of Go programming language
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-sm">Variables & Data Types</span>
+                        <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Variables & Data Types</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-sm">Control Structures</span>
+                        <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Control Structures</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-sm">Functions & Methods</span>
+                        <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Functions & Methods</span>
                       </div>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Structs & Interfaces</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Structs & Interfaces</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Error Handling</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Error Handling</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Package Management</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Package Management</span>
                       </div>
                     </div>
                   </div>
                   <Progress value={75} className="mt-4" />
-                  <p className="text-sm text-muted-foreground">8 lessons • 2-3 weeks</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">8 lessons • 2-3 weeks</p>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="intermediate" className="mt-8">
+            <TabsContent value="intermediate" className="mt-6 sm:mt-8">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Globe className="mr-2 h-5 w-5 text-primary" />
+                  <CardTitle className="flex items-center text-base sm:text-lg">
+                    <Globe className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                     Web Development & APIs
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-sm sm:text-base">
                     Build web applications and REST APIs with Go
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-sm">HTTP Server Basics</span>
+                        <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">HTTP Server Basics</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">REST API Design</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">REST API Design</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Database Integration</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Database Integration</span>
                       </div>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Middleware & Auth</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Middleware & Auth</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Testing Strategies</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Testing Strategies</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Deployment</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Deployment</span>
                       </div>
                     </div>
                   </div>
                   <Progress value={25} className="mt-4" />
-                  <p className="text-sm text-muted-foreground">12 lessons • 4-5 weeks</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">12 lessons • 4-5 weeks</p>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="advanced" className="mt-8">
+            <TabsContent value="advanced" className="mt-6 sm:mt-8">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <TrendingUp className="mr-2 h-5 w-5 text-primary" />
+                  <CardTitle className="flex items-center text-base sm:text-lg">
+                    <TrendingUp className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                     Microservices & Performance
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-sm sm:text-base">
                     Build scalable, production-ready Go applications
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Concurrency Patterns</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Concurrency Patterns</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Microservices Architecture</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Microservices Architecture</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">gRPC & Protocol Buffers</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">gRPC & Protocol Buffers</span>
                       </div>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Performance Optimization</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Performance Optimization</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Monitoring & Observability</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Monitoring & Observability</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Production Deployment</span>
+                        <Clock className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">Production Deployment</span>
                       </div>
                     </div>
                   </div>
                   <Progress value={0} className="mt-4" />
-                  <p className="text-sm text-muted-foreground">15 lessons • 6-8 weeks</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">15 lessons • 6-8 weeks</p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -395,23 +395,23 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 sm:py-32 relative overflow-hidden">
+      <section className="py-16 sm:py-20 lg:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background pointer-events-none" />
 
-        <div className="container max-w-screen-2xl px-4 relative z-10">
-          <div className="mx-auto max-w-2xl text-center mb-16">
+        <div className="container-responsive relative z-10">
+          <div className="mx-auto max-w-2xl text-center margin-responsive">
             <Badge variant="outline" className="mb-4 animate-in fade-in duration-500">
               💬 Testimonials
             </Badge>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 animate-in fade-in slide-in-bottom duration-700">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl mb-4 animate-in fade-in slide-in-bottom duration-700">
               Loved by <span className="go-gradient-text">Developers Worldwide</span>
             </h2>
-            <p className="text-lg text-muted-foreground animate-in fade-in slide-in-bottom duration-1000">
+            <p className="text-base sm:text-lg text-muted-foreground animate-in fade-in slide-in-bottom duration-1000">
               Join thousands of developers who've advanced their careers with GO-PRO
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {testimonials.map((testimonial, index) => (
               <Card
                 key={testimonial.name}
@@ -422,30 +422,30 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-yellow-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 <CardHeader className="relative z-10">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <Avatar className="h-12 w-12 ring-2 ring-primary/20 group-hover:ring-primary/50 group-hover:scale-110 transition-all duration-300 shadow-lg">
+                  <div className="flex items-center space-x-3 mb-3 sm:mb-4">
+                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-primary/20 group-hover:ring-primary/50 group-hover:scale-110 transition-all duration-300 shadow-lg flex-shrink-0">
                       <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold text-xs sm:text-sm">
                         {testimonial.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <CardTitle className="text-base group-hover:text-primary transition-colors duration-300">{testimonial.name}</CardTitle>
-                      <CardDescription className="text-sm">{testimonial.role}</CardDescription>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-sm sm:text-base group-hover:text-primary transition-colors duration-300 truncate">{testimonial.name}</CardTitle>
+                      <CardDescription className="text-xs sm:text-sm truncate">{testimonial.role}</CardDescription>
                     </div>
                   </div>
                   <div className="flex space-x-1">
                     {[...Array(testimonial.rating)].map((_, i) => (
                       <Star
                         key={`star-${testimonial.name}-${i}`}
-                        className="h-4 w-4 fill-yellow-400 text-yellow-400 group-hover:scale-125 transition-transform duration-300"
+                        className="h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 group-hover:scale-125 transition-transform duration-300"
                         style={{ transitionDelay: `${i * 50}ms` }}
                       />
                     ))}
                   </div>
                 </CardHeader>
                 <CardContent className="relative z-10">
-                  <p className="text-sm text-muted-foreground group-hover:text-foreground/80 italic leading-relaxed transition-colors duration-300">"{testimonial.content}"</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground group-hover:text-foreground/80 italic leading-relaxed transition-colors duration-300">"{testimonial.content}"</p>
                 </CardContent>
               </Card>
             ))}
@@ -454,52 +454,52 @@ export default function Home() {
       </section>
 
       {/* Enhanced CTA Section */}
-      <section className="py-20 sm:py-32 relative overflow-hidden">
+      <section className="py-16 sm:py-20 lg:py-32 relative overflow-hidden">
         <div className="absolute inset-0 animated-gradient" />
 
         {/* Enhanced Decorative elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-primary/30 via-blue-500/20 to-cyan-500/30 rounded-full blur-3xl float-animation" />
-          <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '1s' }} />
-          <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-gradient-to-tr from-green-500/20 to-emerald-500/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-gradient-to-r from-primary/30 via-blue-500/20 to-cyan-500/30 rounded-full blur-3xl float-animation" />
+          <div className="absolute top-1/4 right-1/4 w-48 sm:w-64 h-48 sm:h-64 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '1s' }} />
+          <div className="absolute bottom-1/4 left-1/4 w-48 sm:w-64 h-48 sm:h-64 bg-gradient-to-tr from-green-500/20 to-emerald-500/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '2s' }} />
         </div>
 
-        <div className="container max-w-screen-2xl px-4 relative z-10">
-          <div className="mx-auto max-w-3xl text-center glass-card-strong p-12 rounded-2xl shadow-2xl hover:shadow-primary/20 transition-all duration-500 border-2 border-primary/20 hover:border-primary/40">
-            <Badge variant="secondary" className="mb-6 pulse-badge shadow-lg">
+        <div className="container-responsive relative z-10">
+          <div className="mx-auto max-w-3xl text-center glass-card-strong p-6 sm:p-8 lg:p-12 rounded-2xl shadow-2xl hover:shadow-primary/20 transition-all duration-500 border-2 border-primary/20 hover:border-primary/40">
+            <Badge variant="secondary" className="mb-4 sm:mb-6 pulse-badge shadow-lg text-xs sm:text-sm">
               🎯 Start Your Journey
             </Badge>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-5xl mb-6 animate-in fade-in slide-in-bottom duration-700">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl mb-4 sm:mb-6 animate-in fade-in slide-in-bottom duration-700">
               Ready to Master <span className="go-gradient-text">Go</span>?
             </h2>
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed animate-in fade-in slide-in-bottom duration-1000">
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed animate-in fade-in slide-in-bottom duration-1000">
               Join thousands of developers who are already building amazing things with Go.
               Start your journey today - it's completely free!
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <Link href="/learn/1">
-                <Button size="lg" className="go-gradient text-white text-lg px-8 py-6 shadow-2xl hover:shadow-primary/50">
-                  <Play className="mr-2 h-5 w-5" />
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-6 sm:mb-8">
+              <Link href="/learn/1" className="w-full sm:w-auto">
+                <Button size="lg" className="go-gradient text-white text-sm sm:text-base lg:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto shadow-2xl hover:shadow-primary/50 min-h-[48px] sm:min-h-[56px]">
+                  <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Start Learning Now
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
-              <Link href="/curriculum">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-2">
-                  <BookOpen className="mr-2 h-5 w-5" />
+              <Link href="/curriculum" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="text-sm sm:text-base lg:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto border-2 min-h-[48px] sm:min-h-[56px]">
+                  <BookOpen className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   View Curriculum
                 </Button>
               </Link>
             </div>
 
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
                 <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
                 <span>Free forever</span>
               </div>
             </div>

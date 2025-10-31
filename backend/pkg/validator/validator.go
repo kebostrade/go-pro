@@ -7,6 +7,7 @@ package validator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -14,7 +15,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"go-pro-backend/internal/errors"
+	apierrors "go-pro-backend/internal/errors"
 )
 
 // Validator interface defines validation methods.
@@ -78,7 +79,7 @@ func (v *validator) AddRule(dataType reflect.Type, rule ValidationRule) {
 // Validate validates the given data according to defined rules.
 func (v *validator) Validate(data interface{}) error {
 	if data == nil {
-		return errors.NewValidationError("data cannot be nil", nil)
+		return apierrors.NewValidationError("data cannot be nil", nil)
 	}
 
 	dataType := reflect.TypeOf(data)
@@ -87,7 +88,7 @@ func (v *validator) Validate(data interface{}) error {
 	// Handle pointers.
 	if dataType.Kind() == reflect.Ptr {
 		if dataValue.IsNil() {
-			return errors.NewValidationError("data cannot be nil", nil)
+			return apierrors.NewValidationError("data cannot be nil", nil)
 		}
 		dataType = dataType.Elem()
 		dataValue = dataValue.Elem()
@@ -103,7 +104,8 @@ func (v *validator) Validate(data interface{}) error {
 
 	for _, rule := range rules {
 		if err := v.validateField(dataValue, rule); err != nil {
-			if ve, ok := err.(ValidationErrors); ok {
+			var ve ValidationErrors
+			if errors.As(err, &ve) {
 				validationErrors = append(validationErrors, ve.Errors...)
 			} else {
 				validationErrors = append(validationErrors, ValidationError{
@@ -115,7 +117,7 @@ func (v *validator) Validate(data interface{}) error {
 	}
 
 	if len(validationErrors) > 0 {
-		return errors.NewValidationError("validation failed", ValidationErrors{Errors: validationErrors})
+		return apierrors.NewValidationError("validation failed", ValidationErrors{Errors: validationErrors})
 	}
 
 	return nil
@@ -124,7 +126,7 @@ func (v *validator) Validate(data interface{}) error {
 // ValidateJSON validates JSON request body.
 func (v *validator) ValidateJSON(r *http.Request, data interface{}) error {
 	if r.Body == nil {
-		return errors.NewBadRequestError("request body is required")
+		return apierrors.NewBadRequestError("request body is required")
 	}
 	defer r.Body.Close()
 
@@ -132,7 +134,7 @@ func (v *validator) ValidateJSON(r *http.Request, data interface{}) error {
 	decoder.DisallowUnknownFields() // Strict JSON parsing
 
 	if err := decoder.Decode(data); err != nil {
-		return errors.NewValidationError("invalid JSON format", err)
+		return apierrors.NewValidationError("invalid JSON format", err)
 	}
 
 	return v.Validate(data)
@@ -229,7 +231,8 @@ func (v *validator) validateBasic(dataValue reflect.Value) error {
 		}
 
 		if err := v.validateTag(field, fieldType.Name, tag); err != nil {
-			if ve, ok := err.(ValidationErrors); ok {
+			var ve ValidationErrors
+			if errors.As(err, &ve) {
 				validationErrors = append(validationErrors, ve.Errors...)
 			} else {
 				validationErrors = append(validationErrors, ValidationError{

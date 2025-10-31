@@ -5,6 +5,9 @@ FROM golang:1.21-alpine AS builder
 # Install build dependencies
 RUN apk add --no-cache git ca-certificates tzdata
 
+# Create non-root user
+RUN adduser -D -g '' appuser
+
 # Set working directory
 WORKDIR /build
 
@@ -34,8 +37,15 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Copy timezone data
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 
+# Copy passwd and group files for non-root user
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+
 # Copy the binary
 COPY --from=builder /app /app
+
+# Use non-root user
+USER appuser
 
 # Expose port
 EXPOSE 8080
@@ -45,9 +55,10 @@ ENV PORT=8080 \
     APP_VERSION=1.0.0 \
     ENVIRONMENT=production
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/app", "health"]
+# Health check (note: health subcommand not implemented in app yet)
+# Use wget/curl in a non-scratch base image or implement health check in app
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#     CMD ["/app", "health"]
 
 # Run the application
 ENTRYPOINT ["/app"]

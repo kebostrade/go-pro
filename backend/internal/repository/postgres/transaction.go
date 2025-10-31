@@ -248,7 +248,9 @@ func (tm *TransactionManager) WithTransaction(ctx context.Context, opts *TxOptio
 
 	defer func() {
 		if p := recover(); p != nil {
-			tx.Rollback(ctx)
+			if rbErr := tx.Rollback(ctx); rbErr != nil {
+				tm.logger.Error(ctx, "Failed to rollback after panic", "rollback_error", rbErr)
+			}
 			tm.logger.Error(ctx, "Transaction panicked", "panic", p)
 			panic(p)
 		}

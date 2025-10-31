@@ -8,6 +8,7 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -132,7 +133,7 @@ func (r *RedisCache) Set(ctx context.Context, key string, value interface{}, exp
 func (r *RedisCache) Get(ctx context.Context, key string, dest interface{}) error {
 	data, err := r.client.Get(ctx, r.key(key)).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return ErrCacheMiss
 		}
 
@@ -226,18 +227,20 @@ func (r *RedisCache) MSet(ctx context.Context, pairs ...interface{}) error {
 	// Convert keys to prefixed keys.
 	prefixedPairs := make([]interface{}, len(pairs))
 	for i := 0; i < len(pairs); i += 2 {
-		if i+1 < len(pairs) {
-			key := pairs[i].(string)
-			value := pairs[i+1]
-
-			data, err := json.Marshal(value)
-			if err != nil {
-				return fmt.Errorf("failed to marshal value for key %s: %w", key, err)
-			}
-
-			prefixedPairs[i] = r.key(key)
-			prefixedPairs[i+1] = data
+		if i+1 >= len(pairs) {
+			continue
 		}
+
+		key := pairs[i].(string)
+		value := pairs[i+1]
+
+		data, err := json.Marshal(value)
+		if err != nil {
+			return fmt.Errorf("failed to marshal value for key %s: %w", key, err)
+		}
+
+		prefixedPairs[i] = r.key(key)
+		prefixedPairs[i+1] = data
 	}
 
 	return r.client.MSet(ctx, prefixedPairs...).Err()

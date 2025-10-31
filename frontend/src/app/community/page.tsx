@@ -264,21 +264,30 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
-      <div className="container max-w-7xl mx-auto px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
-        {/* Header */}
-        <div className="mb-10 lg:mb-12">
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden animated-gradient">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-full blur-3xl float-animation" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-cyan-500/20 to-primary/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '1s' }} />
+        </div>
+
+        <div className="container max-w-7xl mx-auto px-4 py-12 sm:py-16 lg:py-20 relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 lg:mb-8">
-            <div className="mb-4 lg:mb-0">
-              <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Community Hub
+            <div className="mb-6 lg:mb-0">
+              <Badge variant="secondary" className="mb-4 text-sm pulse-badge animate-in fade-in slide-in-bottom duration-500">
+                🌟 Join the Community
+              </Badge>
+              <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold tracking-tight mb-3 animate-in fade-in slide-in-bottom duration-700">
+                <span className="go-gradient-text">Community Hub</span>
               </h1>
-              <p className="text-muted-foreground text-lg lg:text-xl max-w-2xl">
+              <p className="text-base lg:text-xl text-muted-foreground max-w-2xl leading-relaxed animate-in fade-in slide-in-bottom duration-1000">
                 Connect, learn, and grow with fellow Go developers
               </p>
             </div>
-            <Link href="/community/new-post">
-              <Button className="go-gradient text-white text-base px-6 py-3">
+            <Link href="/community/new-post" className="animate-in fade-in duration-1000">
+              <Button className="go-gradient text-white text-base px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-300">
                 <Plus className="mr-2 h-5 w-5" />
                 New Post
               </Button>
@@ -286,45 +295,62 @@ export default function CommunityPage() {
           </div>
 
           {/* Community Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 mb-8">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Users className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{communityStats.totalMembers.toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">Members</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <TrendingUp className="h-6 w-6 text-green-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{communityStats.activeToday.toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">Active Today</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <MessageSquare className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{communityStats.totalPosts.toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">Discussions</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <HelpCircle className="h-6 w-6 text-orange-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{communityStats.solvedQuestions.toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">Solved</div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 animate-in fade-in duration-1000">
+            <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <Users className="h-6 w-6 text-blue-500 group-hover:animate-pulse" />
+                </div>
+                <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-blue-500/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">{communityStats.totalMembers.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">Members</div>
+              </div>
+            </div>
+            <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-green-500/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/20 to-green-500/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="h-6 w-6 text-green-500 group-hover:animate-pulse" />
+                </div>
+                <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-green-500/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">{communityStats.activeToday.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">Active Today</div>
+              </div>
+            </div>
+            <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <MessageSquare className="h-6 w-6 text-purple-500 group-hover:animate-pulse" />
+                </div>
+                <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-purple-500/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">{communityStats.totalPosts.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">Discussions</div>
+              </div>
+            </div>
+            <div className="text-center p-4 sm:p-6 rounded-xl glass-card hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-500 hover:-translate-y-2 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-500/10 w-fit mx-auto mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <HelpCircle className="h-6 w-6 text-orange-500 group-hover:animate-pulse" />
+                </div>
+                <div className="text-2xl font-bold bg-gradient-to-br from-foreground via-orange-500/80 to-foreground/70 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">{communityStats.solvedQuestions.toLocaleString()}</div>
+                <div className="text-sm text-muted-foreground mt-1 group-hover:text-foreground/80 transition-colors">Solved</div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
-          <TabsTrigger value="discussions">Discussions</TabsTrigger>
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="events">Events</TabsTrigger>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+      <div className="container max-w-7xl mx-auto px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-accent/5 to-background pointer-events-none" />
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 relative z-10 animate-in fade-in duration-1000">
+        <TabsList className="grid w-full grid-cols-4 lg:w-[500px] bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg">
+          <TabsTrigger value="discussions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Discussions</TabsTrigger>
+          <TabsTrigger value="members" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Members</TabsTrigger>
+          <TabsTrigger value="events" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Events</TabsTrigger>
+          <TabsTrigger value="leaderboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Leaderboard</TabsTrigger>
         </TabsList>
 
         {/* Discussions Tab */}

@@ -2,6 +2,7 @@
 // Copyright (c) 2025 GO-PRO Team
 // Licensed under MIT License
 
+// Package migrations provides database migration definitions for the GO-PRO Learning Platform.
 package migrations
 
 import (

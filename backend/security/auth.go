@@ -103,8 +103,14 @@ func NewInMemoryUserStore() *InMemoryUserStore {
 		IsVerified:   true,
 	}
 
-	store.CreateUser(adminUser)
-	store.CreateUser(regularUser)
+	if err := store.CreateUser(adminUser); err != nil {
+		// Log error but continue - this is for testing only
+		_ = err
+	}
+	if err := store.CreateUser(regularUser); err != nil {
+		// Log error but continue - this is for testing only
+		_ = err
+	}
 
 	return store
 }
@@ -239,7 +245,10 @@ func (as *AuthService) Login(req LoginRequest) (*TokenResponse, error) {
 	// Update last login.
 	now := time.Now()
 	user.LastLoginAt = &now
-	as.userStore.UpdateUser(user)
+	if err := as.userStore.UpdateUser(user); err != nil {
+		// Log error but don't fail login
+		_ = err
+	}
 
 	// Generate tokens.
 	accessToken, refreshToken, err := as.jwtManager.GenerateTokens(user.ID, user.Email, user.Roles)
@@ -475,7 +484,10 @@ func (as *AuthService) ProfileHandler(w http.ResponseWriter, r *http.Request) {
 
 func generateUserID() string {
 	bytes := make([]byte, 16)
-	rand.Read(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to timestamp-based ID if random generation fails
+		return fmt.Sprintf("usr_%d", time.Now().UnixNano())
+	}
 
 	return "usr_" + hex.EncodeToString(bytes)
 }

@@ -226,97 +226,111 @@ func main() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
-      <div className="container-responsive padding-responsive-y">
-        {/* Breadcrumb Navigation */}
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-6 lg:mb-8">
-        <Link href="/" className="hover:text-primary">
-          <Home className="h-4 w-4" />
-        </Link>
-        <ChevronRight className="h-4 w-4" />
-        <Link href="/practice" className="hover:text-primary">
-          Practice
-        </Link>
-        <ChevronRight className="h-4 w-4" />
-        <span className="text-foreground">{challengeData.title}</span>
-      </div>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden animated-gradient">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-full blur-3xl float-animation" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-cyan-500/20 to-primary/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '1s' }} />
+        </div>
 
-      {/* Challenge Header */}
-      <div className="mb-8">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center space-x-3 mb-3">
-              <Badge className={getDifficultyColor(challengeData.difficulty)}>
-                {challengeData.difficulty}
-              </Badge>
-              <Badge variant="outline">{challengeData.category}</Badge>
-              {completed && (
-                <Badge className="bg-green-100 text-green-800 border-green-200">
-                  <CheckCircle className="mr-1 h-3 w-3" />
-                  Completed
-                </Badge>
-              )}
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">{challengeData.title}</h1>
-            <p className="text-muted-foreground text-lg mb-4">{challengeData.description}</p>
-            
-            <div className="flex items-center space-x-6 text-sm">
-              <div className="flex items-center space-x-1">
-                <Clock className="h-4 w-4" />
-                <span>{challengeData.estimatedTime}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Star className="h-4 w-4 text-yellow-500" />
-                <span>{challengeData.points} points</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Target className="h-4 w-4" />
-                <span>{challengeData.completionRate}% success rate</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Users className="h-4 w-4" />
-                <span>{challengeData.totalAttempts} attempts</span>
-              </div>
-            </div>
+        <div className="container-responsive py-8 sm:py-12 relative z-10">
+          {/* Breadcrumb Navigation */}
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground mb-6 animate-in fade-in duration-500">
+            <Link href="/" className="hover:text-primary transition-colors">
+              <Home className="h-4 w-4" />
+            </Link>
+            <ChevronRight className="h-4 w-4" />
+            <Link href="/practice" className="hover:text-primary transition-colors">
+              Practice
+            </Link>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-foreground">{challengeData.title}</span>
           </div>
-          <div className="ml-6">
-            <Link href="/practice">
-              <Button variant="outline" size="sm">
+
+          {/* Challenge Header */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-3 mb-4 animate-in fade-in slide-in-bottom duration-700">
+                <Badge className={getDifficultyColor(challengeData.difficulty)}>
+                  {challengeData.difficulty}
+                </Badge>
+                <Badge variant="outline">{challengeData.category}</Badge>
+                {completed && (
+                  <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+                    <CheckCircle className="mr-1 h-3 w-3" />
+                    Completed
+                  </Badge>
+                )}
+              </div>
+
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight mb-3 animate-in fade-in slide-in-bottom duration-700">
+                <span className="go-gradient-text">{challengeData.title}</span>
+              </h1>
+              <p className="text-muted-foreground text-lg mb-4 animate-in fade-in slide-in-bottom duration-1000">
+                {challengeData.description}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm animate-in fade-in duration-1000">
+                <div className="flex items-center space-x-2 glass-card px-3 py-2 rounded-lg">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span>{challengeData.estimatedTime}</span>
+                </div>
+                <div className="flex items-center space-x-2 glass-card px-3 py-2 rounded-lg">
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  <span>{challengeData.points} points</span>
+                </div>
+                <div className="flex items-center space-x-2 glass-card px-3 py-2 rounded-lg">
+                  <Target className="h-4 w-4 text-blue-500" />
+                  <span>{challengeData.completionRate}% success</span>
+                </div>
+                <div className="flex items-center space-x-2 glass-card px-3 py-2 rounded-lg">
+                  <Users className="h-4 w-4 text-purple-500" />
+                  <span>{challengeData.totalAttempts} attempts</span>
+                </div>
+              </div>
+            </div>
+
+            <Link href="/practice" className="ml-6 animate-in fade-in duration-1000">
+              <Button variant="outline" size="sm" className="glass-card hover:shadow-lg transition-all duration-300">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Practice
+                Back
               </Button>
             </Link>
           </div>
-        </div>
 
-        {/* Progress indicator */}
-        {attempts > 0 && (
-          <div className="mb-4">
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span>Attempts: {attempts}</span>
-              <span>{testResults.filter(t => t.passed).length}/{testResults.length} tests passed</span>
+          {/* Progress indicator */}
+          {attempts > 0 && (
+            <div className="glass-card p-4 rounded-xl mt-6 animate-in fade-in duration-1000">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="font-medium">Attempts: {attempts}</span>
+                <span className="font-medium">{testResults.filter(t => t.passed).length}/{testResults.length} tests passed</span>
+              </div>
+              <Progress
+                value={testResults.length > 0 ? (testResults.filter(t => t.passed).length / testResults.length) * 100 : 0}
+                className="h-2"
+              />
             </div>
-            <Progress 
-              value={testResults.length > 0 ? (testResults.filter(t => t.passed).length / testResults.length) * 100 : 0} 
-              className="h-2" 
-            />
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </section>
 
       {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-          <TabsTrigger value="challenge">Challenge</TabsTrigger>
-          <TabsTrigger value="solution">Solution</TabsTrigger>
-          <TabsTrigger value="discussion">Discussion</TabsTrigger>
-        </TabsList>
+      <div className="container-responsive padding-responsive-y relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-accent/5 to-background pointer-events-none" />
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 relative z-10 animate-in fade-in duration-1000">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[400px] bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg">
+            <TabsTrigger value="challenge" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Challenge</TabsTrigger>
+            <TabsTrigger value="solution" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Solution</TabsTrigger>
+            <TabsTrigger value="discussion" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Discussion</TabsTrigger>
+          </TabsList>
 
         {/* Challenge Tab */}
         <TabsContent value="challenge" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Instructions */}
-            <Card>
+            <Card className="glass-card border-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <BookOpen className="mr-2 h-5 w-5" />
@@ -386,7 +400,7 @@ func main() {
 
           {/* Test Results */}
           {testResults.length > 0 && (
-            <Card>
+            <Card className="glass-card border-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Target className="mr-2 h-5 w-5" />
@@ -422,20 +436,20 @@ func main() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between">
-            <Button variant="outline" onClick={handleReset}>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <Button variant="outline" onClick={handleReset} className="glass-card hover:shadow-lg transition-all duration-300">
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset Code
             </Button>
-            
+
             {completed && (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 text-green-600">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="flex items-center space-x-2 text-green-600 glass-card px-4 py-2 rounded-lg">
                   <Trophy className="h-5 w-5" />
                   <span className="font-medium">Challenge Completed! +{challengeData.points} points</span>
                 </div>
                 <Link href="/practice">
-                  <Button className="go-gradient text-white">
+                  <Button className="go-gradient text-white shadow-lg hover:shadow-xl transition-all duration-300">
                     Next Challenge
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -444,7 +458,7 @@ func main() {
             )}
           </div>
         </TabsContent>
-      </Tabs>
+        </Tabs>
       </div>
     </div>
   );

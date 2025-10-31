@@ -295,6 +295,7 @@ type TableTest struct {
 
 // RunTableTests runs a series of table-driven tests.
 func RunTableTests(t *testing.T, tests []TableTest) {
+	t.Helper()
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
 			if tt.Setup != nil {
