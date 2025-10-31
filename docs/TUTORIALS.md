@@ -1734,6 +1734,1316 @@ Due to length constraints, I've shown the transformed format for the first sever
 
 ---
 
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                       🎨 SPECIALIZED TUTORIALS                               ║
+║                                                                              ║
+║                Advanced Topics for Production Systems                        ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## 💬 Tutorial 12: WebSocket Real-Time Communication
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🟡 INTERMEDIATE                                ⏱️  40 minutes             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  🎯 PROJECT: Real-Time Chat Application                                 │
+│                                                                          │
+│  📚 WHAT YOU'LL BUILD:                                                   │
+│     ✓ WebSocket server with gorilla/websocket                          │
+│     ✓ Real-time message broadcasting                                   │
+│     ✓ Multiple chat rooms                                              │
+│     ✓ Concurrent client handling                                       │
+│     ✓ Message history and user management                              │
+│     ✓ Modern web interface                                             │
+│                                                                          │
+│  🛠️ TECH STACK: WebSockets, Goroutines, Channels, Hub Pattern          │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Navigate to the Project
+```bash
+cd basic/projects/websocket-chat
+```
+
+#### Step 2: Understand the Architecture
+
+**📖 Hub Pattern Overview:**
+```
+┌─────────────────────────────────────────────────────────┐
+│                         Hub                             │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  Rooms: map[string]map[Client]bool              │   │
+│  │  History: map[string][]Message                  │   │
+│  │  Channels: register, unregister, broadcast      │   │
+│  └─────────────────────────────────────────────────┘   │
+│                          │                              │
+│         ┌────────────────┼────────────────┐            │
+│         ▼                ▼                ▼            │
+│    ┌────────┐      ┌────────┐      ┌────────┐         │
+│    │Client 1│      │Client 2│      │Client 3│         │
+│    │Room: A │      │Room: A │      │Room: B │         │
+│    └────────┘      └────────┘      └────────┘         │
+└─────────────────────────────────────────────────────────┘
+```
+
+**💡 Key Concepts:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  WebSocket Lifecycle:                                           │
+│                                                                 │
+│  1. HTTP Upgrade Request                                       │
+│  2. WebSocket Handshake                                        │
+│  3. Bidirectional Communication                                │
+│  4. Ping/Pong Heartbeat                                        │
+│  5. Graceful Shutdown                                          │
+│                                                                 │
+│  Each Client has 2 Goroutines:                                 │
+│  • ReadPump:  WebSocket → Hub (reads messages)                 │
+│  • WritePump: Hub → WebSocket (writes messages)                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 3: Install Dependencies
+```bash
+# Download dependencies
+make deps
+
+# This installs:
+# - github.com/gorilla/websocket v1.5.1
+```
+
+#### Step 4: Explore the Code Structure
+
+```bash
+# View the project structure
+tree -L 3
+```
+
+**📁 Project Layout:**
+```
+websocket-chat/
+├── cmd/
+│   └── main.go              # Server entry point + web UI
+├── internal/
+│   ├── client/
+│   │   └── client.go        # WebSocket client handler
+│   ├── hub/
+│   │   └── hub.go           # Central message hub
+│   └── room/
+│       └── room.go          # Chat room management
+├── Makefile                 # Build automation
+├── go.mod                   # Dependencies
+└── README.md                # Documentation
+```
+
+**🔍 Examine Key Files:**
+```bash
+# Hub - manages all clients and rooms
+cat internal/hub/hub.go | head -50
+
+# Client - handles individual connections
+cat internal/client/client.go | head -50
+
+# Main - HTTP server and WebSocket upgrade
+cat cmd/main.go | head -50
+```
+
+#### Step 5: Build and Run
+
+```bash
+# Build the application
+make build
+
+# Run the server
+make run
+```
+
+**📤 Server Output:**
+```
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║           💬 WebSocket Chat Server                          ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+✓ Server starting on http://localhost:8080
+✓ WebSocket endpoint: ws://localhost:8080/ws
+✓ Ready to accept connections
+
+📚 API Endpoints:
+  GET  /                    - Web interface
+  WS   /ws?username=X&room=Y - WebSocket connection
+  GET  /api/rooms           - List all rooms
+  GET  /api/rooms/{id}      - Get room statistics
+
+🎯 Quick Start:
+  1. Open http://localhost:8080 in your browser
+  2. Enter your username and room name
+  3. Start chatting!
+```
+
+#### Step 6: Test the Chat Application
+
+**Option 1: Web Browser (Easiest)**
+```bash
+# Open in your browser
+open http://localhost:8080
+
+# Or manually navigate to:
+# http://localhost:8080
+```
+
+**📱 Web Interface Features:**
+- Modern, responsive design
+- Real-time message updates
+- System notifications (join/leave)
+- Message timestamps
+- Connection status indicator
+
+**Option 2: Multiple Browser Windows**
+```bash
+# Open 3 browser windows/tabs
+# Window 1: Username "Alice", Room "general"
+# Window 2: Username "Bob", Room "general"
+# Window 3: Username "Charlie", Room "tech"
+
+# Alice and Bob can chat in "general"
+# Charlie is in a separate "tech" room
+```
+
+**Option 3: Command Line with wscat**
+```bash
+# Install wscat (if not already installed)
+npm install -g wscat
+
+# Connect to chat
+wscat -c "ws://localhost:8080/ws?username=Alice&room=general"
+
+# Send a message (type and press Enter)
+{"type":"message","content":"Hello from command line!"}
+```
+
+#### Step 7: Test the REST API
+
+**List All Active Rooms:**
+```bash
+curl http://localhost:8080/api/rooms
+```
+
+**📤 Response:**
+```json
+{
+  "rooms": ["general", "tech", "random"],
+  "count": 3
+}
+```
+
+**Get Room Statistics:**
+```bash
+curl http://localhost:8080/api/rooms/general
+```
+
+**📤 Response:**
+```json
+{
+  "client_count": 5,
+  "message_count": 42,
+  "users": ["Alice", "Bob", "Charlie", "David", "Eve"]
+}
+```
+
+#### Step 8: Understanding the Message Flow
+
+**📖 Message Broadcasting Flow:**
+```
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  Client A sends message                                  │
+│       │                                                  │
+│       ▼                                                  │
+│  ReadPump() reads from WebSocket                         │
+│       │                                                  │
+│       ▼                                                  │
+│  Hub.Broadcast(message, roomID)                          │
+│       │                                                  │
+│       ▼                                                  │
+│  Hub finds all clients in room                           │
+│       │                                                  │
+│       ├──► Client A.Send ◄── WritePump() ──► WebSocket  │
+│       ├──► Client B.Send ◄── WritePump() ──► WebSocket  │
+│       └──► Client C.Send ◄── WritePump() ──► WebSocket  │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+**💡 Key Implementation Details:**
+
+1. **Buffered Channels** (256 messages):
+   ```go
+   Send: make(chan []byte, 256)
+   ```
+   Prevents blocking when sending to slow clients
+
+2. **Ping/Pong Heartbeat**:
+   - Ping every 54 seconds
+   - Pong timeout: 60 seconds
+   - Detects dead connections
+
+3. **Thread-Safe Operations**:
+   ```go
+   h.mu.Lock()
+   defer h.mu.Unlock()
+   ```
+   Protects shared state from race conditions
+
+#### Step 9: Explore Advanced Features
+
+**Feature 1: Message History**
+```bash
+# Join a room - you'll see last 100 messages
+# History is automatically sent to new clients
+```
+
+**Feature 2: System Notifications**
+```bash
+# Watch for join/leave messages
+# Format: "Alice joined the chat"
+#         "Bob left the chat"
+```
+
+**Feature 3: Multiple Rooms**
+```bash
+# Create different rooms for different topics
+# Messages are isolated per room
+# Each room has independent history
+```
+
+#### Step 10: Run Tests
+
+```bash
+# Run all tests
+make test
+
+# Run with coverage
+make test-coverage
+
+# Run benchmarks
+make bench
+```
+
+**📊 Expected Benchmark Results:**
+```
+BenchmarkBroadcast-8        10000    105234 ns/op    2048 B/op    12 allocs/op
+BenchmarkClientSend-8       50000     32156 ns/op     512 B/op     5 allocs/op
+BenchmarkHubRegister-8     100000     15234 ns/op     256 B/op     3 allocs/op
+```
+
+**🎯 Quick Wins:**
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✓ Open 3+ browser windows and chat between them                │
+│  ✓ Create multiple rooms (general, tech, random)                │
+│  ✓ Test message history by joining an active room               │
+│  ✓ Monitor server logs to see connection events                 │
+│  ✓ Check room statistics via API                                │
+│  ✓ Test connection resilience (close/reopen browser)            │
+│  ✓ Send 100+ messages and verify performance                    │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 📚 Code Deep Dive
+
+#### Understanding the Hub
+
+**The Hub is the heart of the application:**
+
+```go
+type Hub struct {
+    // Clients organized by room
+    rooms map[string]map[Client]bool
+
+    // Channels for communication
+    broadcast  chan *BroadcastMessage
+    register   chan Client
+    unregister chan Client
+
+    // Message history (last 100 per room)
+    history map[string][]Message
+
+    // Thread safety
+    mu sync.RWMutex
+}
+```
+
+**Hub's Main Loop:**
+```go
+func (h *Hub) Run() {
+    for {
+        select {
+        case client := <-h.register:
+            h.registerClient(client)
+
+        case client := <-h.unregister:
+            h.unregisterClient(client)
+
+        case message := <-h.broadcast:
+            h.broadcastMessage(message)
+        }
+    }
+}
+```
+
+**💡 Why This Pattern?**
+- **Single Goroutine**: All hub operations in one goroutine = no race conditions
+- **Channel Communication**: Type-safe, blocking communication
+- **Select Statement**: Handles multiple channels efficiently
+
+#### Understanding the Client
+
+**Each client has two goroutines:**
+
+**ReadPump (WebSocket → Hub):**
+```go
+func (c *Client) ReadPump() {
+    defer func() {
+        c.Hub.Unregister(c)
+        c.Conn.Close()
+    }()
+
+    // Set read deadline and limits
+    c.Conn.SetReadLimit(maxMessageSize)
+    c.Conn.SetReadDeadline(time.Now().Add(pongWait))
+
+    for {
+        _, message, err := c.Conn.ReadMessage()
+        if err != nil {
+            break
+        }
+
+        // Parse and broadcast message
+        var msg Message
+        json.Unmarshal(message, &msg)
+        msg.Username = c.Username
+        msg.Timestamp = time.Now()
+
+        messageBytes, _ := json.Marshal(msg)
+        c.Hub.Broadcast(messageBytes, c.RoomID)
+    }
+}
+```
+
+**WritePump (Hub → WebSocket):**
+```go
+func (c *Client) WritePump() {
+    ticker := time.NewTicker(pingPeriod)
+    defer ticker.Stop()
+
+    for {
+        select {
+        case message, ok := <-c.Send:
+            if !ok {
+                // Hub closed the channel
+                c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+                return
+            }
+
+            // Write message to WebSocket
+            w, _ := c.Conn.NextWriter(websocket.TextMessage)
+            w.Write(message)
+            w.Close()
+
+        case <-ticker.C:
+            // Send ping to keep connection alive
+            c.Conn.WriteMessage(websocket.PingMessage, nil)
+        }
+    }
+}
+```
+
+### 🔧 Customization Ideas
+
+**1. Add Private Messaging:**
+```go
+type PrivateMessage struct {
+    From    string `json:"from"`
+    To      string `json:"to"`
+    Content string `json:"content"`
+}
+
+// In hub, add method:
+func (h *Hub) SendPrivate(msg PrivateMessage) {
+    // Find recipient client and send directly
+}
+```
+
+**2. Add Typing Indicators:**
+```go
+type TypingEvent struct {
+    Username string `json:"username"`
+    IsTyping bool   `json:"is_typing"`
+    RoomID   string `json:"room_id"`
+}
+
+// Broadcast typing events with debouncing
+```
+
+**3. Add User Authentication:**
+```go
+// Add JWT middleware
+func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        token := r.Header.Get("Authorization")
+        // Validate JWT token
+        next(w, r)
+    }
+}
+```
+
+**4. Add Persistent Storage:**
+```go
+// Store messages in PostgreSQL
+type MessageRepository interface {
+    Save(msg Message) error
+    GetHistory(roomID string, limit int) ([]Message, error)
+}
+```
+
+### 🐛 Common Issues and Solutions
+
+**Issue 1: Connection Drops**
+```
+Problem: Clients disconnect after 60 seconds
+Solution: Ping/pong heartbeat is working correctly
+         This is the pongWait timeout
+         Increase if needed in client.go
+```
+
+**Issue 2: Messages Not Broadcasting**
+```
+Problem: Messages sent but not received by other clients
+Solution: Check that clients are in the same room
+         Verify roomID matches exactly
+         Check server logs for errors
+```
+
+**Issue 3: Memory Leak**
+```
+Problem: Memory usage grows over time
+Solution: Message history is limited to 100 per room
+         Ensure clients are properly unregistered
+         Check for goroutine leaks with pprof
+```
+
+**Issue 4: Race Conditions**
+```
+Problem: Panic: concurrent map read and write
+Solution: All hub operations use mutex locks
+         Run with -race flag to detect issues
+         go run -race ./cmd/main.go
+```
+
+### 📊 Performance Tuning
+
+**1. Adjust Buffer Sizes:**
+```go
+// In client.go
+Send: make(chan []byte, 256)  // Increase for high-traffic rooms
+
+// In upgrader
+ReadBufferSize:  1024,  // Increase for larger messages
+WriteBufferSize: 1024,
+```
+
+**2. Optimize Message History:**
+```go
+// In hub.go
+const maxHistorySize = 100  // Adjust based on needs
+
+// Consider using a ring buffer for efficiency
+```
+
+**3. Add Connection Pooling:**
+```go
+// Limit concurrent connections
+var connectionSemaphore = make(chan struct{}, 10000)
+
+func serveWs(...) {
+    connectionSemaphore <- struct{}{}
+    defer func() { <-connectionSemaphore }()
+    // ... rest of code
+}
+```
+
+**4. Enable Compression:**
+```go
+upgrader := websocket.Upgrader{
+    EnableCompression: true,
+    // ... other settings
+}
+```
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                                                                          │
+│  🎓 WHAT YOU LEARNED:                                                    │
+│                                                                          │
+│  • WebSocket protocol and HTTP upgrade handshake                        │
+│  • Hub pattern for managing concurrent connections                      │
+│  • Goroutines for concurrent read/write operations                      │
+│  • Channels for thread-safe communication                               │
+│  • Select statements for multiplexing channels                          │
+│  • Mutex locks for protecting shared state                              │
+│  • Ping/pong heartbeat for connection health                            │
+│  • Buffered channels for non-blocking sends                             │
+│  • Graceful shutdown and cleanup                                        │
+│  • Real-time message broadcasting                                       │
+│  • Room-based message isolation                                         │
+│  • Message history management                                           │
+│                                                                          │
+│  💪 SKILLS GAINED:                                                       │
+│                                                                          │
+│  ✓ Building real-time applications                                      │
+│  ✓ Managing concurrent connections at scale                             │
+│  ✓ Implementing pub/sub patterns                                        │
+│  ✓ Handling WebSocket lifecycle                                         │
+│  ✓ Designing thread-safe systems                                        │
+│  ✓ Performance optimization techniques                                  │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+**🎉 Congratulations!** You've built a production-ready real-time chat application!
+
+**🚀 Next Steps:**
+- Add user authentication with JWT
+- Implement private messaging
+- Add file sharing capabilities
+- Deploy to production with Docker
+- Scale with Redis for distributed deployment
+- Add message encryption for security
+
+---
+
+## 🏗️ Tutorial 13: Microservices Architecture in Go
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🔴 ADVANCED                                    ⏱️  60 minutes             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  🎯 PROJECT: Production Microservices System                            │
+│                                                                          │
+│  📚 WHAT YOU'LL BUILD:                                                   │
+│     ✓ API Gateway with routing and authentication                      │
+│     ✓ User Service with JWT authentication                             │
+│     ✓ Product Service with caching                                     │
+│     ✓ Order Service with event handling                                │
+│     ✓ Service discovery and registration                               │
+│     ✓ Distributed logging and monitoring                               │
+│     ✓ Docker Compose orchestration                                     │
+│                                                                          │
+│  🛠️ TECH STACK: Microservices, gRPC, REST, Docker, Service Discovery   │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Navigate to the Project
+```bash
+cd basic/projects/microservices-demo
+```
+
+#### Step 2: Understand the Architecture
+
+**📖 Microservices Architecture Overview:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         API Gateway                             │
+│                      (Port 8080)                                │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  • Request Routing                                       │  │
+│  │  • Authentication & Authorization                        │  │
+│  │  • Rate Limiting                                         │  │
+│  │  • Load Balancing                                        │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└────────────┬────────────────┬────────────────┬─────────────────┘
+             │                │                │
+    ┌────────▼────────┐  ┌───▼──────────┐  ┌─▼──────────────┐
+    │  User Service   │  │   Product    │  │  Order Service │
+    │   (Port 8081)   │  │   Service    │  │  (Port 8083)   │
+    │                 │  │ (Port 8082)  │  │                │
+    │  • User CRUD    │  │  • Product   │  │  • Order CRUD  │
+    │  • Auth/Login   │  │    Catalog   │  │  • Status Mgmt │
+    │  • JWT Tokens   │  │  • Inventory │  │  • Events      │
+    └────────┬────────┘  └───┬──────────┘  └─┬──────────────┘
+             │               │                │
+    ┌────────▼────────┐  ┌──▼───────────┐   │
+    │   PostgreSQL    │  │    Redis     │   │
+    │   (Port 5432)   │  │  (Port 6379) │   │
+    └─────────────────┘  └──────────────┘   │
+                                             │
+                         ┌───────────────────▼──────────┐
+                         │  Shared Infrastructure       │
+                         │  • Service Discovery         │
+                         │  • Logging (Zap)             │
+                         │  • Middleware (Auth, Logs)   │
+                         └──────────────────────────────┘
+```
+
+**💡 Key Microservices Patterns:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  1. API Gateway Pattern                                         │
+│     Single entry point for all client requests                 │
+│     Handles routing, auth, rate limiting                       │
+│                                                                 │
+│  2. Service Discovery                                           │
+│     Services register themselves on startup                    │
+│     Gateway discovers services dynamically                     │
+│                                                                 │
+│  3. Database per Service                                        │
+│     Each service owns its data                                 │
+│     No direct database sharing                                 │
+│                                                                 │
+│  4. Shared Infrastructure                                       │
+│     Common packages for logging, middleware                    │
+│     Reusable across all services                               │
+│                                                                 │
+│  5. Graceful Shutdown                                           │
+│     Services handle SIGTERM/SIGINT                             │
+│     Clean connection closure                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 3: Install Dependencies
+```bash
+# Download all dependencies
+make deps
+
+# This installs:
+# - gorilla/mux (HTTP routing)
+# - go-redis (Redis client)
+# - zap (Structured logging)
+# - jwt (JWT authentication)
+# - uuid (UUID generation)
+# - grpc (gRPC framework)
+```
+
+#### Step 4: Explore the Project Structure
+
+```bash
+# View the complete structure
+tree -L 3
+```
+
+**📁 Project Layout:**
+```
+microservices-demo/
+├── services/
+│   ├── api-gateway/          # API Gateway (Port 8080)
+│   │   └── cmd/main.go
+│   ├── user-service/         # User Service (Port 8081)
+│   │   ├── cmd/main.go
+│   │   └── internal/
+│   │       ├── models.go
+│   │       ├── repository.go
+│   │       └── handler.go
+│   ├── product-service/      # Product Service (Port 8082)
+│   │   └── cmd/main.go
+│   └── order-service/        # Order Service (Port 8083)
+│       └── cmd/main.go
+├── pkg/                      # Shared packages
+│   ├── logger/              # Structured logging
+│   ├── discovery/           # Service registry
+│   ├── middleware/          # HTTP middleware
+│   └── proto/               # gRPC definitions
+├── deployments/             # Docker & K8s
+│   ├── docker-compose.yml
+│   └── Dockerfile.*
+├── Makefile                # Build automation
+└── go.mod                  # Dependencies
+```
+
+**🔍 Examine Key Components:**
+```bash
+# Service Discovery
+cat pkg/discovery/discovery.go | head -50
+
+# Authentication Middleware
+cat pkg/middleware/auth.go | head -50
+
+# User Service Handler
+cat services/user-service/internal/handler.go | head -50
+
+# API Gateway
+cat services/api-gateway/cmd/main.go | head -50
+```
+
+#### Step 5: Run with Docker Compose (Recommended)
+
+```bash
+# Build and start all services
+make docker-up
+```
+
+**📤 Expected Output:**
+```
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║           🏗️  Microservices System Starting                 ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+Creating network "microservices-network" ... done
+Creating microservices-postgres ... done
+Creating microservices-redis    ... done
+Creating user-service           ... done
+Creating product-service        ... done
+Creating order-service          ... done
+Creating api-gateway            ... done
+
+✓ All services started successfully
+
+📡 Services available at:
+  API Gateway:     http://localhost:8080
+  User Service:    http://localhost:8081
+  Product Service: http://localhost:8082
+  Order Service:   http://localhost:8083
+  PostgreSQL:      localhost:5432
+  Redis:           localhost:6379
+```
+
+#### Step 6: Run Locally (Alternative)
+
+```bash
+# Terminal 1: User Service
+make run-user
+
+# Terminal 2: Product Service
+make run-product
+
+# Terminal 3: Order Service
+make run-order
+
+# Terminal 4: API Gateway
+make run-gateway
+```
+
+#### Step 7: Test the System
+
+**🧪 1. Health Checks**
+```bash
+# Check API Gateway
+curl http://localhost:8080/health
+# Response: OK
+
+# Check User Service
+curl http://localhost:8081/health
+# Response: OK
+
+# Check Product Service
+curl http://localhost:8082/health
+# Response: OK
+
+# Check Order Service
+curl http://localhost:8083/health
+# Response: OK
+```
+
+**🔍 2. Service Discovery**
+```bash
+# List all registered services
+curl http://localhost:8080/services
+
+# Response:
+{
+  "services": {
+    "user-service": "localhost:8081",
+    "product-service": "localhost:8082",
+    "order-service": "localhost:8083"
+  }
+}
+```
+
+**👤 3. User Management**
+```bash
+# Create a user
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "alice",
+    "email": "alice@example.com",
+    "password": "password123"
+  }'
+
+# Response:
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "username": "alice",
+  "email": "alice@example.com",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+
+# Login
+curl -X POST http://localhost:8080/api/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "alice@example.com",
+    "password": "password123"
+  }'
+
+# Response:
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "alice",
+    "email": "alice@example.com"
+  }
+}
+
+# Save the token for authenticated requests!
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# List users (requires authentication)
+curl http://localhost:8080/api/users \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**📦 4. Product Management**
+```bash
+# List products (seeded data)
+curl http://localhost:8080/api/products
+
+# Response:
+{
+  "products": [
+    {
+      "id": "1",
+      "name": "Laptop",
+      "description": "High-performance laptop",
+      "price": 999.99,
+      "stock": 10
+    },
+    {
+      "id": "2",
+      "name": "Mouse",
+      "description": "Wireless mouse",
+      "price": 29.99,
+      "stock": 50
+    }
+  ],
+  "total": 2
+}
+
+# Create a product
+curl -X POST http://localhost:8080/api/products \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Keyboard",
+    "description": "Mechanical keyboard",
+    "price": 149.99,
+    "stock": 25
+  }'
+
+# Get a specific product
+curl http://localhost:8080/api/products/1
+```
+
+**🛒 5. Order Management**
+```bash
+# Create an order (requires authentication)
+curl -X POST http://localhost:8080/api/orders \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "user_id": "550e8400-e29b-41d4-a716-446655440000",
+    "product_id": "1",
+    "quantity": 2,
+    "total": 1999.98
+  }'
+
+# Response:
+{
+  "id": "order-uuid-here",
+  "user_id": "550e8400-e29b-41d4-a716-446655440000",
+  "product_id": "1",
+  "quantity": 2,
+  "total": 1999.98,
+  "status": "pending",
+  "created_at": "2024-01-15T10:35:00Z"
+}
+
+# List all orders
+curl http://localhost:8080/api/orders \
+  -H "Authorization: Bearer $TOKEN"
+
+# Update order status
+curl -X PUT http://localhost:8080/api/orders/order-uuid-here/status \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"status": "completed"}'
+```
+
+#### Step 8: Understand the Code
+
+**🔐 Authentication Flow:**
+```go
+// 1. User registers
+POST /api/users
+  → User Service creates user
+  → Password hashed with bcrypt
+  → User stored in repository
+
+// 2. User logs in
+POST /api/users/login
+  → User Service validates credentials
+  → JWT token generated (24h expiration)
+  → Token returned to client
+
+// 3. Client makes authenticated request
+GET /api/users (with Authorization header)
+  → API Gateway receives request
+  → Middleware validates JWT token
+  → Request proxied to User Service
+  → Response returned to client
+```
+
+**🔄 Request Flow Through Gateway:**
+```go
+// Example: GET /api/products/1
+
+Client
+  ↓
+API Gateway (Port 8080)
+  ↓ (Middleware: Logging, Rate Limiting)
+  ↓
+Service Discovery
+  ↓ (Discover "product-service" → localhost:8082)
+  ↓
+Reverse Proxy
+  ↓ (Forward to http://localhost:8082/api/products/1)
+  ↓
+Product Service (Port 8082)
+  ↓ (Handler processes request)
+  ↓
+Response
+  ↓
+API Gateway
+  ↓
+Client
+```
+
+**📊 Service Discovery Mechanism:**
+```go
+// Service Registration (on startup)
+func main() {
+    serviceName := "user-service"
+    serviceAddr := "localhost:8081"
+
+    // Register with discovery service
+    discovery.Register(serviceName, serviceAddr)
+    defer discovery.Deregister(serviceName)
+
+    // Start HTTP server
+    srv.ListenAndServe()
+}
+
+// Service Discovery (in API Gateway)
+func proxyHandler(serviceName string) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        // Discover service address
+        serviceAddr, err := discovery.Discover(serviceName)
+
+        // Forward request to service
+        targetURL := fmt.Sprintf("http://%s%s", serviceAddr, r.URL.Path)
+        // ... proxy logic
+    }
+}
+```
+
+#### Step 9: Monitor and Debug
+
+**📝 View Logs:**
+```bash
+# Docker logs
+make docker-logs
+
+# Follow logs for specific service
+docker logs -f user-service
+docker logs -f api-gateway
+
+# Local logs (if running locally)
+# Logs appear in terminal where service is running
+```
+
+**🔍 Debug Service Communication:**
+```bash
+# Check service registration
+curl http://localhost:8080/services
+
+# Test direct service access (bypass gateway)
+curl http://localhost:8081/health
+curl http://localhost:8082/products
+curl http://localhost:8083/orders
+
+# Check rate limiting
+for i in {1..300}; do
+  curl http://localhost:8080/health
+done
+# Should see 429 Too Many Requests after ~200 requests
+```
+
+### 🎓 Key Concepts Explained
+
+#### 1. API Gateway Pattern
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  WHY API Gateway?                                               │
+│                                                                 │
+│  ✓ Single entry point for clients                              │
+│  ✓ Centralized authentication & authorization                  │
+│  ✓ Request routing to appropriate services                     │
+│  ✓ Rate limiting and throttling                                │
+│  ✓ Load balancing across service instances                     │
+│  ✓ Protocol translation (REST → gRPC)                          │
+│  ✓ Response aggregation from multiple services                 │
+│                                                                 │
+│  IMPLEMENTATION:                                                │
+│  - Reverse proxy pattern                                       │
+│  - Service discovery integration                               │
+│  - Middleware chain (auth, logging, rate limit)                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### 2. Service Discovery
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Service Registry Pattern                                       │
+│                                                                 │
+│  REGISTRATION (Service Startup):                                │
+│    1. Service starts on port 8081                              │
+│    2. Calls discovery.Register("user-service", "localhost:8081")│
+│    3. Registry stores mapping                                  │
+│                                                                 │
+│  DISCOVERY (API Gateway):                                       │
+│    1. Request arrives for /api/users                           │
+│    2. Gateway calls discovery.Discover("user-service")         │
+│    3. Registry returns "localhost:8081"                        │
+│    4. Gateway forwards request                                 │
+│                                                                 │
+│  DEREGISTRATION (Service Shutdown):                             │
+│    1. Service receives SIGTERM                                 │
+│    2. Calls discovery.Deregister("user-service")               │
+│    3. Registry removes mapping                                 │
+│                                                                 │
+│  PRODUCTION: Use Consul, etcd, or Kubernetes Service Discovery │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### 3. JWT Authentication
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Token-Based Authentication Flow                                │
+│                                                                 │
+│  TOKEN GENERATION:                                              │
+│    claims := jwt.MapClaims{                                    │
+│      "user_id": "uuid",                                        │
+│      "username": "alice",                                      │
+│      "email": "alice@example.com",                             │
+│      "exp": time.Now().Add(24 * time.Hour).Unix(),            │
+│    }                                                            │
+│    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims) │
+│    tokenString, _ := token.SignedString([]byte(secret))       │
+│                                                                 │
+│  TOKEN VALIDATION:                                              │
+│    token, err := jwt.Parse(tokenString, func(token *jwt.Token) │
+│      return []byte(secret), nil                                │
+│    })                                                           │
+│    claims := token.Claims.(jwt.MapClaims)                      │
+│    userID := claims["user_id"].(string)                        │
+│                                                                 │
+│  MIDDLEWARE:                                                    │
+│    - Extracts token from Authorization header                  │
+│    - Validates signature and expiration                        │
+│    - Injects user info into request context                    │
+│    - Rejects invalid/expired tokens (401)                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### 4. Rate Limiting (Token Bucket Algorithm)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Token Bucket Algorithm                                         │
+│                                                                 │
+│  CONCEPT:                                                       │
+│    Bucket capacity: 200 tokens                                 │
+│    Refill rate: 100 tokens/second                              │
+│                                                                 │
+│  FLOW:                                                          │
+│    1. Request arrives                                          │
+│    2. Check if bucket has tokens                               │
+│    3. If yes: consume 1 token, allow request                   │
+│    4. If no: reject with 429 Too Many Requests                 │
+│    5. Bucket refills at constant rate                          │
+│                                                                 │
+│  IMPLEMENTATION:                                                │
+│    type Visitor struct {                                       │
+│      limiter  *rate.Limiter                                    │
+│      lastSeen time.Time                                        │
+│    }                                                            │
+│                                                                 │
+│    limiter := rate.NewLimiter(rate.Limit(100), 200)           │
+│    if !limiter.Allow() {                                       │
+│      http.Error(w, "Too Many Requests", 429)                   │
+│    }                                                            │
+│                                                                 │
+│  BENEFITS:                                                      │
+│    ✓ Prevents API abuse                                        │
+│    ✓ Protects backend services                                 │
+│    ✓ Allows burst traffic (up to bucket capacity)              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### 5. Graceful Shutdown
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Handling Service Shutdown Properly                             │
+│                                                                 │
+│  SETUP:                                                         │
+│    quit := make(chan os.Signal, 1)                            │
+│    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)       │
+│                                                                 │
+│  WAIT FOR SIGNAL:                                               │
+│    <-quit  // Blocks until signal received                     │
+│                                                                 │
+│  SHUTDOWN SEQUENCE:                                             │
+│    1. Stop accepting new requests                              │
+│    2. Wait for in-flight requests to complete (30s timeout)    │
+│    3. Close database connections                               │
+│    4. Deregister from service discovery                        │
+│    5. Flush logs                                               │
+│    6. Exit cleanly                                             │
+│                                                                 │
+│  CODE:                                                          │
+│    ctx, cancel := context.WithTimeout(context.Background(), 30s)│
+│    defer cancel()                                              │
+│    if err := srv.Shutdown(ctx); err != nil {                   │
+│      logger.Fatal("Forced shutdown", zap.Error(err))           │
+│    }                                                            │
+│                                                                 │
+│  WHY IMPORTANT:                                                 │
+│    ✓ No dropped requests                                       │
+│    ✓ No data corruption                                        │
+│    ✓ Clean service deregistration                              │
+│    ✓ Proper resource cleanup                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 🎯 Challenges
+
+**🔰 Beginner Challenges:**
+1. **Add a New Endpoint**: Add `GET /api/users/{id}/orders` to list user's orders
+2. **Custom Middleware**: Create a request ID middleware that adds unique IDs to logs
+3. **Health Check Enhancement**: Add database connectivity check to health endpoints
+4. **Product Search**: Add `GET /api/products/search?q=laptop` endpoint
+
+**🔶 Intermediate Challenges:**
+1. **Pagination**: Add pagination to all list endpoints (page, pageSize)
+2. **Caching Layer**: Implement Redis caching in Product Service
+3. **Event Publishing**: Publish events when orders are created/updated
+4. **Service Metrics**: Add Prometheus metrics to track request counts, latency
+5. **Circuit Breaker**: Implement circuit breaker for service-to-service calls
+
+**🔴 Advanced Challenges:**
+1. **gRPC Communication**: Replace HTTP with gRPC between services
+2. **Distributed Tracing**: Add OpenTelemetry for request tracing across services
+3. **Saga Pattern**: Implement distributed transaction for order creation
+4. **Message Queue**: Add RabbitMQ/Kafka for async communication
+5. **Kubernetes Deployment**: Deploy to Kubernetes with Helm charts
+6. **Service Mesh**: Integrate Istio for advanced traffic management
+
+### 📚 What You Learned
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ MICROSERVICES ARCHITECTURE                                   │
+│     • Service decomposition and boundaries                      │
+│     • API Gateway pattern                                       │
+│     • Service discovery and registration                        │
+│     • Inter-service communication                               │
+│                                                                  │
+│  ✅ DISTRIBUTED SYSTEMS                                          │
+│     • Service-to-service communication                          │
+│     • Distributed logging                                       │
+│     • Graceful shutdown and fault tolerance                     │
+│     • Rate limiting and throttling                              │
+│                                                                  │
+│  ✅ AUTHENTICATION & SECURITY                                    │
+│     • JWT token generation and validation                       │
+│     • Password hashing with bcrypt                              │
+│     • Authentication middleware                                 │
+│     • Authorization patterns                                    │
+│                                                                  │
+│  ✅ INFRASTRUCTURE                                               │
+│     • Docker containerization                                   │
+│     • Docker Compose orchestration                              │
+│     • Multi-stage Docker builds                                 │
+│     • Service networking                                        │
+│                                                                  │
+│  ✅ BEST PRACTICES                                               │
+│     • Clean Architecture (handlers, services, repositories)     │
+│     • Dependency injection                                      │
+│     • Structured logging                                        │
+│     • Error handling and propagation                            │
+│     • Configuration management                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 🚀 Next Steps
+
+1. **Study the Code**: Read through each service implementation
+2. **Add Features**: Implement the challenges above
+3. **Deploy to Cloud**: Try AWS ECS, Google Cloud Run, or Azure Container Instances
+4. **Add Observability**: Integrate Prometheus, Grafana, Jaeger
+5. **Scale Up**: Add load balancing, multiple service instances
+6. **Production Hardening**: Add TLS, secrets management, monitoring
+
+### 📖 Resources
+
+- **Project README**: [microservices-demo/README.md](../basic/projects/microservices-demo/README.md)
+- **Quick Start Guide**: [microservices-demo/QUICK_START.md](../basic/projects/microservices-demo/QUICK_START.md)
+- **Microservices Patterns**: https://microservices.io/patterns/
+- **Go Microservices**: https://go.dev/blog
+- **Docker Documentation**: https://docs.docker.com/
+- **gRPC in Go**: https://grpc.io/docs/languages/go/
+
+### 🎉 Congratulations!
+
+You've built a production-ready microservices architecture with:
+- ✅ 4 independent services
+- ✅ API Gateway with routing and auth
+- ✅ Service discovery
+- ✅ JWT authentication
+- ✅ Rate limiting
+- ✅ Docker orchestration
+- ✅ Structured logging
+
+**You're now ready to build scalable distributed systems in Go!** 🚀
+
+---
+
 ## 🎬 AI Content Creation Course
 
 **Master cutting-edge AI tools to create viral content and generate passive income**
