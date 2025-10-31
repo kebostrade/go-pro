@@ -3044,6 +3044,1421 @@ You've built a production-ready microservices architecture with:
 
 ---
 
+## 🎨 Tutorial 14: Design Patterns in Go
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🔵 INTERMEDIATE                                ⏱️  45 minutes             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  🎯 PROJECT: Classic Design Patterns in Go                              │
+│                                                                          │
+│  📚 WHAT YOU'LL LEARN:                                                   │
+│     ✓ Creational Patterns (Singleton, Factory, Builder)                │
+│     ✓ Structural Patterns (Adapter, Decorator, Proxy)                  │
+│     ✓ Behavioral Patterns (Strategy, Observer, Command)                │
+│     ✓ Go-specific implementations and idioms                           │
+│     ✓ When and how to apply each pattern                               │
+│     ✓ Real-world use cases and examples                                │
+│                                                                          │
+│  🛠️ TECH STACK: Interfaces, Composition, Functional Options            │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Navigate to the Project
+```bash
+cd basic/projects/design-patterns
+```
+
+#### Step 2: Understand Design Patterns
+
+**📖 What are Design Patterns?**
+
+Design patterns are reusable solutions to common software design problems. They represent best practices evolved over time by experienced developers.
+
+**🎯 Three Categories:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  1. CREATIONAL PATTERNS (Object Creation)                      │
+│     How to create objects in a flexible and reusable way       │
+│                                                                 │
+│     • Singleton    - One instance only                         │
+│     • Factory      - Create objects without specifying class   │
+│     • Builder      - Construct complex objects step-by-step    │
+│     • Prototype    - Clone existing objects                    │
+│                                                                 │
+│  2. STRUCTURAL PATTERNS (Object Composition)                   │
+│     How to compose objects to form larger structures           │
+│                                                                 │
+│     • Adapter      - Convert interface to another interface    │
+│     • Decorator    - Add responsibilities dynamically          │
+│     • Proxy        - Provide surrogate for another object      │
+│     • Facade       - Simplified interface to complex system    │
+│                                                                 │
+│  3. BEHAVIORAL PATTERNS (Object Interaction)                   │
+│     How objects communicate and distribute responsibility      │
+│                                                                 │
+│     • Strategy     - Define family of algorithms               │
+│     • Observer     - Notify dependents of state changes        │
+│     • Command      - Encapsulate requests as objects           │
+│     • Chain        - Pass request along chain of handlers      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 3: Install Dependencies
+```bash
+make deps
+```
+
+#### Step 4: Explore Creational Patterns
+
+**🏗️ 1. Singleton Pattern**
+
+**Purpose**: Ensure only one instance exists globally.
+
+```go
+// Thread-safe singleton using sync.Once
+db := creational.GetDatabase()
+db.Connect()
+
+// Same instance everywhere
+db2 := creational.GetDatabase()
+fmt.Println(db == db2) // true
+```
+
+**When to use**:
+- Database connections
+- Configuration managers
+- Logger instances
+- Cache managers
+
+**Go-Specific Implementation**:
+```go
+var (
+    instance *Database
+    once     sync.Once
+)
+
+func GetDatabase() *Database {
+    once.Do(func() {
+        instance = &Database{
+            ConnectionString: "localhost:5432",
+        }
+    })
+    return instance
+}
+```
+
+**🏭 2. Factory Pattern**
+
+**Purpose**: Create objects without specifying exact class.
+
+```go
+// Create different notification types
+email, _ := creational.NotificationFactory("email")
+sms, _ := creational.NotificationFactory("sms")
+push, _ := creational.NotificationFactory("push")
+
+email.Send("Welcome!")
+sms.Send("Code: 123456")
+push.Send("New message")
+```
+
+**When to use**:
+- Multiple product types
+- Runtime type selection
+- Payment processors
+- Document parsers
+
+**🔨 3. Builder Pattern**
+
+**Purpose**: Construct complex objects step by step.
+
+```go
+// Build HTTP request with fluent interface
+request := creational.NewHTTPRequestBuilder().
+    Method("POST").
+    URL("https://api.example.com/users").
+    Header("Content-Type", "application/json").
+    Body(`{"name":"John"}`).
+    Timeout(60).
+    Build()
+
+// Build SQL query
+query := creational.NewSQLQueryBuilder().
+    Select("id", "name", "email").
+    From("users").
+    Where("age > 18").
+    OrderBy("created_at DESC").
+    Limit(10).
+    Build()
+```
+
+**When to use**:
+- Many constructor parameters
+- Complex object construction
+- Immutable objects
+- Readable construction code
+
+#### Step 5: Explore Structural Patterns
+
+**🔌 4. Adapter Pattern**
+
+**Purpose**: Convert interface to another interface.
+
+```go
+// Adapt different media players to common interface
+var player structural.MediaPlayer
+
+player = structural.NewVLCAdapter()
+player.Play("movie.vlc")
+
+player = structural.NewMP4Adapter()
+player.Play("video.mp4")
+```
+
+**When to use**:
+- Third-party library integration
+- Legacy code integration
+- Interface incompatibility
+- API versioning
+
+**🎁 5. Decorator Pattern**
+
+**Purpose**: Add responsibilities dynamically.
+
+```go
+// Build coffee with decorators
+coffee := &structural.SimpleCoffee{}
+coffeeWithMilk := structural.NewMilkDecorator(coffee)
+coffeeWithSugar := structural.NewSugarDecorator(coffeeWithMilk)
+fancyCoffee := structural.NewWhipDecorator(coffeeWithSugar)
+
+fmt.Printf("%s: $%.2f\n", fancyCoffee.Description(), fancyCoffee.Cost())
+// Output: Simple Coffee, Milk, Sugar, Whipped Cream: $3.40
+```
+
+**When to use**:
+- Add behavior at runtime
+- HTTP middleware
+- Logging/caching layers
+- Avoid class explosion
+
+#### Step 6: Explore Behavioral Patterns
+
+**🎯 6. Strategy Pattern**
+
+**Purpose**: Define family of interchangeable algorithms.
+
+```go
+// Payment strategies
+payment := behavioral.NewPaymentContext(&behavioral.CreditCardStrategy{
+    CardNumber: "1234567890123456",
+})
+payment.ExecutePayment(100.00)
+
+// Change strategy at runtime
+payment.SetStrategy(&behavioral.PayPalStrategy{
+    Email: "user@example.com",
+})
+payment.ExecutePayment(50.00)
+```
+
+**When to use**:
+- Multiple algorithms for same task
+- Runtime algorithm selection
+- Payment methods
+- Sorting algorithms
+
+**👁️ 7. Observer Pattern**
+
+**Purpose**: Notify dependents of state changes.
+
+```go
+// Create event manager
+eventManager := behavioral.NewEventManager()
+
+// Attach observers
+eventManager.Attach(&behavioral.EmailObserver{ID: "email-1"})
+eventManager.Attach(&behavioral.SMSObserver{ID: "sms-1"})
+eventManager.Attach(&behavioral.LogObserver{ID: "log-1"})
+
+// Notify all observers
+eventManager.Notify("user.registered", map[string]string{
+    "username": "johndoe",
+})
+```
+
+**When to use**:
+- Event handling systems
+- Pub/Sub messaging
+- Model-View updates
+- Real-time notifications
+
+#### Step 7: Run Examples
+
+**Run all patterns demo:**
+```bash
+make run-all-examples
+```
+
+**Run individual patterns:**
+```bash
+# Singleton
+make run-singleton
+
+# Factory
+make run-factory
+
+# Builder
+make run-builder
+
+# Adapter
+make run-adapter
+
+# Decorator
+make run-decorator
+
+# Strategy
+make run-strategy
+
+# Observer
+make run-observer
+```
+
+#### Step 8: Run Tests
+
+**Run all tests:**
+```bash
+make test
+```
+
+**Run with coverage:**
+```bash
+make test-coverage
+```
+
+**Run benchmarks:**
+```bash
+make bench
+```
+
+**Expected output:**
+```
+=== RUN   TestSingletonInstance
+Creating database instance...
+--- PASS: TestSingletonInstance (0.00s)
+=== RUN   TestSingletonConcurrency
+--- PASS: TestSingletonConcurrency (0.00s)
+=== RUN   TestDatabaseConnect
+--- PASS: TestDatabaseConnect (0.00s)
+=== RUN   TestConfigManager
+--- PASS: TestConfigManager (0.00s)
+PASS
+ok      github.com/DimaJoyti/go-pro/basic/projects/design-patterns/creational
+```
+
+#### Step 9: Pattern Selection Guide
+
+**🤔 When to use each pattern:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  PROBLEM                          → PATTERN                     │
+├─────────────────────────────────────────────────────────────────┤
+│  Need global state                → Singleton                   │
+│  Create different object types    → Factory                     │
+│  Complex object construction      → Builder                     │
+│  Interface incompatibility        → Adapter                     │
+│  Add behavior dynamically         → Decorator                   │
+│  Control access to object         → Proxy                       │
+│  Simplify complex subsystem       → Facade                      │
+│  Select algorithm at runtime      → Strategy                    │
+│  Notify multiple objects          → Observer                    │
+│  Encapsulate requests             → Command                     │
+│  Chain of handlers                → Chain of Responsibility     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 10: Real-World Examples
+
+**E-commerce System:**
+```go
+// Factory: Create different payment processors
+paymentProcessor, _ := creational.PaymentProcessorFactory("stripe")
+
+// Builder: Build complex order
+order := creational.NewOrderBuilder().
+    AddItem("product-1", 2).
+    AddItem("product-2", 1).
+    SetShippingAddress("123 Main St").
+    SetPaymentMethod(paymentProcessor).
+    Build()
+
+// Strategy: Apply different discount strategies
+discountStrategy := &behavioral.PercentageDiscountStrategy{Percent: 10}
+finalPrice := discountStrategy.Apply(order.Total())
+
+// Observer: Notify about order events
+eventManager.Notify("order.placed", order)
+```
+
+**Notification System:**
+```go
+// Factory: Create notifications
+email := creational.NotificationFactory("email")
+sms := creational.NotificationFactory("sms")
+
+// Decorator: Add retry logic
+emailWithRetry := structural.NewRetryDecorator(email, 3)
+
+// Observer: Multiple notification channels
+notifier := behavioral.NewEventManager()
+notifier.Attach(emailObserver)
+notifier.Attach(smsObserver)
+notifier.Notify("alert", "System maintenance at 2 AM")
+```
+
+### 🎯 Key Concepts
+
+#### 1. SOLID Principles
+
+```
+S - Single Responsibility Principle
+    Each pattern has one clear purpose
+
+O - Open/Closed Principle
+    Open for extension, closed for modification
+
+L - Liskov Substitution Principle
+    Subtypes must be substitutable for base types
+
+I - Interface Segregation Principle
+    Many specific interfaces > one general interface
+
+D - Dependency Inversion Principle
+    Depend on abstractions, not concretions
+```
+
+#### 2. Go-Specific Patterns
+
+**Functional Options:**
+```go
+type Server struct {
+    host string
+    port int
+}
+
+type Option func(*Server)
+
+func WithHost(host string) Option {
+    return func(s *Server) {
+        s.host = host
+    }
+}
+
+func NewServer(opts ...Option) *Server {
+    s := &Server{host: "localhost", port: 8080}
+    for _, opt := range opts {
+        opt(s)
+    }
+    return s
+}
+```
+
+**Channel-based Observer:**
+```go
+type Event struct {
+    Type string
+    Data interface{}
+}
+
+observer := NewChannelObserver("obs-1")
+observer.Start()
+
+// Send events through channel
+observer.Channel <- Event{Type: "user.login", Data: user}
+```
+
+#### 3. Performance Considerations
+
+**Singleton:**
+- ✅ Lazy initialization with `sync.Once`
+- ✅ No locks after first initialization
+- ⚠️ Global state can make testing harder
+
+**Factory:**
+- ✅ Centralized object creation
+- ✅ Easy to add new types
+- ⚠️ Can become complex with many types
+
+**Builder:**
+- ✅ Readable construction code
+- ✅ Immutable final objects
+- ⚠️ More code than simple constructors
+
+**Decorator:**
+- ✅ Flexible behavior composition
+- ✅ Runtime modification
+- ⚠️ Can create many small objects
+
+**Strategy:**
+- ✅ Easy to switch algorithms
+- ✅ Testable in isolation
+- ⚠️ Clients must know strategies
+
+**Observer:**
+- ✅ Loose coupling
+- ✅ Dynamic subscriptions
+- ⚠️ Memory leaks if not unsubscribed
+
+### 🧪 Testing Patterns
+
+**Test Singleton:**
+```go
+func TestSingletonInstance(t *testing.T) {
+    db1 := GetDatabase()
+    db2 := GetDatabase()
+    assert.Equal(t, db1, db2)
+}
+
+func TestSingletonConcurrency(t *testing.T) {
+    var wg sync.WaitGroup
+    instances := make([]*Database, 100)
+
+    for i := 0; i < 100; i++ {
+        wg.Add(1)
+        go func(index int) {
+            defer wg.Done()
+            instances[index] = GetDatabase()
+        }(i)
+    }
+
+    wg.Wait()
+
+    // All instances should be the same
+    for i := 1; i < 100; i++ {
+        assert.Equal(t, instances[0], instances[i])
+    }
+}
+```
+
+### 💪 Practice Challenges
+
+#### Challenge 1: Implement Prototype Pattern
+Create a document cloning system using the Prototype pattern.
+
+**Requirements:**
+- Clone documents with deep copy
+- Support different document types
+- Preserve all properties
+
+#### Challenge 2: Implement Proxy Pattern
+Create a caching proxy for expensive operations.
+
+**Requirements:**
+- Cache results of expensive calls
+- Implement lazy loading
+- Add access control
+
+#### Challenge 3: Implement Command Pattern
+Create an undo/redo system for text editor.
+
+**Requirements:**
+- Execute commands
+- Undo last command
+- Redo undone command
+- Command history
+
+#### Challenge 4: Implement Chain of Responsibility
+Create a logging middleware chain.
+
+**Requirements:**
+- Multiple log levels
+- Chain of handlers
+- Request filtering
+
+#### Challenge 5: Real-World Application
+Build a complete notification system combining multiple patterns.
+
+**Requirements:**
+- Factory: Create different notification types
+- Decorator: Add retry, rate limiting
+- Observer: Multiple subscribers
+- Strategy: Different delivery strategies
+
+### 📚 Additional Resources
+
+**Books:**
+- Design Patterns: Elements of Reusable Object-Oriented Software (Gang of Four)
+- Head First Design Patterns
+- Clean Architecture by Robert C. Martin
+
+**Online:**
+- [Refactoring Guru - Design Patterns](https://refactoring.guru/design-patterns)
+- [Go Design Patterns](https://github.com/tmrts/go-patterns)
+- [Effective Go](https://golang.org/doc/effective_go)
+
+**Go-Specific:**
+- [Go Proverbs](https://go-proverbs.github.io/)
+- [Functional Options Pattern](https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis)
+- [Interface Composition](https://www.ardanlabs.com/blog/2015/09/composition-with-go.html)
+
+### 🎓 What You've Learned
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ CREATIONAL PATTERNS                                          │
+│     • Singleton - Global instance management                    │
+│     • Factory - Flexible object creation                        │
+│     • Builder - Complex object construction                     │
+│                                                                  │
+│  ✅ STRUCTURAL PATTERNS                                          │
+│     • Adapter - Interface compatibility                         │
+│     • Decorator - Dynamic behavior addition                     │
+│     • Proxy - Access control and lazy loading                   │
+│                                                                  │
+│  ✅ BEHAVIORAL PATTERNS                                          │
+│     • Strategy - Algorithm selection                            │
+│     • Observer - Event notification                             │
+│     • Command - Request encapsulation                           │
+│                                                                  │
+│  ✅ GO-SPECIFIC IMPLEMENTATIONS                                  │
+│     • Interface-based design                                    │
+│     • Composition over inheritance                              │
+│     • Functional options                                        │
+│     • Channel-based patterns                                    │
+│                                                                  │
+│  ✅ BEST PRACTICES                                               │
+│     • SOLID principles                                          │
+│     • Thread-safe implementations                               │
+│     • Idiomatic Go code                                         │
+│     • Performance optimization                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 🚀 Next Steps
+
+1. **Practice**: Implement all 23 classic design patterns
+2. **Apply**: Use patterns in your projects
+3. **Refactor**: Identify patterns in existing code
+4. **Combine**: Use multiple patterns together
+5. **Teach**: Explain patterns to others
+
+### 📊 Pattern Comparison
+
+| Pattern | Complexity | Use Frequency | Go Idiomatic |
+|---------|-----------|---------------|--------------|
+| Singleton | Low | High | ⭐⭐⭐ |
+| Factory | Medium | High | ⭐⭐⭐⭐ |
+| Builder | Medium | High | ⭐⭐⭐⭐⭐ |
+| Adapter | Low | Medium | ⭐⭐⭐⭐ |
+| Decorator | Medium | High | ⭐⭐⭐⭐⭐ |
+| Strategy | Low | High | ⭐⭐⭐⭐⭐ |
+| Observer | Medium | High | ⭐⭐⭐⭐ |
+
+### 🎯 Summary
+
+Design patterns are **proven solutions** to common problems. In Go:
+
+- **Use interfaces** for flexibility
+- **Prefer composition** over inheritance
+- **Keep it simple** - don't over-engineer
+- **Test thoroughly** - patterns should make testing easier
+- **Document clearly** - explain why you chose a pattern
+
+**Key Takeaways:**
+- ✅ Patterns are guidelines, not rules
+- ✅ Go's simplicity often eliminates need for complex patterns
+- ✅ Interfaces and composition are powerful
+- ✅ Choose patterns based on actual needs
+- ✅ Readability and maintainability matter most
+
+**You're now equipped to write clean, maintainable, and scalable Go code using design patterns!** 🎨
+
+---
+
+## 🔄 Tutorial 15: Concurrency in Go
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🔵 INTERMEDIATE                                ⏱️  60 minutes             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  🎯 PROJECT: Mastering Go Concurrency                                   │
+│                                                                          │
+│  📚 WHAT YOU'LL LEARN:                                                   │
+│     ✓ Goroutines - Lightweight concurrent execution                    │
+│     ✓ Channels - Safe communication between goroutines                 │
+│     ✓ Sync primitives - Mutexes, WaitGroups, Once                      │
+│     ✓ Concurrency patterns - Worker pools, pipelines, fan-out/fan-in  │
+│     ✓ Real-world applications - Web scrapers, parallel processors      │
+│     ✓ Best practices and common pitfalls                               │
+│                                                                          │
+│  🛠️ TECH STACK: Goroutines, Channels, sync package, context            │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Navigate to the Project
+```bash
+cd basic/projects/concurrency-patterns
+```
+
+#### Step 2: Understand Go's Concurrency Model
+
+**📖 What is Concurrency?**
+
+Concurrency is about dealing with multiple things at once. Go's concurrency model is based on **CSP (Communicating Sequential Processes)**.
+
+**🎯 Core Concepts:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  GOROUTINES                                                     │
+│  • Lightweight threads (2KB stack)                             │
+│  • Managed by Go runtime scheduler                             │
+│  • Can have thousands concurrently                             │
+│  • Launched with 'go' keyword                                  │
+│                                                                 │
+│  CHANNELS                                                       │
+│  • Typed conduits for communication                            │
+│  • Send: ch <- value                                           │
+│  • Receive: value := <-ch                                      │
+│  • Buffered vs Unbuffered                                      │
+│                                                                 │
+│  SYNC PRIMITIVES                                                │
+│  • WaitGroup - Wait for goroutines                             │
+│  • Mutex - Mutual exclusion                                    │
+│  • RWMutex - Read-write locks                                  │
+│  • Once - Execute once                                         │
+│  • Cond - Condition variables                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 3: Install Dependencies
+```bash
+make deps
+```
+
+#### Step 4: Goroutine Basics
+
+**🔄 What are Goroutines?**
+
+Goroutines are functions that run concurrently with other functions.
+
+```go
+// Sequential execution
+sayHello("Alice")
+sayHello("Bob")
+
+// Concurrent execution
+go sayHello("Charlie")
+go sayHello("Diana")
+```
+
+**Key Features:**
+- Extremely lightweight (2KB initial stack)
+- Managed by Go scheduler
+- Multiplexed onto OS threads
+- Can have millions concurrently
+
+**⚠️ Common Pitfall: Closure Captures**
+
+```go
+// ❌ WRONG: Closure captures loop variable
+for i := 1; i <= 3; i++ {
+    go func() {
+        fmt.Println(i) // May print 4, 4, 4
+    }()
+}
+
+// ✅ CORRECT: Pass variable as parameter
+for i := 1; i <= 3; i++ {
+    go func(id int) {
+        fmt.Println(id) // Prints 1, 2, 3
+    }(i)
+}
+```
+
+**Run goroutine examples:**
+```bash
+make run-goroutines
+```
+
+#### Step 5: Channel Patterns
+
+**📡 What are Channels?**
+
+Channels are typed conduits for sending and receiving values between goroutines.
+
+**Unbuffered Channels (Synchronous):**
+```go
+ch := make(chan int)
+
+// Send (blocks until receiver ready)
+go func() {
+    ch <- 42
+}()
+
+// Receive (blocks until sender ready)
+value := <-ch
+```
+
+**Buffered Channels (Asynchronous):**
+```go
+ch := make(chan int, 3) // Buffer size 3
+
+// Can send 3 values without blocking
+ch <- 1
+ch <- 2
+ch <- 3
+
+// Receive values
+fmt.Println(<-ch) // 1
+fmt.Println(<-ch) // 2
+fmt.Println(<-ch) // 3
+```
+
+**Channel Direction:**
+```go
+// Send-only channel
+func sendOnly(ch chan<- string) {
+    ch <- "message"
+}
+
+// Receive-only channel
+func receiveOnly(ch <-chan string) {
+    msg := <-ch
+}
+```
+
+**Range and Close:**
+```go
+ch := make(chan int, 5)
+
+go func() {
+    for i := 1; i <= 5; i++ {
+        ch <- i
+    }
+    close(ch) // Close when done sending
+}()
+
+// Range over channel (stops when closed)
+for num := range ch {
+    fmt.Println(num)
+}
+```
+
+**Select Statement:**
+```go
+select {
+case msg := <-ch1:
+    fmt.Println("From ch1:", msg)
+case msg := <-ch2:
+    fmt.Println("From ch2:", msg)
+case <-time.After(1 * time.Second):
+    fmt.Println("Timeout")
+default:
+    fmt.Println("No value ready")
+}
+```
+
+**Run channel examples:**
+```bash
+make run-channels
+```
+
+#### Step 6: Concurrency Patterns
+
+**🎯 1. Worker Pool Pattern**
+
+Fixed number of workers processing jobs from a queue.
+
+```go
+// Create worker pool
+pool := NewWorkerPool(numWorkers, queueSize)
+pool.Start()
+
+// Submit jobs
+for i := 1; i <= 10; i++ {
+    pool.Submit(Job{
+        ID:   i,
+        Data: i,
+        Process: func(data interface{}) (interface{}, error) {
+            num := data.(int)
+            return num * num, nil
+        },
+    })
+}
+
+// Collect results
+for result := range pool.Results() {
+    fmt.Printf("Job %d result: %v\n", result.JobID, result.Output)
+}
+
+pool.Close()
+```
+
+**When to use:**
+- Processing large number of tasks
+- Need to limit concurrent operations
+- Want to reuse goroutines
+- Need backpressure control
+
+**🔗 2. Pipeline Pattern**
+
+Chain of processing stages connected by channels.
+
+```go
+// Stage 1: Generate numbers
+numbers := generate(1, 2, 3, 4, 5)
+
+// Stage 2: Square numbers
+squares := square(numbers)
+
+// Stage 3: Sum squares
+sum := sum(squares)
+
+func generate(nums ...int) <-chan int {
+    out := make(chan int)
+    go func() {
+        for _, n := range nums {
+            out <- n
+        }
+        close(out)
+    }()
+    return out
+}
+
+func square(in <-chan int) <-chan int {
+    out := make(chan int)
+    go func() {
+        for n := range in {
+            out <- n * n
+        }
+        close(out)
+    }()
+    return out
+}
+```
+
+**When to use:**
+- Data processing pipelines
+- Stream processing
+- ETL operations
+- Sequential transformations
+
+**🌟 3. Fan-Out/Fan-In Pattern**
+
+Distribute work to multiple workers, then merge results.
+
+```go
+// Fan-out: Multiple workers process input
+numWorkers := 3
+workers := make([]<-chan int, numWorkers)
+for i := 0; i < numWorkers; i++ {
+    workers[i] = worker(input)
+}
+
+// Fan-in: Merge results
+results := merge(workers...)
+
+func merge(channels ...<-chan int) <-chan int {
+    out := make(chan int)
+    var wg sync.WaitGroup
+
+    wg.Add(len(channels))
+    for _, ch := range channels {
+        go func(c <-chan int) {
+            defer wg.Done()
+            for val := range c {
+                out <- val
+            }
+        }(ch)
+    }
+
+    go func() {
+        wg.Wait()
+        close(out)
+    }()
+
+    return out
+}
+```
+
+**When to use:**
+- Parallel processing
+- Distributed computation
+- Load balancing
+- CPU-intensive tasks
+
+**⏱️ 4. Rate Limiting Pattern**
+
+Control the rate of operations.
+
+```go
+// Allow 2 requests per second
+limiter := time.Tick(500 * time.Millisecond)
+
+for req := range requests {
+    <-limiter // Wait for rate limiter
+    process(req)
+}
+```
+
+**When to use:**
+- API rate limiting
+- Resource throttling
+- Backpressure control
+- Prevent resource exhaustion
+
+**🔒 5. Semaphore Pattern**
+
+Limit concurrent operations using buffered channel.
+
+```go
+// Limit to 2 concurrent operations
+semaphore := make(chan struct{}, 2)
+
+for i := 1; i <= 5; i++ {
+    go func(id int) {
+        semaphore <- struct{}{} // Acquire
+        defer func() { <-semaphore }() // Release
+
+        // Do work
+        process(id)
+    }(i)
+}
+```
+
+**When to use:**
+- Connection pooling
+- Resource limits
+- Concurrency control
+- Database connections
+
+**Run all patterns:**
+```bash
+make run-all
+```
+
+#### Step 7: Sync Primitives
+
+**🔐 WaitGroup - Wait for Goroutines**
+
+```go
+var wg sync.WaitGroup
+
+for i := 1; i <= 3; i++ {
+    wg.Add(1)
+    go func(id int) {
+        defer wg.Done()
+        fmt.Printf("Worker %d\n", id)
+    }(i)
+}
+
+wg.Wait() // Wait for all goroutines
+```
+
+**🔒 Mutex - Mutual Exclusion**
+
+```go
+var (
+    counter int
+    mu      sync.Mutex
+)
+
+for i := 0; i < 100; i++ {
+    go func() {
+        mu.Lock()
+        counter++
+        mu.Unlock()
+    }()
+}
+```
+
+**📖 RWMutex - Read-Write Lock**
+
+```go
+var (
+    data   map[string]string
+    rwmu   sync.RWMutex
+)
+
+// Multiple readers
+rwmu.RLock()
+value := data[key]
+rwmu.RUnlock()
+
+// Single writer
+rwmu.Lock()
+data[key] = value
+rwmu.Unlock()
+```
+
+**1️⃣ Once - Execute Once**
+
+```go
+var once sync.Once
+
+func initialize() {
+    once.Do(func() {
+        // Runs only once, even with multiple goroutines
+        fmt.Println("Initializing...")
+    })
+}
+```
+
+#### Step 8: Best Practices
+
+**✅ 1. Always Close Channels**
+
+```go
+// ✅ Good
+go func() {
+    defer close(ch)
+    for _, item := range items {
+        ch <- item
+    }
+}()
+
+// ❌ Bad - channel never closed
+go func() {
+    for _, item := range items {
+        ch <- item
+    }
+}()
+```
+
+**✅ 2. Use WaitGroup for Synchronization**
+
+```go
+// ✅ Good
+var wg sync.WaitGroup
+for i := 0; i < 10; i++ {
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        // Work
+    }()
+}
+wg.Wait()
+
+// ❌ Bad - no synchronization
+for i := 0; i < 10; i++ {
+    go func() {
+        // Work
+    }()
+}
+// Main may exit before goroutines finish
+```
+
+**✅ 3. Pass Variables to Goroutines**
+
+```go
+// ✅ Good
+for i := 0; i < 10; i++ {
+    go func(id int) {
+        fmt.Println(id)
+    }(i)
+}
+
+// ❌ Bad - closure captures loop variable
+for i := 0; i < 10; i++ {
+    go func() {
+        fmt.Println(i) // May print 10, 10, 10...
+    }()
+}
+```
+
+**✅ 4. Use Context for Cancellation**
+
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+
+select {
+case result := <-ch:
+    return result
+case <-ctx.Done():
+    return ctx.Err()
+}
+```
+
+#### Step 9: Common Pitfalls
+
+**⚠️ 1. Goroutine Leaks**
+
+```go
+// ❌ Goroutine never exits
+go func() {
+    for {
+        // No exit condition
+    }
+}()
+
+// ✅ Use context for cancellation
+go func(ctx context.Context) {
+    for {
+        select {
+        case <-ctx.Done():
+            return
+        default:
+            // Work
+        }
+    }
+}(ctx)
+```
+
+**⚠️ 2. Race Conditions**
+
+```go
+// ❌ Race condition
+var counter int
+for i := 0; i < 100; i++ {
+    go func() {
+        counter++ // Unsafe concurrent access
+    }()
+}
+
+// ✅ Use mutex or atomic
+var mu sync.Mutex
+for i := 0; i < 100; i++ {
+    go func() {
+        mu.Lock()
+        counter++
+        mu.Unlock()
+    }()
+}
+
+// ✅ Or use atomic
+var counter int64
+for i := 0; i < 100; i++ {
+    go func() {
+        atomic.AddInt64(&counter, 1)
+    }()
+}
+```
+
+**⚠️ 3. Deadlocks**
+
+```go
+// ❌ Deadlock - unbuffered channel
+ch := make(chan int)
+ch <- 42 // Blocks forever (no receiver)
+
+// ✅ Use goroutine
+go func() {
+    ch <- 42
+}()
+value := <-ch
+
+// ✅ Or use buffered channel
+ch := make(chan int, 1)
+ch <- 42 // Doesn't block
+```
+
+**⚠️ 4. Sending on Closed Channel**
+
+```go
+// ❌ Panic: send on closed channel
+close(ch)
+ch <- 42 // PANIC!
+
+// ✅ Check if channel is closed
+select {
+case ch <- value:
+    // Sent successfully
+default:
+    // Channel closed or full
+}
+```
+
+**Detect race conditions:**
+```bash
+go test -race ./...
+```
+
+### 🎯 Key Concepts
+
+#### 1. Concurrency vs Parallelism
+
+```
+CONCURRENCY                    PARALLELISM
+• Dealing with many things     • Doing many things
+• Structure of program         • Execution of program
+• Can run on single core       • Requires multiple cores
+• About composition            • About execution
+```
+
+#### 2. Channel Semantics
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  UNBUFFERED CHANNEL                                         │
+│  • Synchronous communication                                │
+│  • Sender blocks until receiver ready                       │
+│  • Receiver blocks until sender ready                       │
+│  • Guarantees delivery                                      │
+│                                                             │
+│  BUFFERED CHANNEL                                           │
+│  • Asynchronous communication                               │
+│  • Sender blocks only when buffer full                      │
+│  • Receiver blocks only when buffer empty                   │
+│  • Decouples sender and receiver                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 3. Goroutine Lifecycle
+
+```
+Created → Runnable → Running → Blocked → Dead
+   ↑                              ↓
+   └──────────────────────────────┘
+```
+
+### 💪 Practice Challenges
+
+#### Challenge 1: Parallel File Processor
+Process multiple files concurrently using worker pool.
+
+**Requirements:**
+- Read files in parallel
+- Process each file
+- Aggregate results
+- Handle errors
+
+#### Challenge 2: Web Crawler
+Build concurrent web crawler with rate limiting.
+
+**Requirements:**
+- Crawl multiple URLs
+- Respect rate limits
+- Avoid duplicate URLs
+- Handle timeouts
+
+#### Challenge 3: Real-Time Data Pipeline
+Build data processing pipeline with multiple stages.
+
+**Requirements:**
+- Generate data
+- Transform data
+- Filter data
+- Aggregate results
+
+#### Challenge 4: Concurrent Cache
+Implement thread-safe cache with expiration.
+
+**Requirements:**
+- Get/Set operations
+- Concurrent access
+- TTL expiration
+- Cleanup goroutine
+
+### 📚 Additional Resources
+
+**Official Documentation:**
+- [Effective Go - Concurrency](https://golang.org/doc/effective_go#concurrency)
+- [Go Blog - Concurrency Patterns](https://blog.golang.org/pipelines)
+- [Go Blog - Advanced Concurrency](https://blog.golang.org/advanced-go-concurrency-patterns)
+
+**Books:**
+- Concurrency in Go by Katherine Cox-Buday
+- The Go Programming Language by Donovan & Kernighan
+- Go in Action by William Kennedy
+
+**Videos:**
+- [Google I/O - Go Concurrency Patterns](https://www.youtube.com/watch?v=f6kdp27TYZs)
+- [GopherCon - Advanced Concurrency](https://www.youtube.com/watch?v=QDDwwePbDtw)
+
+### 🎓 What You've Learned
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ GOROUTINES                                                   │
+│     • Lightweight concurrent execution                          │
+│     • Goroutine lifecycle and management                        │
+│     • Closure pitfalls and solutions                            │
+│                                                                  │
+│  ✅ CHANNELS                                                     │
+│     • Unbuffered vs buffered channels                           │
+│     • Channel direction and closing                             │
+│     • Select statement and timeouts                             │
+│                                                                  │
+│  ✅ SYNC PRIMITIVES                                              │
+│     • WaitGroup for synchronization                             │
+│     • Mutex for mutual exclusion                                │
+│     • RWMutex for read-write locks                              │
+│     • Once for single execution                                 │
+│                                                                  │
+│  ✅ CONCURRENCY PATTERNS                                         │
+│     • Worker pool for controlled concurrency                    │
+│     • Pipeline for sequential processing                        │
+│     • Fan-out/Fan-in for parallel processing                    │
+│     • Rate limiting for resource control                        │
+│     • Semaphore for concurrency limits                          │
+│                                                                  │
+│  ✅ BEST PRACTICES                                               │
+│     • Avoiding race conditions                                  │
+│     • Preventing goroutine leaks                                │
+│     • Proper error handling                                     │
+│     • Context for cancellation                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 🚀 Next Steps
+
+1. **Practice**: Implement all concurrency patterns
+2. **Build**: Create real-world concurrent applications
+3. **Profile**: Use pprof to analyze performance
+4. **Test**: Write concurrent tests with -race flag
+5. **Read**: Study Go's runtime scheduler
+
+### 📊 Pattern Selection Guide
+
+| Pattern | Use Case | Complexity | Performance |
+|---------|----------|------------|-------------|
+| Worker Pool | Task processing | Medium | High |
+| Pipeline | Sequential stages | Low | Medium |
+| Fan-Out/Fan-In | Parallel processing | Medium | High |
+| Rate Limiting | API throttling | Low | Medium |
+| Semaphore | Resource limits | Low | High |
+
+### 🎯 Summary
+
+Go's concurrency model is **simple yet powerful**:
+
+- **Goroutines** are cheap - use them liberally
+- **Channels** enable safe communication
+- **Select** multiplexes channel operations
+- **Sync primitives** provide low-level control
+- **Patterns** solve common problems
+
+**Key Principles:**
+- ✅ Don't communicate by sharing memory; share memory by communicating
+- ✅ Start goroutines when you know how they'll stop
+- ✅ Use channels for ownership transfer
+- ✅ Use mutexes for protecting state
+- ✅ Profile before optimizing
+
+**Common Mistakes to Avoid:**
+- ❌ Goroutine leaks
+- ❌ Race conditions
+- ❌ Deadlocks
+- ❌ Sending on closed channels
+- ❌ Not using -race flag
+
+**You're now ready to build high-performance concurrent applications in Go!** 🔄
+
+---
+
 ## 🎬 AI Content Creation Course
 
 **Master cutting-edge AI tools to create viral content and generate passive income**
