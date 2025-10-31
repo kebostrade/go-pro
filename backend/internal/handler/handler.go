@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package handler provides HTTP request handlers for the API.
 package handler
 
 import (
@@ -9,20 +14,21 @@ import (
 	"time"
 
 	"go-pro-backend/internal/domain"
-	apierrors "go-pro-backend/internal/errors"
 	"go-pro-backend/internal/service"
 	"go-pro-backend/pkg/logger"
 	"go-pro-backend/pkg/validator"
+
+	apierrors "go-pro-backend/internal/errors"
 )
 
-// Handler represents the HTTP handler for the API
+// Handler represents the HTTP handler for the API.
 type Handler struct {
 	services  *service.Services
 	logger    logger.Logger
 	validator validator.Validator
 }
 
-// New creates a new HTTP handler
+// New creates a new HTTP handler.
 func New(services *service.Services, logger logger.Logger, validator validator.Validator) *Handler {
 	return &Handler{
 		services:  services,
@@ -31,44 +37,44 @@ func New(services *service.Services, logger logger.Logger, validator validator.V
 	}
 }
 
-// RegisterRoutes registers all API routes
+// RegisterRoutes registers all API routes.
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	// Health check
+	// Health check.
 	mux.HandleFunc("GET /api/v1/health", h.handleHealth)
 
-	// Course management
+	// Course management.
 	mux.HandleFunc("POST /api/v1/courses", h.handleCreateCourse)
 	mux.HandleFunc("GET /api/v1/courses", h.handleGetCourses)
 	mux.HandleFunc("GET /api/v1/courses/{id}", h.handleGetCourse)
 	mux.HandleFunc("PUT /api/v1/courses/{id}", h.handleUpdateCourse)
 	mux.HandleFunc("DELETE /api/v1/courses/{id}", h.handleDeleteCourse)
 
-	// Course lessons
+	// Course lessons.
 	mux.HandleFunc("GET /api/v1/courses/{courseId}/lessons", h.handleGetCourseLessons)
 
-	// Lesson management
+	// Lesson management.
 	mux.HandleFunc("POST /api/v1/lessons", h.handleCreateLesson)
 	mux.HandleFunc("GET /api/v1/lessons/{id}", h.handleGetLesson)
 	mux.HandleFunc("PUT /api/v1/lessons/{id}", h.handleUpdateLesson)
 	mux.HandleFunc("DELETE /api/v1/lessons/{id}", h.handleDeleteLesson)
 
-	// Exercise management
+	// Exercise management.
 	mux.HandleFunc("GET /api/v1/exercises/{id}", h.handleGetExercise)
 	mux.HandleFunc("POST /api/v1/exercises/{id}/submit", h.handleSubmitExercise)
 
-	// Progress tracking
+	// Progress tracking.
 	mux.HandleFunc("GET /api/v1/progress/{userId}", h.handleGetProgress)
 	mux.HandleFunc("POST /api/v1/progress/{userId}/lesson/{lessonId}", h.handleUpdateProgress)
 
-	// Curriculum
+	// Curriculum.
 	mux.HandleFunc("GET /api/v1/curriculum", h.handleGetCurriculum)
 	mux.HandleFunc("GET /api/v1/curriculum/lesson/{id}", h.handleGetLessonDetail)
 
-	// API documentation
+	// API documentation.
 	mux.HandleFunc("GET /", h.handleAPIDocumentation)
 }
 
-// Health endpoint
+// Health endpoint.
 func (h *Handler) handleHealth(w http.ResponseWriter, r *http.Request) {
 	healthStatus, err := h.services.Health.GetHealthStatus(r.Context())
 	if err != nil {
@@ -79,7 +85,7 @@ func (h *Handler) handleHealth(w http.ResponseWriter, r *http.Request) {
 	h.writeSuccessResponse(w, r, healthStatus, "health check successful")
 }
 
-// Course handlers
+// Course handlers.
 func (h *Handler) handleCreateCourse(w http.ResponseWriter, r *http.Request) {
 	var req domain.CreateCourseRequest
 	if err := h.validator.ValidateJSON(r, &req); err != nil {
@@ -161,7 +167,7 @@ func (h *Handler) handleDeleteCourse(w http.ResponseWriter, r *http.Request) {
 	h.writeSuccessResponse(w, r, nil, "course deleted successfully")
 }
 
-// Course lessons handler
+// Course lessons handler.
 func (h *Handler) handleGetCourseLessons(w http.ResponseWriter, r *http.Request) {
 	courseID := r.PathValue("courseId")
 	if courseID == "" {
@@ -180,7 +186,7 @@ func (h *Handler) handleGetCourseLessons(w http.ResponseWriter, r *http.Request)
 	h.writeSuccessResponse(w, r, response, "course lessons retrieved successfully")
 }
 
-// Lesson handlers
+// Lesson handlers.
 func (h *Handler) handleCreateLesson(w http.ResponseWriter, r *http.Request) {
 	var req domain.CreateLessonRequest
 	if err := h.validator.ValidateJSON(r, &req); err != nil {
@@ -250,7 +256,7 @@ func (h *Handler) handleDeleteLesson(w http.ResponseWriter, r *http.Request) {
 	h.writeSuccessResponse(w, r, nil, "lesson deleted successfully")
 }
 
-// Exercise handlers
+// Exercise handlers.
 func (h *Handler) handleGetExercise(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if id == "" {
@@ -289,7 +295,7 @@ func (h *Handler) handleSubmitExercise(w http.ResponseWriter, r *http.Request) {
 	h.writeSuccessResponse(w, r, result, "exercise submitted and evaluated")
 }
 
-// Progress handlers
+// Progress handlers.
 func (h *Handler) handleGetProgress(w http.ResponseWriter, r *http.Request) {
 	userID := r.PathValue("userId")
 	if userID == "" {
@@ -332,7 +338,7 @@ func (h *Handler) handleUpdateProgress(w http.ResponseWriter, r *http.Request) {
 	h.writeSuccessResponse(w, r, progress, "progress updated successfully")
 }
 
-// Curriculum handlers
+// Curriculum handlers.
 func (h *Handler) handleGetCurriculum(w http.ResponseWriter, r *http.Request) {
 	curriculum, err := h.services.Curriculum.GetCurriculum(r.Context())
 	if err != nil {
@@ -350,7 +356,7 @@ func (h *Handler) handleGetLessonDetail(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Convert string to int
+	// Convert string to int.
 	var lessonID int
 	if _, err := fmt.Sscanf(idStr, "%d", &lessonID); err != nil {
 		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("invalid lesson ID format"))
@@ -366,7 +372,7 @@ func (h *Handler) handleGetLessonDetail(w http.ResponseWriter, r *http.Request) 
 	h.writeSuccessResponse(w, r, lesson, "lesson detail retrieved successfully")
 }
 
-// API documentation handler
+// API documentation handler.
 func (h *Handler) handleAPIDocumentation(w http.ResponseWriter, r *http.Request) {
 	html := `<!DOCTYPE html>
 <html>
@@ -466,9 +472,9 @@ func (h *Handler) handleAPIDocumentation(w http.ResponseWriter, r *http.Request)
 	w.Write([]byte(html))
 }
 
-// Helper methods
+// Helper methods.
 
-// writeSuccessResponse writes a successful API response
+// writeSuccessResponse writes a successful API response.
 func (h *Handler) writeSuccessResponse(w http.ResponseWriter, r *http.Request, data interface{}, message string) {
 	response := &domain.APIResponse{
 		Success:   true,
@@ -486,7 +492,7 @@ func (h *Handler) writeSuccessResponse(w http.ResponseWriter, r *http.Request, d
 	}
 }
 
-// writeErrorResponse writes an error API response
+// writeErrorResponse writes an error API response.
 func (h *Handler) writeErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	var apiErr *apierrors.APIError
 	var statusCode int
@@ -515,18 +521,19 @@ func (h *Handler) writeErrorResponse(w http.ResponseWriter, r *http.Request, err
 		logger.LogError(h.logger, r.Context(), err, "failed to encode error response")
 	}
 
-	// Log the error
+	// Log the error.
 	logger.LogError(h.logger, r.Context(), apiErr, "HTTP request error",
 		"status_code", statusCode,
 		"error_type", apiErr.Type,
 	)
 }
 
-// getPaginationFromContext retrieves pagination from request context
+// getPaginationFromContext retrieves pagination from request context.
 func getPaginationFromContext(ctx context.Context) *domain.PaginationRequest {
 	if pagination, ok := ctx.Value("pagination").(*domain.PaginationRequest); ok {
 		return pagination
 	}
+
 	return &domain.PaginationRequest{
 		Page:     1,
 		PageSize: 10,

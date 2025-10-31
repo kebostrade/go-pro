@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package postgres provides functionality for the GO-PRO Learning Platform.
 package postgres
 
 import (
@@ -10,13 +15,13 @@ import (
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
-// DB wraps sql.DB with additional functionality
+// DB wraps sql.DB with additional functionality.
 type DB struct {
 	*sql.DB
 	config *Config
 }
 
-// Config holds database configuration
+// Config holds database configuration.
 type Config struct {
 	Host            string
 	Port            int
@@ -30,7 +35,7 @@ type Config struct {
 	ConnMaxIdleTime time.Duration
 }
 
-// DefaultConfig returns a default database configuration
+// DefaultConfig returns a default database configuration.
 func DefaultConfig() *Config {
 	return &Config{
 		Host:            "localhost",
@@ -46,7 +51,7 @@ func DefaultConfig() *Config {
 	}
 }
 
-// DSN returns the data source name for PostgreSQL connection
+// DSN returns the data source name for PostgreSQL connection.
 func (c *Config) DSN() string {
 	return fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
@@ -54,7 +59,7 @@ func (c *Config) DSN() string {
 	)
 }
 
-// NewConnection creates a new PostgreSQL database connection
+// NewConnection creates a new PostgreSQL database connection.
 func NewConnection(config *Config) (*DB, error) {
 	if config == nil {
 		config = DefaultConfig()
@@ -65,13 +70,13 @@ func NewConnection(config *Config) (*DB, error) {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
 
-	// Configure connection pool
+	// Configure connection pool.
 	db.SetMaxOpenConns(config.MaxOpenConns)
 	db.SetMaxIdleConns(config.MaxIdleConns)
 	db.SetConnMaxLifetime(config.ConnMaxLifetime)
 	db.SetConnMaxIdleTime(config.ConnMaxIdleTime)
 
-	// Test the connection
+	// Test the connection.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -86,12 +91,12 @@ func NewConnection(config *Config) (*DB, error) {
 	}, nil
 }
 
-// Close closes the database connection
+// Close closes the database connection.
 func (db *DB) Close() error {
 	return db.DB.Close()
 }
 
-// Health checks the database connection health
+// Health checks the database connection health.
 func (db *DB) Health(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
@@ -103,17 +108,17 @@ func (db *DB) Health(ctx context.Context) error {
 	return nil
 }
 
-// Stats returns database connection statistics
+// Stats returns database connection statistics.
 func (db *DB) Stats() sql.DBStats {
 	return db.DB.Stats()
 }
 
-// BeginTx starts a new transaction with the given options
+// BeginTx starts a new transaction with the given options.
 func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
 	return db.DB.BeginTx(ctx, opts)
 }
 
-// WithTransaction executes a function within a database transaction
+// WithTransaction executes a function within a database transaction.
 func (db *DB) WithTransaction(ctx context.Context, fn func(*sql.Tx) error) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -129,8 +134,9 @@ func (db *DB) WithTransaction(ctx context.Context, fn func(*sql.Tx) error) error
 
 	if err := fn(tx); err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return fmt.Errorf("transaction error: %v, rollback error: %w", err, rbErr)
+			return fmt.Errorf("transaction error: %w, rollback error: %w", err, rbErr)
 		}
+
 		return err
 	}
 
@@ -141,31 +147,34 @@ func (db *DB) WithTransaction(ctx context.Context, fn func(*sql.Tx) error) error
 	return nil
 }
 
-// IsUniqueViolation checks if the error is a unique constraint violation
+// IsUniqueViolation checks if the error is a unique constraint violation.
 func IsUniqueViolation(err error) bool {
 	if pqErr, ok := err.(*pq.Error); ok {
 		return pqErr.Code == "23505" // unique_violation
 	}
+
 	return false
 }
 
-// IsForeignKeyViolation checks if the error is a foreign key constraint violation
+// IsForeignKeyViolation checks if the error is a foreign key constraint violation.
 func IsForeignKeyViolation(err error) bool {
 	if pqErr, ok := err.(*pq.Error); ok {
 		return pqErr.Code == "23503" // foreign_key_violation
 	}
+
 	return false
 }
 
-// IsNotNullViolation checks if the error is a not null constraint violation
+// IsNotNullViolation checks if the error is a not null constraint violation.
 func IsNotNullViolation(err error) bool {
 	if pqErr, ok := err.(*pq.Error); ok {
 		return pqErr.Code == "23502" // not_null_violation
 	}
+
 	return false
 }
 
-// Migration represents a database migration
+// Migration represents a database migration.
 type Migration struct {
 	Version     int
 	Description string
@@ -173,9 +182,9 @@ type Migration struct {
 	Down        string
 }
 
-// RunMigrations executes database migrations
+// RunMigrations executes database migrations.
 func (db *DB) RunMigrations(ctx context.Context, migrations []Migration) error {
-	// Create migrations table if it doesn't exist
+	// Create migrations table if it doesn't exist.
 	createMigrationsTable := `
 		CREATE TABLE IF NOT EXISTS schema_migrations (
 			version INTEGER PRIMARY KEY,
@@ -188,7 +197,7 @@ func (db *DB) RunMigrations(ctx context.Context, migrations []Migration) error {
 		return fmt.Errorf("failed to create migrations table: %w", err)
 	}
 
-	// Get applied migrations
+	// Get applied migrations.
 	appliedMigrations := make(map[int]bool)
 	rows, err := db.QueryContext(ctx, "SELECT version FROM schema_migrations")
 	if err != nil {
@@ -204,19 +213,19 @@ func (db *DB) RunMigrations(ctx context.Context, migrations []Migration) error {
 		appliedMigrations[version] = true
 	}
 
-	// Apply pending migrations
+	// Apply pending migrations.
 	for _, migration := range migrations {
 		if appliedMigrations[migration.Version] {
 			continue
 		}
 
 		err := db.WithTransaction(ctx, func(tx *sql.Tx) error {
-			// Execute migration
+			// Execute migration.
 			if _, err := tx.ExecContext(ctx, migration.Up); err != nil {
 				return fmt.Errorf("failed to execute migration %d: %w", migration.Version, err)
 			}
 
-			// Record migration
+			// Record migration.
 			_, err := tx.ExecContext(ctx,
 				"INSERT INTO schema_migrations (version, description) VALUES ($1, $2)",
 				migration.Version, migration.Description,
@@ -227,7 +236,6 @@ func (db *DB) RunMigrations(ctx context.Context, migrations []Migration) error {
 
 			return nil
 		})
-
 		if err != nil {
 			return err
 		}

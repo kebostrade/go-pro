@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package repository provides functionality for the GO-PRO Learning Platform.
 package repository
 
 import (
@@ -11,20 +16,20 @@ import (
 	"go-pro-backend/internal/errors"
 )
 
-// MemoryCourseRepository implements CourseRepository using in-memory storage
+// MemoryCourseRepository implements CourseRepository using in-memory storage.
 type MemoryCourseRepository struct {
 	courses map[string]*domain.Course
 	mu      sync.RWMutex
 }
 
-// NewMemoryCourseRepository creates a new in-memory course repository
+// NewMemoryCourseRepository creates a new in-memory course repository.
 func NewMemoryCourseRepository() *MemoryCourseRepository {
 	return &MemoryCourseRepository{
 		courses: make(map[string]*domain.Course),
 	}
 }
 
-// Create implements CourseRepository.Create
+// Create implements CourseRepository.Create.
 func (r *MemoryCourseRepository) Create(ctx context.Context, course *domain.Course) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -36,10 +41,11 @@ func (r *MemoryCourseRepository) Create(ctx context.Context, course *domain.Cour
 	course.CreatedAt = time.Now()
 	course.UpdatedAt = time.Now()
 	r.courses[course.ID] = course
+
 	return nil
 }
 
-// GetByID implements CourseRepository.GetByID
+// GetByID implements CourseRepository.GetByID.
 func (r *MemoryCourseRepository) GetByID(ctx context.Context, id string) (*domain.Course, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -49,12 +55,13 @@ func (r *MemoryCourseRepository) GetByID(ctx context.Context, id string) (*domai
 		return nil, errors.NewNotFoundError(fmt.Sprintf("course with id %s not found", id))
 	}
 
-	// Return a copy to prevent modification
+	// Return a copy to prevent modification.
 	courseCopy := *course
+
 	return &courseCopy, nil
 }
 
-// GetAll implements CourseRepository.GetAll
+// GetAll implements CourseRepository.GetAll.
 func (r *MemoryCourseRepository) GetAll(ctx context.Context, pagination *domain.PaginationRequest) ([]*domain.Course, int64, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -72,7 +79,7 @@ func (r *MemoryCourseRepository) GetAll(ctx context.Context, pagination *domain.
 
 	total := int64(len(courses))
 
-	// Apply pagination if provided
+	// Apply pagination if provided.
 	if pagination != nil {
 		start := (pagination.Page - 1) * pagination.PageSize
 		end := start + pagination.PageSize
@@ -91,7 +98,7 @@ func (r *MemoryCourseRepository) GetAll(ctx context.Context, pagination *domain.
 	return courses, total, nil
 }
 
-// Update implements CourseRepository.Update
+// Update implements CourseRepository.Update.
 func (r *MemoryCourseRepository) Update(ctx context.Context, course *domain.Course) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -102,10 +109,11 @@ func (r *MemoryCourseRepository) Update(ctx context.Context, course *domain.Cour
 
 	course.UpdatedAt = time.Now()
 	r.courses[course.ID] = course
+
 	return nil
 }
 
-// Delete implements CourseRepository.Delete
+// Delete implements CourseRepository.Delete.
 func (r *MemoryCourseRepository) Delete(ctx context.Context, id string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -115,13 +123,14 @@ func (r *MemoryCourseRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	delete(r.courses, id)
+
 	return nil
 }
 
-// NewRepositoriesSimple creates repository instances with simple approach
+// NewRepositoriesSimple creates repository instances with simple approach.
 func NewRepositoriesSimple() *Repositories {
 	return &Repositories{
 		Course: NewMemoryCourseRepository(),
-		// TODO: Implement other repositories as needed
+		// TODO: Implement other repositories as needed.
 	}
 }

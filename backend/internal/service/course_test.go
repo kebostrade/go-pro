@@ -1,15 +1,20 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package service provides functionality for the GO-PRO Learning Platform.
 package service
 
 import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"go-pro-backend/internal/domain"
 	"go-pro-backend/internal/testutil"
 	"go-pro-backend/pkg/validator"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCourseService_Create(t *testing.T) {
@@ -42,7 +47,7 @@ func TestCourseService_Create(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
+			// Arrange.
 			mockRepo := testutil.NewMockCourseRepository()
 			mockCache := testutil.NewMockCacheManager()
 			logger := testutil.NewTestLogger(t)
@@ -58,16 +63,16 @@ func TestCourseService_Create(t *testing.T) {
 			service := NewCourseService(mockRepo, config)
 			ctx := context.Background()
 
-			// Create request from course
+			// Create request from course.
 			req := &domain.CreateCourseRequest{
 				Title:       tt.course.Title,
 				Description: tt.course.Description,
 			}
 
-			// Act
+			// Act.
 			_, err := service.CreateCourse(ctx, req)
 
-			// Assert
+			// Assert.
 			if tt.wantErr {
 				require.Error(t, err)
 				if tt.errContains != "" {
@@ -102,7 +107,7 @@ func TestCourseService_GetByID(t *testing.T) {
 			name:     "course not found",
 			courseID: "course-999",
 			setupMock: func(repo *testutil.MockCourseRepository, cache *testutil.MockCacheManager) {
-				// No setup - course doesn't exist
+				// No setup - course doesn't exist.
 			},
 			wantErr:     true,
 			errContains: "not found",
@@ -111,7 +116,7 @@ func TestCourseService_GetByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
+			// Arrange.
 			mockRepo := testutil.NewMockCourseRepository()
 			mockCache := testutil.NewMockCacheManager()
 			logger := testutil.NewTestLogger(t)
@@ -129,10 +134,10 @@ func TestCourseService_GetByID(t *testing.T) {
 			service := NewCourseService(mockRepo, config)
 			ctx := context.Background()
 
-			// Act
+			// Act.
 			course, err := service.GetCourseByID(ctx, tt.courseID)
 
-			// Assert
+			// Assert.
 			if tt.wantErr {
 				require.Error(t, err)
 				if tt.errContains != "" {
@@ -179,7 +184,7 @@ func TestCourseService_Update(t *testing.T) {
 				Lessons:     []string{},
 			},
 			setupMock: func(repo *testutil.MockCourseRepository) {
-				// No setup - course doesn't exist
+				// No setup - course doesn't exist.
 			},
 			wantErr:     true,
 			errContains: "not found",
@@ -188,7 +193,7 @@ func TestCourseService_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
+			// Arrange.
 			mockRepo := testutil.NewMockCourseRepository()
 			mockCache := testutil.NewMockCacheManager()
 			logger := testutil.NewTestLogger(t)
@@ -206,16 +211,16 @@ func TestCourseService_Update(t *testing.T) {
 			service := NewCourseService(mockRepo, config)
 			ctx := context.Background()
 
-			// Create update request
+			// Create update request.
 			req := &domain.UpdateCourseRequest{
 				Title:       &tt.course.Title,
 				Description: &tt.course.Description,
 			}
 
-			// Act
+			// Act.
 			_, err := service.UpdateCourse(ctx, tt.course.ID, req)
 
-			// Assert
+			// Assert.
 			if tt.wantErr {
 				require.Error(t, err)
 				if tt.errContains != "" {
@@ -231,7 +236,7 @@ func TestCourseService_Update(t *testing.T) {
 }
 
 func TestCourseService_Delete(t *testing.T) {
-	// Arrange
+	// Arrange.
 	mockRepo := testutil.NewMockCourseRepository()
 	mockCache := testutil.NewMockCacheManager()
 	logger := testutil.NewTestLogger(t)
@@ -250,20 +255,20 @@ func TestCourseService_Delete(t *testing.T) {
 	service := NewCourseService(mockRepo, config)
 	ctx := context.Background()
 
-	// Act
+	// Act.
 	err := service.DeleteCourse(ctx, "course-1")
 
-	// Assert
+	// Assert.
 	require.NoError(t, err)
 	assert.Equal(t, 1, mockRepo.GetCallCount("GetByID"))
 	assert.Equal(t, 1, mockRepo.GetCallCount("Delete"))
 
-	// Verify course is deleted
+	// Verify course is deleted.
 	_, err = mockRepo.GetByID(ctx, "course-1")
 	assert.Error(t, err)
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkCourseService_Create(b *testing.B) {
 	mockRepo := testutil.NewMockCourseRepository()
 	mockCache := testutil.NewMockCacheManager()

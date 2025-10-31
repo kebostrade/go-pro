@@ -41,10 +41,27 @@
 - [Tutorial 14](#-tutorial-14-performance-optimization) - Performance Optimization ⏱️ 50 min
 - [Tutorial 15](#-tutorial-15-docker--deployment) - Docker & Deployment ⏱️ 45 min
 
+### 🤖 [AI Engineering](#-ai-engineering-tutorials) (6-8 hours)
+- [AI Tutorial 0](#-ai-tutorial-0-ai-engineering-overview) - AI Engineering Overview ⏱️ 20 min
+- [AI Tutorial 1](#-ai-tutorial-1-llm-basics) - LLM Basics & Chatbot ⏱️ 30 min
+- [AI Tutorial 2](#-ai-tutorial-2-prompt-engineering) - Prompt Engineering ⏱️ 25 min
+- [Quick Reference](#-ai-quick-reference) - AI Engineering Quick Reference
+
+### 🎬 [AI Content Creation](#-ai-content-creation-course) (54-69 hours)
+- [Course Overview](#-ai-content-creation-mastery-course) - Complete Course Guide
+- [Module 1](#-module-1-ai-video-generation) - AI Video Generation (Veo 3, Sora 2) ⏱️ 10-12h
+- [Module 2](#-module-2-ai-audio--voice) - AI Audio & Voice (ElevenLabs) ⏱️ 6-8h
+- [Module 3](#-module-3-advanced-audio-integration) - Advanced Audio (SFX, Ambient, Mixing) ⏱️ 8-10h ⭐ NEW
+- [Module 7](#-module-7-content-strategy--monetization) - Monetization & Viral Strategy ⏱️ 12-15h
+- [Viral Strategy](#-viral-video-strategy) - Get Millions of Views ⭐ NEW
+- [Audio Library](#-audio-library-resources) - Complete Audio Resources ⭐ NEW
+- [Quick Start](#-quick-start-create-first-video-in-2-hours) - Create First Video in 2 Hours ⏱️ 2h
+
 ### 📈 [Learning Paths](#-learning-path-summary)
 - [Beginner Path](#beginner-path) - Start Here
 - [Intermediate Path](#intermediate-path) - Next Steps
 - [Advanced Path](#advanced-path) - Master Level
+- [AI Engineering Path](#ai-engineering-path) - Build AI Apps
 
 ---
 
@@ -1528,6 +1545,180 @@ curl -X DELETE http://localhost:8080/api/posts/1 \
 
 ---
 
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                      🤖 AI ENGINEERING TUTORIALS                             ║
+║                                                                              ║
+║              Build Production-Ready AI Applications with Go                  ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+## 🤖 AI Tutorial 0: AI Engineering Overview
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🟢 BEGINNER                                    ⏱️  20 minutes             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  🎯 GOAL: Understand AI Engineering and the learning path               │
+│                                                                          │
+│  📚 WHAT YOU'LL LEARN:                                                   │
+│     ✓ What is AI Engineering                                            │
+│     ✓ LLMs, RAG, Agents, and Embeddings                                 │
+│     ✓ Why Go for AI Engineering                                         │
+│     ✓ Platform architecture overview                                    │
+│     ✓ Learning roadmap and prerequisites                                │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📝 Read the Overview
+
+```bash
+# Navigate to AI Engineering tutorials
+cd docs/tutorials/ai-engineering
+
+# Read the overview
+cat 00_AI_ENGINEERING_OVERVIEW.md
+```
+
+**📚 Full Tutorial**: [00_AI_ENGINEERING_OVERVIEW.md](tutorials/ai-engineering/00_AI_ENGINEERING_OVERVIEW.md)
+
+---
+
+## 🤖 AI Tutorial 1: LLM Basics
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🟢 BEGINNER                                    ⏱️  30 minutes             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  🎯 PROJECT: Build a CLI Chatbot with OpenAI                            │
+│                                                                          │
+│  📚 WHAT YOU'LL LEARN:                                                   │
+│     ✓ OpenAI API integration in Go                                      │
+│     ✓ Streaming vs non-streaming responses                              │
+│     ✓ Token management and counting                                     │
+│     ✓ Conversation history management                                   │
+│     ✓ Model parameters (temperature, max_tokens)                        │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Navigate to Project
+```bash
+cd basic/projects/ai-engineering/chatbot-cli
+```
+
+#### Step 2: Setup API Key
+```bash
+# Get your API key from https://platform.openai.com/api-keys
+export OPENAI_API_KEY="sk-..."
+```
+
+#### Step 3: Install Dependencies
+```bash
+go mod init chatbot-cli
+go get github.com/sashabaranov/go-openai
+```
+
+#### Step 4: Run the Chatbot
+```bash
+go run main.go
+```
+
+**📚 Full Tutorial**: [01_LLM_BASICS.md](tutorials/ai-engineering/01_LLM_BASICS.md)
+
+**💡 Quick Tip**: Start with GPT-3.5-turbo for development (faster and cheaper)!
+
+---
+
+## 🤖 AI Tutorial 2: Prompt Engineering
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🟡 INTERMEDIATE                                ⏱️  25 minutes             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  🎯 GOAL: Master prompt design for better AI responses                  │
+│                                                                          │
+│  📚 WHAT YOU'LL LEARN:                                                   │
+│     ✓ Prompt engineering fundamentals                                   │
+│     ✓ System, user, and assistant roles                                 │
+│     ✓ Few-shot learning techniques                                      │
+│     ✓ Chain-of-thought prompting                                        │
+│     ✓ Prompt templates and patterns                                     │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📝 Read the Tutorial
+
+```bash
+cd docs/tutorials/ai-engineering
+cat 02_PROMPT_ENGINEERING.md
+```
+
+**📚 Full Tutorial**: [02_PROMPT_ENGINEERING.md](tutorials/ai-engineering/02_PROMPT_ENGINEERING.md)
+
+**💡 Quick Tip**: Good prompts are reusable - build a library of your best prompts!
+
+---
+
+## 📖 AI Quick Reference
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                                                                          │
+│  📚 QUICK REFERENCE GUIDE                                                │
+│                                                                          │
+│  Common patterns, code snippets, and best practices for AI Engineering  │
+│                                                                          │
+│  • LLM Integration                                                       │
+│  • Prompt Engineering                                                    │
+│  • Embeddings & Vectors                                                  │
+│  • RAG Systems                                                           │
+│  • AI Agents                                                             │
+│  • Error Handling                                                        │
+│  • Best Practices                                                        │
+│  • Troubleshooting                                                       │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+**📚 Full Reference**: [QUICK_REFERENCE.md](tutorials/ai-engineering/QUICK_REFERENCE.md)
+
+**💡 Bookmark this page** for quick reference while building AI applications!
+
+---
+
+## 🎓 AI Engineering Path
+
+**Complete Learning Path**: See [PATH 4: AI ENGINEERING](../LEARNING_PATHS.md#-path-4-ai-engineering) in LEARNING_PATHS.md
+
+**Duration**: 12-14 weeks
+
+**Projects**:
+1. CLI Chatbot (Week 1-2)
+2. Semantic Search Engine (Week 3-4)
+3. RAG Q&A System (Week 5-7)
+4. Coding Assistant Agent (Week 8-10)
+5. Production AI Service (Week 11-14)
+
+**Skills You'll Master**:
+- LLM API integration
+- Prompt engineering
+- Embeddings and vector search
+- RAG architecture
+- AI agent development
+- Production deployment
+
+---
+
 *[Continues with remaining tutorials 5-15 in the same beautiful format...]*
 
 Due to length constraints, I've shown the transformed format for the first several tutorials. The complete file would continue with:
@@ -1540,5 +1731,197 @@ Due to length constraints, I've shown the transformed format for the first sever
 - Tutorial 10: Container Orchestrator
 - Specialized Tutorials (11-15)
 - Learning paths and resources
+
+---
+
+## 🎬 AI Content Creation Course
+
+**Master cutting-edge AI tools to create viral content and generate passive income**
+
+**Full Course**: [AI Content Creation Mastery](courses/ai-content-creation/README.md)
+
+**Quick Start**: [Create Your First Video in 2 Hours](courses/ai-content-creation/resources/QUICK_START.md)
+
+**Course Summary**: [Complete Overview](courses/ai-content-creation/COURSE_SUMMARY.md)
+
+This comprehensive course teaches you to use Google Veo 3, Sora 2, ElevenLabs, RunwayML, SunoAI, HeyGen, and Hailou AI to create content that attracts millions of views on YouTube, TikTok, and Instagram, and generates $1,000-$50,000+/month in passive income.
+
+---
+
+### 🎵 Module 3: Advanced Audio Integration
+
+**File**: [modules/03_ADVANCED_AUDIO.md](courses/ai-content-creation/modules/03_ADVANCED_AUDIO.md)
+
+**Focus**: Sound Effects, Ambient Noise, Professional Mixing
+**Duration**: 8-10 hours
+**Difficulty**: 🟡 Intermediate
+
+**What You'll Master**:
+- Layer sound effects for maximum impact
+- Create immersive ambient soundscapes
+- Add realistic multi-character dialogue
+- Mix audio like a professional
+- Optimize audio for viral engagement
+
+**The 3-Layer Audio System**:
+```
+Layer 1: Dialogue/Narration (100% volume)
+Layer 2: Sound Effects (60-80% volume)
+Layer 3: Ambient Noise (20-40% volume)
+```
+
+**Key Techniques**:
+- Multi-character conversations with ElevenLabs
+- 5 categories of sound effects (Transitions, Emphasis, UI/Tech, Emotional, Nature)
+- 5 ambient soundscape scenarios (Office, Coffee Shop, Lab, Nature, Urban)
+- Professional audio mixing and ducking
+- Platform-specific audio optimization
+- Emotional audio arcs
+- Strategic silence for impact
+
+**Why Audio Matters**:
+- 📈 3-5x more engagement than silent videos
+- 🔄 2x higher completion rate
+- 💬 4x more comments
+- 🔁 6x more shares
+
+**Projects**:
+- Tech product demo with professional audio
+- Storytelling short using audio-only narrative
+- Viral challenge with superior audio quality
+
+**Resources**: [Complete Audio Library](courses/ai-content-creation/resources/AUDIO_LIBRARY.md)
+
+---
+
+### 🚀 Viral Video Strategy
+
+**File**: [VIRAL_STRATEGY.md](courses/ai-content-creation/VIRAL_STRATEGY.md)
+
+**Goal**: Create videos that get 1M+ views consistently
+
+**The Viral Formula**:
+```
+Viral Video = Hook × Value × Emotion × Shareability × Timing
+```
+
+**The 7-Second Rule**:
+```
+First 7 seconds = 80% of your success
+
+0-1s:  Viewer decides to keep watching or scroll
+1-3s:  Brain processes if content is relevant
+3-5s:  Emotional response triggered
+5-7s:  Decision to engage (like, comment, share)
+```
+
+**5 Perfect Hook Formulas**:
+1. **Shock Value**: "I made $50,000 in 24 hours..."
+2. **Controversy**: "Everyone is doing [X] wrong..."
+3. **Transformation**: "From [Bad] to [Good] in [Time]..."
+4. **Secret Reveal**: "I discovered a secret that..."
+5. **Urgent Warning**: "Stop doing [X] immediately..."
+
+**Platform-Specific Strategies**:
+- **YouTube Shorts**: 1M+ views (3-5 posts/day)
+- **TikTok**: 5M+ views (5-7 posts/day)
+- **Instagram Reels**: 500K+ views (1-2 posts/day)
+
+**10 Psychological Triggers**:
+1. Awe/Wonder (85% share rate)
+2. Anger/Outrage (80%)
+3. Anxiety/Fear (75%)
+4. Humor/Joy (90%)
+5. Inspiration (70%)
+6. Validation (65%)
+7. Belonging (75%)
+8. Curiosity (85%)
+9. Utility (80%)
+10. Controversy (90%)
+
+**30-Day Viral Challenge**:
+- Week 1: 35 videos (testing)
+- Week 2: 49 videos (optimization)
+- Week 3: 70 videos (scaling)
+- Week 4: 90+ videos (viral phase)
+- **Total**: 244+ videos → 1-3 viral hits, 10K-100K followers
+
+**Monetization**:
+```
+1M views = $2K-$10K (YouTube AdSense)
+1M views = 10K-50K followers
+         = $5K-$50K (sponsorships)
+         = $10K-$100K (product sales)
+```
+
+---
+
+### 🎧 Audio Library Resources
+
+**File**: [resources/AUDIO_LIBRARY.md](courses/ai-content-creation/resources/AUDIO_LIBRARY.md)
+
+**Complete curated library of audio resources**
+
+**Free Sound Effects**:
+- Freesound.org (500,000+ sounds)
+- Zapsplat.com (100,000+ sounds)
+- YouTube Audio Library (10,000+ sounds)
+- BBC Sound Effects (16,000+ sounds)
+- Sonniss Game Audio (30GB+ bundle)
+
+**Premium Sound Effects**:
+- Epidemic Sound ($15/month - 90,000+ SFX)
+- Artlist ($16.60/month - 50,000+ SFX)
+- Soundstripe ($15/month - 40,000+ SFX)
+- Boom Library ($50-$500 per pack)
+- Pro Sound Effects ($20/month - 100,000+ sounds)
+
+**Ambient Noise Generators**:
+- Ambient-Mixer.com (custom soundscapes)
+- MyNoise.net (parametric generator)
+- Noisli (simple mixing)
+- A Soft Murmur (natural sounds)
+
+**Music Platforms**:
+- Uppbeat (free with attribution)
+- Pixabay Music (free, no attribution)
+- Incompetech (free with attribution)
+- Bensound (cinematic music)
+
+**AI Voice Tools**:
+- ElevenLabs (best quality)
+- Murf.ai (business content)
+- Play.ht (variety)
+
+**Audio Editing Software**:
+- Free: Audacity, GarageBand, Ocenaudio
+- Premium: Adobe Audition, Logic Pro, Reaper
+
+**Recommended Starter Kits**:
+```
+Free Kit ($0/month):
+- Freesound + Zapsplat (SFX)
+- Ambient-Mixer (ambient)
+- Uppbeat (music)
+- ElevenLabs free tier (voice)
+- Audacity (editing)
+
+Budget Kit ($25/month):
+- Epidemic Sound ($15)
+- ElevenLabs ($5)
+- Audacity (free)
+
+Professional Kit ($100/month):
+- Epidemic Sound ($15)
+- ElevenLabs ($22)
+- Adobe Audition ($23)
+- Pro Sound Effects ($20)
+```
+
+---
+
+**🎉 Congratulations!** You now have access to world-class Go programming AND AI content creation education!
+
+**Happy Coding & Creating! 🚀**
 
 Each following the same visual structure with boxes, emojis, clear sections, checkpoints, and engaging formatting. Would you like me to continue with the remaining tutorials?

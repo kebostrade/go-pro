@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package postgres provides functionality for the GO-PRO Learning Platform.
 package postgres
 
 import (
@@ -10,7 +15,7 @@ import (
 	"go-pro-backend/pkg/logger"
 )
 
-// PoolMonitor monitors database connection pool health
+// PoolMonitor monitors database connection pool health.
 type PoolMonitor struct {
 	db     *DB
 	logger logger.Logger
@@ -18,7 +23,7 @@ type PoolMonitor struct {
 	stats  PoolStats
 }
 
-// PoolStats represents connection pool statistics
+// PoolStats represents connection pool statistics.
 type PoolStats struct {
 	MaxOpenConnections int           `json:"max_open_connections"`
 	OpenConnections    int           `json:"open_connections"`
@@ -32,7 +37,7 @@ type PoolStats struct {
 	Timestamp          time.Time     `json:"timestamp"`
 }
 
-// NewPoolMonitor creates a new connection pool monitor
+// NewPoolMonitor creates a new connection pool monitor.
 func NewPoolMonitor(db *DB, logger logger.Logger) *PoolMonitor {
 	return &PoolMonitor{
 		db:     db,
@@ -40,14 +45,15 @@ func NewPoolMonitor(db *DB, logger logger.Logger) *PoolMonitor {
 	}
 }
 
-// GetStats returns current pool statistics
+// GetStats returns current pool statistics.
 func (pm *PoolMonitor) GetStats() PoolStats {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
+
 	return pm.stats
 }
 
-// UpdateStats updates the pool statistics
+// UpdateStats updates the pool statistics.
 func (pm *PoolMonitor) UpdateStats(ctx context.Context) {
 	dbStats := pm.db.Stats()
 
@@ -68,7 +74,7 @@ func (pm *PoolMonitor) UpdateStats(ctx context.Context) {
 	}
 }
 
-// StartMonitoring starts periodic monitoring of the connection pool
+// StartMonitoring starts periodic monitoring of the connection pool.
 func (pm *PoolMonitor) StartMonitoring(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -84,7 +90,7 @@ func (pm *PoolMonitor) StartMonitoring(ctx context.Context, interval time.Durati
 			pm.UpdateStats(ctx)
 			stats := pm.GetStats()
 
-			// Log warnings if pool is under stress
+			// Log warnings if pool is under stress.
 			if stats.InUse >= int(float64(stats.MaxOpenConnections)*0.8) {
 				pm.logger.Warn(ctx, "Connection pool usage is high",
 					"in_use", stats.InUse,
@@ -107,14 +113,14 @@ func (pm *PoolMonitor) StartMonitoring(ctx context.Context, interval time.Durati
 	}
 }
 
-// QueryPerformanceTracker tracks query performance
+// QueryPerformanceTracker tracks query performance.
 type QueryPerformanceTracker struct {
 	logger logger.Logger
 	mu     sync.RWMutex
 	stats  map[string]*QueryStats
 }
 
-// QueryStats represents statistics for a specific query
+// QueryStats represents statistics for a specific query.
 type QueryStats struct {
 	Query          string        `json:"query"`
 	ExecutionCount int64         `json:"execution_count"`
@@ -126,7 +132,7 @@ type QueryStats struct {
 	LastExecuted   time.Time     `json:"last_executed"`
 }
 
-// NewQueryPerformanceTracker creates a new query performance tracker
+// NewQueryPerformanceTracker creates a new query performance tracker.
 func NewQueryPerformanceTracker(logger logger.Logger) *QueryPerformanceTracker {
 	return &QueryPerformanceTracker{
 		logger: logger,
@@ -134,7 +140,7 @@ func NewQueryPerformanceTracker(logger logger.Logger) *QueryPerformanceTracker {
 	}
 }
 
-// TrackQuery tracks the execution of a query
+// TrackQuery tracks the execution of a query.
 func (qpt *QueryPerformanceTracker) TrackQuery(query string, duration time.Duration, err error) {
 	qpt.mu.Lock()
 	defer qpt.mu.Unlock()
@@ -165,7 +171,7 @@ func (qpt *QueryPerformanceTracker) TrackQuery(query string, duration time.Durat
 		stats.ErrorCount++
 	}
 
-	// Log slow queries
+	// Log slow queries.
 	if duration > 1*time.Second {
 		qpt.logger.Warn(context.Background(), "Slow query detected",
 			"query", query,
@@ -174,12 +180,12 @@ func (qpt *QueryPerformanceTracker) TrackQuery(query string, duration time.Durat
 	}
 }
 
-// GetStats returns statistics for all tracked queries
+// GetStats returns statistics for all tracked queries.
 func (qpt *QueryPerformanceTracker) GetStats() map[string]*QueryStats {
 	qpt.mu.RLock()
 	defer qpt.mu.RUnlock()
 
-	// Create a copy to avoid race conditions
+	// Create a copy to avoid race conditions.
 	statsCopy := make(map[string]*QueryStats, len(qpt.stats))
 	for k, v := range qpt.stats {
 		statsCopy[k] = &QueryStats{
@@ -197,12 +203,12 @@ func (qpt *QueryPerformanceTracker) GetStats() map[string]*QueryStats {
 	return statsCopy
 }
 
-// GetTopSlowQueries returns the N slowest queries by average duration
+// GetTopSlowQueries returns the N slowest queries by average duration.
 func (qpt *QueryPerformanceTracker) GetTopSlowQueries(n int) []*QueryStats {
 	qpt.mu.RLock()
 	defer qpt.mu.RUnlock()
 
-	// Convert map to slice
+	// Convert map to slice.
 	queries := make([]*QueryStats, 0, len(qpt.stats))
 	for _, stats := range qpt.stats {
 		queries = append(queries, stats)
@@ -217,7 +223,7 @@ func (qpt *QueryPerformanceTracker) GetTopSlowQueries(n int) []*QueryStats {
 		}
 	}
 
-	// Return top N
+	// Return top N.
 	if n > len(queries) {
 		n = len(queries)
 	}
@@ -225,20 +231,20 @@ func (qpt *QueryPerformanceTracker) GetTopSlowQueries(n int) []*QueryStats {
 	return queries[:n]
 }
 
-// Reset resets all query statistics
+// Reset resets all query statistics.
 func (qpt *QueryPerformanceTracker) Reset() {
 	qpt.mu.Lock()
 	defer qpt.mu.Unlock()
 	qpt.stats = make(map[string]*QueryStats)
 }
 
-// TrackedDB wraps DB with query performance tracking
+// TrackedDB wraps DB with query performance tracking.
 type TrackedDB struct {
 	*DB
 	tracker *QueryPerformanceTracker
 }
 
-// NewTrackedDB creates a new tracked database connection
+// NewTrackedDB creates a new tracked database connection.
 func NewTrackedDB(db *DB, tracker *QueryPerformanceTracker) *TrackedDB {
 	return &TrackedDB{
 		DB:      db,
@@ -246,7 +252,7 @@ func NewTrackedDB(db *DB, tracker *QueryPerformanceTracker) *TrackedDB {
 	}
 }
 
-// ExecContext executes a query with performance tracking
+// ExecContext executes a query with performance tracking.
 func (tdb *TrackedDB) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	start := time.Now()
 	result, err := tdb.DB.ExecContext(ctx, query, args...)
@@ -257,7 +263,7 @@ func (tdb *TrackedDB) ExecContext(ctx context.Context, query string, args ...int
 	return result, err
 }
 
-// QueryContext executes a query with performance tracking
+// QueryContext executes a query with performance tracking.
 func (tdb *TrackedDB) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	start := time.Now()
 	rows, err := tdb.DB.QueryContext(ctx, query, args...)
@@ -268,19 +274,19 @@ func (tdb *TrackedDB) QueryContext(ctx context.Context, query string, args ...in
 	return rows, err
 }
 
-// QueryRowContext executes a query with performance tracking
+// QueryRowContext executes a query with performance tracking.
 func (tdb *TrackedDB) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
 	start := time.Now()
 	row := tdb.DB.QueryRowContext(ctx, query, args...)
 	duration := time.Since(start)
 
-	// Note: We can't detect errors here as QueryRow doesn't return an error
+	// Note: We can't detect errors here as QueryRow doesn't return an error.
 	tdb.tracker.TrackQuery(query, duration, nil)
 
 	return row
 }
 
-// HealthReport generates a comprehensive health report
+// HealthReport generates a comprehensive health report.
 type HealthReport struct {
 	PoolStats       PoolStats     `json:"pool_stats"`
 	TopSlowQueries  []*QueryStats `json:"top_slow_queries"`
@@ -291,7 +297,7 @@ type HealthReport struct {
 	Timestamp       time.Time     `json:"timestamp"`
 }
 
-// GenerateHealthReport generates a comprehensive health report
+// GenerateHealthReport generates a comprehensive health report.
 func GenerateHealthReport(ctx context.Context, db *DB, monitor *PoolMonitor, tracker *QueryPerformanceTracker) (*HealthReport, error) {
 	report := &HealthReport{
 		PoolStats:      monitor.GetStats(),
@@ -299,14 +305,14 @@ func GenerateHealthReport(ctx context.Context, db *DB, monitor *PoolMonitor, tra
 		Timestamp:      time.Now(),
 	}
 
-	// Get database version
+	// Get database version.
 	var version string
 	if err := db.QueryRowContext(ctx, "SELECT version()").Scan(&version); err != nil {
 		return nil, fmt.Errorf("failed to get database version: %w", err)
 	}
 	report.DatabaseVersion = version
 
-	// Calculate total queries and errors
+	// Calculate total queries and errors.
 	stats := tracker.GetStats()
 	for _, s := range stats {
 		report.TotalQueries += s.ExecutionCount

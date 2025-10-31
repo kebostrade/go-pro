@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package main is the entry point for the GO-PRO Learning Platform API server.
 package main
 
 import (
@@ -20,10 +25,10 @@ import (
 const version = "1.0.0"
 
 func main() {
-	// Load configuration
+	// Load configuration.
 	cfg := config.Load()
 
-	// Initialize logger
+	// Initialize logger.
 	log := logger.New(cfg.Logger.Level, cfg.Logger.Format)
 
 	ctx := context.Background()
@@ -33,7 +38,7 @@ func main() {
 		"log_level", cfg.Logger.Level,
 	)
 
-	// Initialize dependency injection container
+	// Initialize dependency injection container.
 	containerConfig := &container.ContainerConfig{
 		Config: cfg,
 		Logger: log,
@@ -44,22 +49,26 @@ func main() {
 		log.Error(ctx, "Failed to initialize container", "error", err)
 		os.Exit(1)
 	}
-	defer appContainer.Shutdown(ctx)
+	defer func() {
+		if shutdownErr := appContainer.Shutdown(ctx); shutdownErr != nil {
+			log.Error(ctx, "Failed to shutdown container", "error", shutdownErr)
+		}
+	}()
 
-	// Initialize sample data
+	// Initialize sample data.
 	if err := initializeSampleData(ctx, appContainer.Services); err != nil {
 		log.Error(ctx, "Failed to initialize sample data", "error", err)
 		os.Exit(1)
 	}
 
-	// Initialize HTTP handler
+	// Initialize HTTP handler.
 	httpHandler := handler.New(appContainer.Services, log, appContainer.Validator)
 
-	// Setup routes
+	// Setup routes.
 	mux := http.NewServeMux()
 	httpHandler.RegisterRoutes(mux)
 
-	// Setup middleware chain
+	// Setup middleware chain.
 	middlewares := []middleware.Middleware{
 		middleware.RequestID,
 		middleware.Logging(log),
@@ -74,7 +83,7 @@ func main() {
 
 	handler := middleware.Chain(mux, middlewares...)
 
-	// Create HTTP server
+	// Create HTTP server.
 	server := &http.Server{
 		Addr:         ":" + cfg.Server.Port,
 		Handler:      handler,
@@ -83,7 +92,7 @@ func main() {
 		IdleTimeout:  cfg.Server.IdleTimeout,
 	}
 
-	// Start server in goroutine
+	// Start server in goroutine.
 	go func() {
 		log.Info(ctx, "GO-PRO API Server starting",
 			"address", "http://"+cfg.Server.Host+":"+cfg.Server.Port,
@@ -97,14 +106,14 @@ func main() {
 		}
 	}()
 
-	// Wait for interrupt signal for graceful shutdown
+	// Wait for interrupt signal for graceful shutdown.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
 	log.Info(ctx, "Shutting down server...")
 
-	// Graceful shutdown with timeout
+	// Graceful shutdown with timeout.
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -116,12 +125,14 @@ func main() {
 	log.Info(ctx, "Server exited gracefully")
 }
 
-// initializeSampleData populates the repositories with sample data
+// initializeSampleData populates the repositories with sample data.
 func initializeSampleData(ctx context.Context, services *service.Services) error {
-	// Create sample course
+	// Create sample course.
 	courseReq := &domain.CreateCourseRequest{
-		Title:       "GO-PRO: Complete Go Programming Mastery",
-		Description: "Master Go programming from basics to advanced microservices. Learn Go's syntax, concurrency patterns, web development, testing, and best practices through hands-on exercises and real-world projects.",
+		Title: "GO-PRO: Complete Go Programming Mastery",
+		Description: "Master Go programming from basics to advanced microservices. " +
+			"Learn Go's syntax, concurrency patterns, web development, testing, " +
+			"and best practices through hands-on exercises and real-world projects.",
 	}
 
 	course, err := services.Course.CreateCourse(ctx, courseReq)
@@ -129,7 +140,7 @@ func initializeSampleData(ctx context.Context, services *service.Services) error
 		return err
 	}
 
-	// Add more sample data here as services are implemented
+	// Add more sample data here as services are implemented.
 	_ = course // Prevent unused variable warning
 
 	return nil

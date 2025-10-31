@@ -1,10 +1,15 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package kafka provides functionality for the GO-PRO Learning Platform.
 package kafka
 
 import (
 	"time"
 )
 
-// Config holds Kafka configuration
+// Config holds Kafka configuration.
 type Config struct {
 	Brokers             []string
 	GroupID             string
@@ -37,7 +42,7 @@ type Config struct {
 	SendBufferBytes     int
 }
 
-// DefaultConfig returns a default Kafka configuration
+// DefaultConfig returns a default Kafka configuration.
 func DefaultConfig() *Config {
 	return &Config{
 		Brokers:             []string{"localhost:9092"},
@@ -69,7 +74,7 @@ func DefaultConfig() *Config {
 	}
 }
 
-// Topics defines the Kafka topics used by the application
+// Topics defines the Kafka topics used by the application.
 type Topics struct {
 	UserEvents         string
 	CourseEvents       string
@@ -80,7 +85,7 @@ type Topics struct {
 	AuditEvents        string
 }
 
-// DefaultTopics returns the default topic configuration
+// DefaultTopics returns the default topic configuration.
 func DefaultTopics() *Topics {
 	return &Topics{
 		UserEvents:         "go-pro.user.events",
@@ -93,50 +98,50 @@ func DefaultTopics() *Topics {
 	}
 }
 
-// EventType represents the type of event
+// EventType represents the type of event.
 type EventType string
 
 const (
-	// User events
+	// User events.
 	UserCreated   EventType = "user.created"
 	UserUpdated   EventType = "user.updated"
 	UserDeleted   EventType = "user.deleted"
 	UserLoggedIn  EventType = "user.logged_in"
 	UserLoggedOut EventType = "user.logged_out"
 
-	// Course events
+	// Course events.
 	CourseCreated   EventType = "course.created"
 	CourseUpdated   EventType = "course.updated"
 	CourseDeleted   EventType = "course.deleted"
 	CoursePublished EventType = "course.published"
 
-	// Lesson events
+	// Lesson events.
 	LessonCreated   EventType = "lesson.created"
 	LessonUpdated   EventType = "lesson.updated"
 	LessonDeleted   EventType = "lesson.deleted"
 	LessonCompleted EventType = "lesson.completed"
 
-	// Exercise events
+	// Exercise events.
 	ExerciseCreated   EventType = "exercise.created"
 	ExerciseUpdated   EventType = "exercise.updated"
 	ExerciseDeleted   EventType = "exercise.deleted"
 	ExerciseSubmitted EventType = "exercise.submitted"
 	ExerciseCompleted EventType = "exercise.completed"
 
-	// Progress events
+	// Progress events.
 	ProgressStarted   EventType = "progress.started"
 	ProgressUpdated   EventType = "progress.updated"
 	ProgressCompleted EventType = "progress.completed"
 
-	// Notification events
+	// Notification events.
 	NotificationSent EventType = "notification.sent"
 	NotificationRead EventType = "notification.read"
 
-	// Audit events
+	// Audit events.
 	AuditLog EventType = "audit.log"
 )
 
-// Event represents a generic event structure
+// Event represents a generic event structure.
 type Event struct {
 	ID        string                 `json:"id"`
 	Type      EventType              `json:"type"`
@@ -148,20 +153,20 @@ type Event struct {
 	Version   string                 `json:"version"`
 }
 
-// UserEvent represents user-related events
+// UserEvent represents user-related events.
 type UserEvent struct {
 	Event
 	UserID string `json:"user_id"`
 }
 
-// CourseEvent represents course-related events
+// CourseEvent represents course-related events.
 type CourseEvent struct {
 	Event
 	CourseID     string `json:"course_id"`
 	InstructorID string `json:"instructor_id,omitempty"`
 }
 
-// LessonEvent represents lesson-related events
+// LessonEvent represents lesson-related events.
 type LessonEvent struct {
 	Event
 	LessonID string `json:"lesson_id"`
@@ -169,7 +174,7 @@ type LessonEvent struct {
 	UserID   string `json:"user_id,omitempty"`
 }
 
-// ExerciseEvent represents exercise-related events
+// ExerciseEvent represents exercise-related events.
 type ExerciseEvent struct {
 	Event
 	ExerciseID string `json:"exercise_id"`
@@ -178,7 +183,7 @@ type ExerciseEvent struct {
 	Score      int    `json:"score,omitempty"`
 }
 
-// ProgressEvent represents progress-related events
+// ProgressEvent represents progress-related events.
 type ProgressEvent struct {
 	Event
 	UserID    string `json:"user_id"`
@@ -189,7 +194,7 @@ type ProgressEvent struct {
 	TimeSpent int    `json:"time_spent_seconds"`
 }
 
-// NotificationEvent represents notification-related events
+// NotificationEvent represents notification-related events.
 type NotificationEvent struct {
 	Event
 	UserID   string `json:"user_id"`
@@ -200,7 +205,7 @@ type NotificationEvent struct {
 	Priority string `json:"priority"`
 }
 
-// AuditEvent represents audit log events
+// AuditEvent represents audit log events.
 type AuditEvent struct {
 	Event
 	UserID       string                 `json:"user_id,omitempty"`

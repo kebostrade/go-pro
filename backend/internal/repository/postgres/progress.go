@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package postgres provides functionality for the GO-PRO Learning Platform.
 package postgres
 
 import (
@@ -12,17 +17,17 @@ import (
 	"github.com/google/uuid"
 )
 
-// ProgressRepository implements the ProgressRepository interface for PostgreSQL
+// ProgressRepository implements the ProgressRepository interface for PostgreSQL.
 type ProgressRepository struct {
 	db *DB
 }
 
-// NewProgressRepository creates a new PostgreSQL progress repository
+// NewProgressRepository creates a new PostgreSQL progress repository.
 func NewProgressRepository(db *DB) *ProgressRepository {
 	return &ProgressRepository{db: db}
 }
 
-// Create creates a new progress record in the database
+// Create creates a new progress record in the database.
 func (r *ProgressRepository) Create(ctx context.Context, progress *domain.Progress) error {
 	if progress.ID == "" {
 		progress.ID = uuid.New().String()
@@ -65,7 +70,6 @@ func (r *ProgressRepository) Create(ctx context.Context, progress *domain.Progre
 		progress.CreatedAt,
 		progress.UpdatedAt,
 	)
-
 	if err != nil {
 		return fmt.Errorf("failed to create progress: %w", err)
 	}
@@ -73,7 +77,7 @@ func (r *ProgressRepository) Create(ctx context.Context, progress *domain.Progre
 	return nil
 }
 
-// GetByID retrieves a progress record by its ID
+// GetByID retrieves a progress record by its ID.
 func (r *ProgressRepository) GetByID(ctx context.Context, id string) (*domain.Progress, error) {
 	query := `
 		SELECT id, user_id, lesson_id, status, completed_at, time_spent_seconds, created_at, updated_at
@@ -96,15 +100,15 @@ func (r *ProgressRepository) GetByID(ctx context.Context, id string) (*domain.Pr
 		&progress.CreatedAt,
 		&progress.UpdatedAt,
 	)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.NewNotFoundError(fmt.Sprintf("progress with id %s not found", id))
 		}
+
 		return nil, fmt.Errorf("failed to get progress: %w", err)
 	}
 
-	// Convert status to domain Status
+	// Convert status to domain Status.
 	progress.Status = domain.Status(status)
 	if completedAt.Valid {
 		completedAtTime := completedAt.Time
@@ -114,9 +118,9 @@ func (r *ProgressRepository) GetByID(ctx context.Context, id string) (*domain.Pr
 	return &progress, nil
 }
 
-// GetByUserID retrieves all progress records for a specific user
+// GetByUserID retrieves all progress records for a specific user.
 func (r *ProgressRepository) GetByUserID(ctx context.Context, userID string, pagination *domain.PaginationRequest) ([]*domain.Progress, int64, error) {
-	// Count total progress records for the user
+	// Count total progress records for the user.
 	countQuery := "SELECT COUNT(*) FROM gopro.user_lesson_progress WHERE user_id = $1"
 	var total int64
 	err := r.db.QueryRowContext(ctx, countQuery, userID).Scan(&total)
@@ -124,7 +128,7 @@ func (r *ProgressRepository) GetByUserID(ctx context.Context, userID string, pag
 		return nil, 0, fmt.Errorf("failed to count progress records: %w", err)
 	}
 
-	// Build query with pagination
+	// Build query with pagination.
 	query := `
 		SELECT id, user_id, lesson_id, status, completed_at, time_spent_seconds, created_at, updated_at
 		FROM gopro.user_lesson_progress
@@ -167,7 +171,7 @@ func (r *ProgressRepository) GetByUserID(ctx context.Context, userID string, pag
 			return nil, 0, fmt.Errorf("failed to scan progress: %w", err)
 		}
 
-		// Convert status to domain Status
+		// Convert status to domain Status.
 		progress.Status = domain.Status(status)
 		if completedAt.Valid {
 			completedAtTime := completedAt.Time
@@ -184,7 +188,7 @@ func (r *ProgressRepository) GetByUserID(ctx context.Context, userID string, pag
 	return progressRecords, total, nil
 }
 
-// GetByUserAndLesson retrieves a specific progress record for a user and lesson
+// GetByUserAndLesson retrieves a specific progress record for a user and lesson.
 func (r *ProgressRepository) GetByUserAndLesson(ctx context.Context, userID, lessonID string) (*domain.Progress, error) {
 	query := `
 		SELECT id, user_id, lesson_id, status, completed_at, time_spent_seconds, created_at, updated_at
@@ -207,15 +211,15 @@ func (r *ProgressRepository) GetByUserAndLesson(ctx context.Context, userID, les
 		&progress.CreatedAt,
 		&progress.UpdatedAt,
 	)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.NewNotFoundError(fmt.Sprintf("progress for user %s and lesson %s not found", userID, lessonID))
 		}
+
 		return nil, fmt.Errorf("failed to get progress: %w", err)
 	}
 
-	// Convert status to domain Status
+	// Convert status to domain Status.
 	progress.Status = domain.Status(status)
 	if completedAt.Valid {
 		completedAtTime := completedAt.Time
@@ -225,7 +229,7 @@ func (r *ProgressRepository) GetByUserAndLesson(ctx context.Context, userID, les
 	return &progress, nil
 }
 
-// Update updates an existing progress record
+// Update updates an existing progress record.
 func (r *ProgressRepository) Update(ctx context.Context, progress *domain.Progress) error {
 	query := `
 		UPDATE gopro.user_lesson_progress 
@@ -248,7 +252,6 @@ func (r *ProgressRepository) Update(ctx context.Context, progress *domain.Progre
 		completedAt,
 		progress.UpdatedAt,
 	)
-
 	if err != nil {
 		return fmt.Errorf("failed to update progress: %w", err)
 	}
@@ -265,7 +268,7 @@ func (r *ProgressRepository) Update(ctx context.Context, progress *domain.Progre
 	return nil
 }
 
-// Delete deletes a progress record by ID
+// Delete deletes a progress record by ID.
 func (r *ProgressRepository) Delete(ctx context.Context, id string) error {
 	query := "DELETE FROM gopro.user_lesson_progress WHERE id = $1"
 
@@ -286,7 +289,7 @@ func (r *ProgressRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-// GetUserProgressSummary retrieves a summary of user progress across all courses
+// GetUserProgressSummary retrieves a summary of user progress across all courses.
 func (r *ProgressRepository) GetUserProgressSummary(ctx context.Context, userID string) (*domain.UserProgressSummary, error) {
 	query := `
 		SELECT 
@@ -308,7 +311,6 @@ func (r *ProgressRepository) GetUserProgressSummary(ctx context.Context, userID 
 		&summary.TotalLessons,
 		&progressPercentage,
 	)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user progress summary: %w", err)
 	}

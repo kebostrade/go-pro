@@ -1,8 +1,13 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package testutils provides testing utilities and helpers.
 package testutils
 
 import "time"
 
-// Domain models for testing (duplicated from main package to avoid circular imports)
+// Domain models for testing (duplicated from main package to avoid circular imports).
 type Course struct {
 	ID          string   `json:"id"`
 	Title       string   `json:"title"`

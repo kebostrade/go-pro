@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package service provides functionality for the GO-PRO Learning Platform.
 package service
 
 import (
@@ -12,12 +17,10 @@ import (
 	"go-pro-backend/pkg/validator"
 )
 
-var (
-	// ErrLessonNotFound is returned when a lesson is not found
-	ErrLessonNotFound = errors.NewNotFoundError("lesson not found")
-)
+// ErrLessonNotFound is returned when a lesson is not found.
+var ErrLessonNotFound = errors.NewNotFoundError("lesson not found")
 
-// curriculumService implements the CurriculumService interface
+// curriculumService implements the CurriculumService interface.
 type curriculumService struct {
 	logger    logger.Logger
 	validator validator.Validator
@@ -25,7 +28,7 @@ type curriculumService struct {
 	messaging *messaging.Service
 }
 
-// NewCurriculumService creates a new curriculum service
+// NewCurriculumService creates a new curriculum service.
 func NewCurriculumService(config *Config) CurriculumService {
 	return &curriculumService{
 		logger:    config.Logger,
@@ -35,12 +38,12 @@ func NewCurriculumService(config *Config) CurriculumService {
 	}
 }
 
-// GetCurriculum returns the complete curriculum structure
+// GetCurriculum returns the complete curriculum structure.
 func (s *curriculumService) GetCurriculum(ctx context.Context) (*domain.Curriculum, error) {
 	s.logger.Info(ctx, "Getting curriculum")
 
-	// In a real implementation, this would come from a database or file system
-	// For now, we'll return the curriculum based on the syllabus.md structure
+	// In a real implementation, this would come from a database or file system.
+	// For now, we'll return the curriculum based on the syllabus.md structure.
 	curriculum := &domain.Curriculum{
 		ID:          "go-pro-curriculum",
 		Title:       "GO-PRO: Complete Go Programming Mastery",
@@ -407,14 +410,15 @@ func (s *curriculumService) GetCurriculum(ctx context.Context) (*domain.Curricul
 	}
 
 	s.logger.Info(ctx, "Curriculum retrieved successfully")
+
 	return curriculum, nil
 }
 
-// GetLessonDetail returns detailed information about a specific lesson
+// GetLessonDetail returns detailed information about a specific lesson.
 func (s *curriculumService) GetLessonDetail(ctx context.Context, lessonID int) (*domain.LessonDetail, error) {
 	s.logger.Info(ctx, "Getting lesson detail", "lesson_id", lessonID)
 
-	// Mock lesson data - in a real implementation, this would come from a database or file system
+	// Mock lesson data - in a real implementation, this would come from a database or file system.
 	lessonData := map[int]*domain.LessonDetail{
 		1: {
 			ID:          1,
@@ -465,22 +469,22 @@ Go has several built-in basic types:
 import "fmt"
 
 func main() {
-    // Basic variable declarations
+    // Basic variable declarations.
     var name string = "Go Programming"
     var version float64 = 1.21
     var isAwesome bool = true
     
-    // Short variable declaration
+    // Short variable declaration.
     year := 2024
     
-    // Constants
+    // Constants.
     const MaxUsers = 1000
     
-    // Type conversion
+    // Type conversion.
     var x int = 42
     var y float64 = float64(x)
     
-    // Print values
+    // Print values.
     fmt.Printf("Language: %s\n", name)
     fmt.Printf("Version: %.2f\n", version)
     fmt.Printf("Year: %d\n", year)
@@ -493,22 +497,22 @@ func main() {
 import "fmt"
 
 func main() {
-    // Basic variable declarations
+    // Basic variable declarations.
     var name string = "Go Programming"
     var version float64 = 1.21
     var isAwesome bool = true
     
-    // Short variable declaration
+    // Short variable declaration.
     year := 2024
     
-    // Constants
+    // Constants.
     const MaxUsers = 1000
     
-    // Type conversion
+    // Type conversion.
     var x int = 42
     var y float64 = float64(x)
     
-    // Print values
+    // Print values.
     fmt.Printf("Language: %s\n", name)
     fmt.Printf("Version: %.2f\n", version)
     fmt.Printf("Year: %d\n", year)
@@ -516,9 +520,9 @@ func main() {
     fmt.Printf("Max Users: %d\n", MaxUsers)
     fmt.Printf("Converted: %.1f\n", y)
     
-    // Additional examples
+    // Additional examples.
     
-    // Multiple variable declaration
+    // Multiple variable declaration.
     var (
         firstName = "John"
         lastName  = "Doe"
@@ -527,7 +531,7 @@ func main() {
     
     fmt.Printf("Full Name: %s %s, Age: %d\n", firstName, lastName, age)
     
-    // Enumerated constants
+    // Enumerated constants.
     const (
         Red = iota
         Green
@@ -553,9 +557,9 @@ func main() {
 import "fmt"
 
 func main() {
-    // TODO: Declare your variables here
+    // TODO: Declare your variables here.
     
-    // TODO: Print the values
+    // TODO: Print the values.
     
 }`,
 					Solution: `package main
@@ -563,17 +567,17 @@ func main() {
 import "fmt"
 
 func main() {
-    // Variable declarations
+    // Variable declarations.
     var name string = "Alice"
     var age int = 25
     var likesProgramming bool = true
     currentYear := 2024
     
-    // Type conversion
+    // Type conversion.
     var score int = 95
     var percentage float64 = float64(score)
     
-    // Print values
+    // Print values.
     fmt.Printf("Name: %s\n", name)
     fmt.Printf("Age: %d\n", age)
     fmt.Printf("Likes Programming: %t\n", likesProgramming)
@@ -593,5 +597,6 @@ func main() {
 	}
 
 	s.logger.Info(ctx, "Lesson detail retrieved successfully", "lesson_id", lessonID)
+
 	return lesson, nil
 }

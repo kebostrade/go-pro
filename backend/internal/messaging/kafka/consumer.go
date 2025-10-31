@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package kafka provides functionality for the GO-PRO Learning Platform.
 package kafka
 
 import (
@@ -10,20 +15,20 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// MessageHandler defines the interface for handling Kafka messages
+// MessageHandler defines the interface for handling Kafka messages.
 type MessageHandler interface {
 	HandleMessage(ctx context.Context, message *kafka.Message) error
 }
 
-// MessageHandlerFunc is a function adapter for MessageHandler
+// MessageHandlerFunc is a function adapter for MessageHandler.
 type MessageHandlerFunc func(ctx context.Context, message *kafka.Message) error
 
-// HandleMessage implements MessageHandler
+// HandleMessage implements MessageHandler.
 func (f MessageHandlerFunc) HandleMessage(ctx context.Context, message *kafka.Message) error {
 	return f(ctx, message)
 }
 
-// Consumer wraps kafka-go reader with additional functionality
+// Consumer wraps kafka-go reader with additional functionality.
 type Consumer struct {
 	reader   *kafka.Reader
 	config   *Config
@@ -31,7 +36,7 @@ type Consumer struct {
 	handlers map[string]MessageHandler
 }
 
-// NewConsumer creates a new Kafka consumer
+// NewConsumer creates a new Kafka consumer.
 func NewConsumer(config *Config, topics *Topics, consumerTopics []string) *Consumer {
 	if config == nil {
 		config = DefaultConfig()
@@ -40,8 +45,8 @@ func NewConsumer(config *Config, topics *Topics, consumerTopics []string) *Consu
 		topics = DefaultTopics()
 	}
 
-	// For kafka-go, we need to create separate readers for each topic
-	// or use the first topic if only one is specified
+	// For kafka-go, we need to create separate readers for each topic.
+	// or use the first topic if only one is specified.
 	var topic string
 	if len(consumerTopics) > 0 {
 		topic = consumerTopics[0]
@@ -68,17 +73,17 @@ func NewConsumer(config *Config, topics *Topics, consumerTopics []string) *Consu
 	}
 }
 
-// RegisterHandler registers a message handler for a specific topic
+// RegisterHandler registers a message handler for a specific topic.
 func (c *Consumer) RegisterHandler(topic string, handler MessageHandler) {
 	c.handlers[topic] = handler
 }
 
-// RegisterHandlerFunc registers a message handler function for a specific topic
+// RegisterHandlerFunc registers a message handler function for a specific topic.
 func (c *Consumer) RegisterHandlerFunc(topic string, handlerFunc MessageHandlerFunc) {
 	c.handlers[topic] = handlerFunc
 }
 
-// Start starts consuming messages
+// Start starts consuming messages.
 func (c *Consumer) Start(ctx context.Context) error {
 	for {
 		select {
@@ -93,19 +98,19 @@ func (c *Consumer) Start(ctx context.Context) error {
 
 			if err := c.processMessage(ctx, &message); err != nil {
 				log.Printf("Error processing message: %v", err)
-				// In production, you might want to send to a dead letter queue
+				// In production, you might want to send to a dead letter queue.
 				continue
 			}
 		}
 	}
 }
 
-// Close closes the consumer
+// Close closes the consumer.
 func (c *Consumer) Close() error {
 	return c.reader.Close()
 }
 
-// processMessage processes a single message
+// processMessage processes a single message.
 func (c *Consumer) processMessage(ctx context.Context, message *kafka.Message) error {
 	handler, exists := c.handlers[message.Topic]
 	if !exists {
@@ -116,12 +121,12 @@ func (c *Consumer) processMessage(ctx context.Context, message *kafka.Message) e
 	return handler.HandleMessage(ctx, message)
 }
 
-// EventConsumer provides high-level event consumption
+// EventConsumer provides high-level event consumption.
 type EventConsumer struct {
 	consumer *Consumer
 }
 
-// NewEventConsumer creates a new event consumer
+// NewEventConsumer creates a new event consumer.
 func NewEventConsumer(config *Config, topics *Topics) *EventConsumer {
 	allTopics := []string{
 		topics.UserEvents,
@@ -134,110 +139,118 @@ func NewEventConsumer(config *Config, topics *Topics) *EventConsumer {
 	}
 
 	consumer := NewConsumer(config, topics, allTopics)
+
 	return &EventConsumer{consumer: consumer}
 }
 
-// RegisterUserEventHandler registers a handler for user events
+// RegisterUserEventHandler registers a handler for user events.
 func (ec *EventConsumer) RegisterUserEventHandler(handler func(ctx context.Context, event *UserEvent) error) {
 	ec.consumer.RegisterHandlerFunc(ec.consumer.topics.UserEvents, func(ctx context.Context, message *kafka.Message) error {
 		var event UserEvent
 		if err := json.Unmarshal(message.Value, &event); err != nil {
 			return fmt.Errorf("failed to unmarshal user event: %w", err)
 		}
+
 		return handler(ctx, &event)
 	})
 }
 
-// RegisterCourseEventHandler registers a handler for course events
+// RegisterCourseEventHandler registers a handler for course events.
 func (ec *EventConsumer) RegisterCourseEventHandler(handler func(ctx context.Context, event *CourseEvent) error) {
 	ec.consumer.RegisterHandlerFunc(ec.consumer.topics.CourseEvents, func(ctx context.Context, message *kafka.Message) error {
 		var event CourseEvent
 		if err := json.Unmarshal(message.Value, &event); err != nil {
 			return fmt.Errorf("failed to unmarshal course event: %w", err)
 		}
+
 		return handler(ctx, &event)
 	})
 }
 
-// RegisterLessonEventHandler registers a handler for lesson events
+// RegisterLessonEventHandler registers a handler for lesson events.
 func (ec *EventConsumer) RegisterLessonEventHandler(handler func(ctx context.Context, event *LessonEvent) error) {
 	ec.consumer.RegisterHandlerFunc(ec.consumer.topics.LessonEvents, func(ctx context.Context, message *kafka.Message) error {
 		var event LessonEvent
 		if err := json.Unmarshal(message.Value, &event); err != nil {
 			return fmt.Errorf("failed to unmarshal lesson event: %w", err)
 		}
+
 		return handler(ctx, &event)
 	})
 }
 
-// RegisterExerciseEventHandler registers a handler for exercise events
+// RegisterExerciseEventHandler registers a handler for exercise events.
 func (ec *EventConsumer) RegisterExerciseEventHandler(handler func(ctx context.Context, event *ExerciseEvent) error) {
 	ec.consumer.RegisterHandlerFunc(ec.consumer.topics.ExerciseEvents, func(ctx context.Context, message *kafka.Message) error {
 		var event ExerciseEvent
 		if err := json.Unmarshal(message.Value, &event); err != nil {
 			return fmt.Errorf("failed to unmarshal exercise event: %w", err)
 		}
+
 		return handler(ctx, &event)
 	})
 }
 
-// RegisterProgressEventHandler registers a handler for progress events
+// RegisterProgressEventHandler registers a handler for progress events.
 func (ec *EventConsumer) RegisterProgressEventHandler(handler func(ctx context.Context, event *ProgressEvent) error) {
 	ec.consumer.RegisterHandlerFunc(ec.consumer.topics.ProgressEvents, func(ctx context.Context, message *kafka.Message) error {
 		var event ProgressEvent
 		if err := json.Unmarshal(message.Value, &event); err != nil {
 			return fmt.Errorf("failed to unmarshal progress event: %w", err)
 		}
+
 		return handler(ctx, &event)
 	})
 }
 
-// RegisterNotificationEventHandler registers a handler for notification events
+// RegisterNotificationEventHandler registers a handler for notification events.
 func (ec *EventConsumer) RegisterNotificationEventHandler(handler func(ctx context.Context, event *NotificationEvent) error) {
 	ec.consumer.RegisterHandlerFunc(ec.consumer.topics.NotificationEvents, func(ctx context.Context, message *kafka.Message) error {
 		var event NotificationEvent
 		if err := json.Unmarshal(message.Value, &event); err != nil {
 			return fmt.Errorf("failed to unmarshal notification event: %w", err)
 		}
+
 		return handler(ctx, &event)
 	})
 }
 
-// RegisterAuditEventHandler registers a handler for audit events
+// RegisterAuditEventHandler registers a handler for audit events.
 func (ec *EventConsumer) RegisterAuditEventHandler(handler func(ctx context.Context, event *AuditEvent) error) {
 	ec.consumer.RegisterHandlerFunc(ec.consumer.topics.AuditEvents, func(ctx context.Context, message *kafka.Message) error {
 		var event AuditEvent
 		if err := json.Unmarshal(message.Value, &event); err != nil {
 			return fmt.Errorf("failed to unmarshal audit event: %w", err)
 		}
+
 		return handler(ctx, &event)
 	})
 }
 
-// Start starts the event consumer
+// Start starts the event consumer.
 func (ec *EventConsumer) Start(ctx context.Context) error {
 	return ec.consumer.Start(ctx)
 }
 
-// Close closes the event consumer
+// Close closes the event consumer.
 func (ec *EventConsumer) Close() error {
 	return ec.consumer.Close()
 }
 
-// BatchConsumer provides batch message consumption
+// BatchConsumer provides batch message consumption.
 type BatchConsumer struct {
 	reader    *kafka.Reader
 	batchSize int
 	timeout   time.Duration
 }
 
-// NewBatchConsumer creates a new batch consumer
+// NewBatchConsumer creates a new batch consumer.
 func NewBatchConsumer(config *Config, topics []string, batchSize int, timeout time.Duration) *BatchConsumer {
 	if config == nil {
 		config = DefaultConfig()
 	}
 
-	// For kafka-go, use the first topic or default
+	// For kafka-go, use the first topic or default.
 	var topic string
 	if len(topics) > 0 {
 		topic = topics[0]
@@ -263,7 +276,7 @@ func NewBatchConsumer(config *Config, topics []string, batchSize int, timeout ti
 	}
 }
 
-// ConsumeBatch consumes messages in batches
+// ConsumeBatch consumes messages in batches.
 func (bc *BatchConsumer) ConsumeBatch(ctx context.Context, handler func([]kafka.Message) error) error {
 	messages := make([]kafka.Message, 0, bc.batchSize)
 	timer := time.NewTimer(bc.timeout)
@@ -275,6 +288,7 @@ func (bc *BatchConsumer) ConsumeBatch(ctx context.Context, handler func([]kafka.
 			if len(messages) > 0 {
 				return handler(messages)
 			}
+
 			return ctx.Err()
 		case <-timer.C:
 			if len(messages) > 0 {
@@ -302,7 +316,7 @@ func (bc *BatchConsumer) ConsumeBatch(ctx context.Context, handler func([]kafka.
 	}
 }
 
-// Close closes the batch consumer
+// Close closes the batch consumer.
 func (bc *BatchConsumer) Close() error {
 	return bc.reader.Close()
 }

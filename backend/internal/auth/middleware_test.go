@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package auth provides functionality for the GO-PRO Learning Platform.
 package auth
 
 import (
@@ -7,10 +12,10 @@ import (
 	"testing"
 	"time"
 
+	"go-pro-backend/internal/testutil"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"go-pro-backend/internal/testutil"
 )
 
 func TestAuthenticate(t *testing.T) {
@@ -35,7 +40,7 @@ func TestAuthenticate(t *testing.T) {
 		{
 			name: "missing authorization header",
 			setupRequest: func(r *http.Request) {
-				// No authorization header
+				// No authorization header.
 			},
 			expectedStatus: http.StatusUnauthorized,
 			expectUserInfo: false,
@@ -59,7 +64,7 @@ func TestAuthenticate(t *testing.T) {
 		{
 			name: "expired token",
 			setupRequest: func(r *http.Request) {
-				// Create a JWT manager with very short expiration
+				// Create a JWT manager with very short expiration.
 				shortJWT := NewJWTManager([]byte("test-secret"), 1*time.Nanosecond, "test-issuer", logger)
 				token, _ := shortJWT.GenerateToken("user-1", "test@example.com", "testuser", []string{"student"})
 				time.Sleep(10 * time.Millisecond) // Wait for token to expire
@@ -72,7 +77,7 @@ func TestAuthenticate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create test handler
+			// Create test handler.
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if tt.expectUserInfo {
 					userInfo := GetUserInfo(r.Context())
@@ -83,21 +88,21 @@ func TestAuthenticate(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			})
 
-			// Wrap with authentication middleware
+			// Wrap with authentication middleware.
 			middleware := Authenticate(jwtManager)
 			wrappedHandler := middleware(handler)
 
-			// Create request
-			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			// Create request.
+			req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
 			tt.setupRequest(req)
 
-			// Create response recorder
+			// Create response recorder.
 			rr := httptest.NewRecorder()
 
-			// Execute request
+			// Execute request.
 			wrappedHandler.ServeHTTP(rr, req)
 
-			// Assert
+			// Assert.
 			assert.Equal(t, tt.expectedStatus, rr.Code)
 		})
 	}
@@ -138,34 +143,34 @@ func TestRequireRoles(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create test handler
+			// Create test handler.
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 			})
 
-			// Create user context
+			// Create user context.
 			userInfo := &UserInfo{
 				ID:    "user-1",
 				Email: "test@example.com",
 				Roles: tt.userRoles,
 			}
 
-			// Wrap with role middleware
+			// Wrap with role middleware.
 			middleware := RequireRoles(tt.requiredRoles...)
 			wrappedHandler := middleware(handler)
 
-			// Create request with user context
-			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			// Create request with user context.
+			req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
 			ctx := context.WithValue(req.Context(), userInfoKey, userInfo)
 			req = req.WithContext(ctx)
 
-			// Create response recorder
+			// Create response recorder.
 			rr := httptest.NewRecorder()
 
-			// Execute request
+			// Execute request.
 			wrappedHandler.ServeHTTP(rr, req)
 
-			// Assert
+			// Assert.
 			assert.Equal(t, tt.expectedStatus, rr.Code)
 		})
 	}
@@ -196,34 +201,34 @@ func TestRequireAdmin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create test handler
+			// Create test handler.
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 			})
 
-			// Create user context
+			// Create user context.
 			userInfo := &UserInfo{
 				ID:    "user-1",
 				Email: "test@example.com",
 				Roles: tt.userRoles,
 			}
 
-			// Wrap with admin middleware
+			// Wrap with admin middleware.
 			middleware := RequireAdmin()
 			wrappedHandler := middleware(handler)
 
-			// Create request with user context
-			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			// Create request with user context.
+			req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
 			ctx := context.WithValue(req.Context(), userInfoKey, userInfo)
 			req = req.WithContext(ctx)
 
-			// Create response recorder
+			// Create response recorder.
 			rr := httptest.NewRecorder()
 
-			// Execute request
+			// Execute request.
 			wrappedHandler.ServeHTTP(rr, req)
 
-			// Assert
+			// Assert.
 			assert.Equal(t, tt.expectedStatus, rr.Code)
 		})
 	}
@@ -251,7 +256,7 @@ func TestOptionalAuth(t *testing.T) {
 		{
 			name: "no token provided",
 			setupRequest: func(r *http.Request) {
-				// No authorization header
+				// No authorization header.
 			},
 			expectedStatus: http.StatusOK,
 			expectUserInfo: false,
@@ -268,7 +273,7 @@ func TestOptionalAuth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create test handler
+			// Create test handler.
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				userInfo := GetUserInfo(r.Context())
 				if tt.expectUserInfo {
@@ -279,21 +284,21 @@ func TestOptionalAuth(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			})
 
-			// Wrap with optional auth middleware
+			// Wrap with optional auth middleware.
 			middleware := OptionalAuth(jwtManager)
 			wrappedHandler := middleware(handler)
 
-			// Create request
-			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			// Create request.
+			req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
 			tt.setupRequest(req)
 
-			// Create response recorder
+			// Create response recorder.
 			rr := httptest.NewRecorder()
 
-			// Execute request
+			// Execute request.
 			wrappedHandler.ServeHTTP(rr, req)
 
-			// Assert
+			// Assert.
 			assert.Equal(t, tt.expectedStatus, rr.Code)
 		})
 	}
@@ -313,6 +318,7 @@ func TestGetUserInfo(t *testing.T) {
 					Email: "test@example.com",
 					Roles: []string{"student"},
 				}
+
 				return context.WithValue(context.Background(), userInfoKey, userInfo)
 			},
 			expected: &UserInfo{

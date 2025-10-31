@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package postgres provides functionality for the GO-PRO Learning Platform.
 package postgres
 
 import (
@@ -13,17 +18,17 @@ import (
 	"github.com/google/uuid"
 )
 
-// CourseRepository implements the CourseRepository interface for PostgreSQL
+// CourseRepository implements the CourseRepository interface for PostgreSQL.
 type CourseRepository struct {
 	db *DB
 }
 
-// NewCourseRepository creates a new PostgreSQL course repository
+// NewCourseRepository creates a new PostgreSQL course repository.
 func NewCourseRepository(db *DB) *CourseRepository {
 	return &CourseRepository{db: db}
 }
 
-// Create creates a new course in the database
+// Create creates a new course in the database.
 func (r *CourseRepository) Create(ctx context.Context, course *domain.Course) error {
 	if course.ID == "" {
 		course.ID = uuid.New().String()
@@ -52,18 +57,18 @@ func (r *CourseRepository) Create(ctx context.Context, course *domain.Course) er
 		course.CreatedAt,
 		course.UpdatedAt,
 	)
-
 	if err != nil {
 		if IsUniqueViolation(err) {
 			return errors.NewConflictError(fmt.Sprintf("course with title '%s' already exists", course.Title))
 		}
+
 		return fmt.Errorf("failed to create course: %w", err)
 	}
 
 	return nil
 }
 
-// GetByID retrieves a course by its ID
+// GetByID retrieves a course by its ID.
 func (r *CourseRepository) GetByID(ctx context.Context, id string) (*domain.Course, error) {
 	query := `
 		SELECT c.id, c.title, c.description, c.created_at, c.updated_at,
@@ -85,21 +90,22 @@ func (r *CourseRepository) GetByID(ctx context.Context, id string) (*domain.Cour
 		&course.UpdatedAt,
 		&lessonIDs,
 	)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.NewNotFoundError(fmt.Sprintf("course with id %s not found", id))
 		}
+
 		return nil, fmt.Errorf("failed to get course: %w", err)
 	}
 
 	course.Lessons = lessonIDs
+
 	return &course, nil
 }
 
-// GetAll retrieves all courses with pagination
+// GetAll retrieves all courses with pagination.
 func (r *CourseRepository) GetAll(ctx context.Context, pagination *domain.PaginationRequest) ([]*domain.Course, int64, error) {
-	// Count total courses
+	// Count total courses.
 	countQuery := "SELECT COUNT(*) FROM gopro.courses WHERE is_published = true"
 	var total int64
 	err := r.db.QueryRowContext(ctx, countQuery).Scan(&total)
@@ -107,7 +113,7 @@ func (r *CourseRepository) GetAll(ctx context.Context, pagination *domain.Pagina
 		return nil, 0, fmt.Errorf("failed to count courses: %w", err)
 	}
 
-	// Build query with pagination
+	// Build query with pagination.
 	query := `
 		SELECT c.id, c.title, c.description, c.created_at, c.updated_at,
 		       COALESCE(array_agg(l.id) FILTER (WHERE l.id IS NOT NULL), '{}') as lesson_ids
@@ -160,7 +166,7 @@ func (r *CourseRepository) GetAll(ctx context.Context, pagination *domain.Pagina
 	return courses, total, nil
 }
 
-// Update updates an existing course
+// Update updates an existing course.
 func (r *CourseRepository) Update(ctx context.Context, course *domain.Course) error {
 	query := `
 		UPDATE gopro.courses 
@@ -177,11 +183,11 @@ func (r *CourseRepository) Update(ctx context.Context, course *domain.Course) er
 		course.Description, // Using description as long_description
 		course.UpdatedAt,
 	)
-
 	if err != nil {
 		if IsUniqueViolation(err) {
 			return errors.NewConflictError(fmt.Sprintf("course with title '%s' already exists", course.Title))
 		}
+
 		return fmt.Errorf("failed to update course: %w", err)
 	}
 
@@ -197,7 +203,7 @@ func (r *CourseRepository) Update(ctx context.Context, course *domain.Course) er
 	return nil
 }
 
-// Delete deletes a course by ID
+// Delete deletes a course by ID.
 func (r *CourseRepository) Delete(ctx context.Context, id string) error {
 	query := "DELETE FROM gopro.courses WHERE id = $1"
 
@@ -218,7 +224,7 @@ func (r *CourseRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-// Search searches for courses by title or description
+// Search searches for courses by title or description.
 func (r *CourseRepository) Search(ctx context.Context, query string, pagination *domain.PaginationRequest) ([]*domain.Course, int64, error) {
 	searchQuery := `
 		SELECT c.id, c.title, c.description, c.created_at, c.updated_at,
@@ -268,7 +274,7 @@ func (r *CourseRepository) Search(ctx context.Context, query string, pagination 
 		courses = append(courses, &course)
 	}
 
-	// Count total matching courses
+	// Count total matching courses.
 	countQuery := `
 		SELECT COUNT(*) 
 		FROM gopro.courses 
@@ -284,11 +290,12 @@ func (r *CourseRepository) Search(ctx context.Context, query string, pagination 
 	return courses, total, nil
 }
 
-// generateSlug creates a URL-friendly slug from a title
+// generateSlug creates a URL-friendly slug from a title.
 func generateSlug(title string) string {
 	slug := strings.ToLower(title)
 	slug = strings.ReplaceAll(slug, " ", "-")
 	slug = strings.ReplaceAll(slug, ":", "")
 	slug = strings.ReplaceAll(slug, "'", "")
+
 	return slug
 }

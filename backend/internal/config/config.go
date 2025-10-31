@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package config provides configuration management for the GO-PRO Learning Platform.
 package config
 
 import (
@@ -7,7 +12,7 @@ import (
 	"time"
 )
 
-// Config holds all configuration for our application
+// Config holds all configuration for our application.
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
@@ -15,7 +20,7 @@ type Config struct {
 	CORS     CORSConfig
 }
 
-// ServerConfig holds HTTP server configuration
+// ServerConfig holds HTTP server configuration.
 type ServerConfig struct {
 	Host         string
 	Port         string
@@ -24,12 +29,12 @@ type ServerConfig struct {
 	IdleTimeout  time.Duration
 }
 
-// CORSConfig holds CORS configuration
+// CORSConfig holds CORS configuration.
 type CORSConfig struct {
 	AllowedOrigins []string
 }
 
-// DatabaseConfig holds database configuration
+// DatabaseConfig holds database configuration.
 type DatabaseConfig struct {
 	Driver          string
 	DSN             string
@@ -45,13 +50,13 @@ type DatabaseConfig struct {
 	ConnMaxIdleTime time.Duration
 }
 
-// LoggerConfig holds logging configuration
+// LoggerConfig holds logging configuration.
 type LoggerConfig struct {
 	Level  string
 	Format string
 }
 
-// Load reads configuration from environment variables with sensible defaults
+// Load reads configuration from environment variables with sensible defaults.
 func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -85,38 +90,42 @@ func Load() *Config {
 	}
 }
 
-// getSliceEnv reads a comma-separated environment variable or returns a default value
+// getSliceEnv reads a comma-separated environment variable or returns a default value.
 func getSliceEnv(key string, defaultValue []string) []string {
 	if value := os.Getenv(key); value != "" {
 		return strings.Split(value, ",")
 	}
+
 	return defaultValue
 }
 
-// getEnv reads an environment variable or returns a default value
+// getEnv reads an environment variable or returns a default value.
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
+
 	return defaultValue
 }
 
-// getDurationEnv reads a duration environment variable or returns a default value
+// getDurationEnv reads a duration environment variable or returns a default value.
 func getDurationEnv(key string, defaultValue time.Duration) time.Duration {
 	if value := os.Getenv(key); value != "" {
 		if duration, err := time.ParseDuration(value); err == nil {
 			return duration
 		}
 	}
+
 	return defaultValue
 }
 
-// getIntEnv reads an integer environment variable or returns a default value
+// getIntEnv reads an integer environment variable or returns a default value.
 func getIntEnv(key string, defaultValue int) int {
 	if value := os.Getenv(key); value != "" {
 		if intValue, err := strconv.Atoi(value); err == nil {
 			return intValue
 		}
 	}
+
 	return defaultValue
 }

@@ -1,6 +1,7 @@
 //go:build integration
 // +build integration
 
+// Package postgres provides functionality for the GO-PRO Learning Platform.
 package postgres
 
 import (
@@ -19,7 +20,7 @@ func TestCourseRepository_Create(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	// Arrange
+	// Arrange.
 	db := testutil.NewTestDB(t)
 	defer db.Cleanup()
 
@@ -29,13 +30,13 @@ func TestCourseRepository_Create(t *testing.T) {
 	repo := NewCourseRepository(db.DB)
 	course := testutil.CreateTestCourse("course-1", "Go Programming")
 
-	// Act
+	// Act.
 	err := repo.Create(ctx, course)
 
-	// Assert
+	// Assert.
 	require.NoError(t, err)
 
-	// Verify course was created
+	// Verify course was created.
 	retrieved, err := repo.GetByID(ctx, "course-1")
 	require.NoError(t, err)
 	assert.Equal(t, course.ID, retrieved.ID)
@@ -75,7 +76,7 @@ func TestCourseRepository_GetByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
+			// Arrange.
 			db := testutil.NewTestDB(t)
 			defer db.Cleanup()
 
@@ -85,10 +86,10 @@ func TestCourseRepository_GetByID(t *testing.T) {
 			repo := NewCourseRepository(db.DB)
 			tt.setupData(repo)
 
-			// Act
+			// Act.
 			course, err := repo.GetByID(ctx, tt.courseID)
 
-			// Assert
+			// Assert.
 			if tt.wantErr {
 				require.Error(t, err)
 				if tt.errContains != "" {
@@ -109,7 +110,7 @@ func TestCourseRepository_GetBySlug(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	// Arrange
+	// Arrange.
 	db := testutil.NewTestDB(t)
 	defer db.Cleanup()
 
@@ -121,10 +122,10 @@ func TestCourseRepository_GetBySlug(t *testing.T) {
 	err := repo.Create(ctx, course)
 	require.NoError(t, err)
 
-	// Act
+	// Act.
 	retrieved, err := repo.GetBySlug(ctx, course.Slug)
 
-	// Assert
+	// Assert.
 	require.NoError(t, err)
 	assert.Equal(t, course.ID, retrieved.ID)
 	assert.Equal(t, course.Slug, retrieved.Slug)
@@ -135,7 +136,7 @@ func TestCourseRepository_List(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	// Arrange
+	// Arrange.
 	db := testutil.NewTestDB(t)
 	defer db.Cleanup()
 
@@ -144,7 +145,7 @@ func TestCourseRepository_List(t *testing.T) {
 
 	repo := NewCourseRepository(db.DB)
 
-	// Create multiple courses
+	// Create multiple courses.
 	courses := []*domain.Course{
 		testutil.CreateTestCourse("course-1", "Go Basics"),
 		testutil.CreateTestCourse("course-2", "Advanced Go"),
@@ -156,14 +157,14 @@ func TestCourseRepository_List(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	// Act
+	// Act.
 	req := &domain.PaginationRequest{
 		Page:     1,
 		PageSize: 10,
 	}
 	result, err := repo.List(ctx, req)
 
-	// Assert
+	// Assert.
 	require.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, 3, len(result.Items))
@@ -176,7 +177,7 @@ func TestCourseRepository_Update(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	// Arrange
+	// Arrange.
 	db := testutil.NewTestDB(t)
 	defer db.Cleanup()
 
@@ -188,17 +189,17 @@ func TestCourseRepository_Update(t *testing.T) {
 	err := repo.Create(ctx, course)
 	require.NoError(t, err)
 
-	// Modify course
+	// Modify course.
 	course.Title = "Updated Go Programming"
 	course.Difficulty = domain.DifficultyAdvanced
 
-	// Act
+	// Act.
 	err = repo.Update(ctx, course)
 
-	// Assert
+	// Assert.
 	require.NoError(t, err)
 
-	// Verify update
+	// Verify update.
 	retrieved, err := repo.GetByID(ctx, "course-1")
 	require.NoError(t, err)
 	assert.Equal(t, "Updated Go Programming", retrieved.Title)
@@ -210,7 +211,7 @@ func TestCourseRepository_Delete(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	// Arrange
+	// Arrange.
 	db := testutil.NewTestDB(t)
 	defer db.Cleanup()
 
@@ -222,13 +223,13 @@ func TestCourseRepository_Delete(t *testing.T) {
 	err := repo.Create(ctx, course)
 	require.NoError(t, err)
 
-	// Act
+	// Act.
 	err = repo.Delete(ctx, "course-1")
 
-	// Assert
+	// Assert.
 	require.NoError(t, err)
 
-	// Verify deletion
+	// Verify deletion.
 	_, err = repo.GetByID(ctx, "course-1")
 	assert.Error(t, err)
 }
@@ -238,7 +239,7 @@ func TestCourseRepository_Pagination(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	// Arrange
+	// Arrange.
 	db := testutil.NewTestDB(t)
 	defer db.Cleanup()
 
@@ -247,7 +248,7 @@ func TestCourseRepository_Pagination(t *testing.T) {
 
 	repo := NewCourseRepository(db.DB)
 
-	// Create 25 courses
+	// Create 25 courses.
 	for i := 1; i <= 25; i++ {
 		course := testutil.CreateTestCourse(
 			testutil.RandomString(10),
@@ -289,14 +290,14 @@ func TestCourseRepository_Pagination(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Act
+			// Act.
 			req := &domain.PaginationRequest{
 				Page:     tt.page,
 				PageSize: tt.pageSize,
 			}
 			result, err := repo.List(ctx, req)
 
-			// Assert
+			// Assert.
 			require.NoError(t, err)
 			assert.Equal(t, tt.expectedItems, len(result.Items))
 			assert.Equal(t, 25, result.TotalItems)
@@ -306,7 +307,7 @@ func TestCourseRepository_Pagination(t *testing.T) {
 	}
 }
 
-// Benchmark tests
+// Benchmark tests.
 func BenchmarkCourseRepository_Create(b *testing.B) {
 	db := testutil.NewTestDB(&testing.T{})
 	defer db.Cleanup()

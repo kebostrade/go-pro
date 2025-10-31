@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package security provides authentication, authorization, and security middleware.
 package security
 
 import (
@@ -7,7 +12,7 @@ import (
 	"time"
 )
 
-// SecurityConfig holds all security-related configuration
+// SecurityConfig holds all security-related configuration.
 type SecurityConfig struct {
 	JWT        JWTConfig
 	CORS       CORSConfig
@@ -78,7 +83,7 @@ type LoggingConfig struct {
 	LogFormat        string
 }
 
-// NewSecurityConfig creates a new security configuration with secure defaults
+// NewSecurityConfig creates a new security configuration with secure defaults.
 func NewSecurityConfig() *SecurityConfig {
 	return &SecurityConfig{
 		JWT: JWTConfig{
@@ -135,11 +140,12 @@ func NewSecurityConfig() *SecurityConfig {
 	}
 }
 
-// Helper functions for environment variable parsing
+// Helper functions for environment variable parsing.
 func getEnvOrDefault(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
+
 	return defaultValue
 }
 
@@ -149,6 +155,7 @@ func getIntEnv(key string, defaultValue int) int {
 			return intValue
 		}
 	}
+
 	return defaultValue
 }
 
@@ -158,22 +165,24 @@ func getBoolEnv(key string, defaultValue bool) bool {
 			return boolValue
 		}
 	}
+
 	return defaultValue
 }
 
 func getJWTSecret() []byte {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		// In production, this should be set as an environment variable
+		// In production, this should be set as an environment variable.
 		secret = "your-super-secure-jwt-secret-change-in-production-min-32-chars"
 	}
+
 	return []byte(secret)
 }
 
 func getAllowedOrigins() []string {
 	origins := os.Getenv("CORS_ALLOWED_ORIGINS")
 	if origins == "" {
-		// Secure default - only localhost for development
+		// Secure default - only localhost for development.
 		return []string{
 			"http://localhost:3000",
 			"http://localhost:8080",
@@ -181,10 +190,11 @@ func getAllowedOrigins() []string {
 			"http://127.0.0.1:8080",
 		}
 	}
+
 	return strings.Split(origins, ",")
 }
 
 func generateSecureAPIKey() string {
-	// This should be generated securely and stored as env var in production
+	// This should be generated securely and stored as env var in production.
 	return "admin-api-key-change-in-production-12345678"
 }

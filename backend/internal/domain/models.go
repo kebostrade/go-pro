@@ -1,10 +1,15 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package domain defines the core business entities and models.
 package domain
 
 import (
 	"time"
 )
 
-// Course represents a learning course
+// Course represents a learning course.
 type Course struct {
 	ID          string    `json:"id" validate:"required,slug"`
 	Title       string    `json:"title" validate:"required,min=3,max=200"`
@@ -14,7 +19,7 @@ type Course struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-// Lesson represents a course lesson
+// Lesson represents a course lesson.
 type Lesson struct {
 	ID          string    `json:"id" validate:"required,slug"`
 	CourseID    string    `json:"course_id" validate:"required,slug"`
@@ -27,7 +32,7 @@ type Lesson struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-// Exercise represents a coding exercise
+// Exercise represents a coding exercise.
 type Exercise struct {
 	ID          string     `json:"id" validate:"required,slug"`
 	LessonID    string     `json:"lesson_id" validate:"required,slug"`
@@ -39,7 +44,7 @@ type Exercise struct {
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
-// Status represents progress status levels
+// Status represents progress status levels.
 type Status string
 
 const (
@@ -48,7 +53,7 @@ const (
 	StatusCompleted  Status = "completed"
 )
 
-// IsValid checks if the status is valid
+// IsValid checks if the status is valid.
 func (s Status) IsValid() bool {
 	switch s {
 	case StatusNotStarted, StatusInProgress, StatusCompleted:
@@ -58,12 +63,12 @@ func (s Status) IsValid() bool {
 	}
 }
 
-// String returns the string representation of status
+// String returns the string representation of status.
 func (s Status) String() string {
 	return string(s)
 }
 
-// Progress represents user learning progress
+// Progress represents user learning progress.
 type Progress struct {
 	ID          string     `json:"id"`
 	UserID      string     `json:"user_id" validate:"required"`
@@ -74,7 +79,7 @@ type Progress struct {
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
-// UserProgressSummary represents a summary of user progress
+// UserProgressSummary represents a summary of user progress.
 type UserProgressSummary struct {
 	UserID           string `json:"user_id"`
 	LessonsStarted   int    `json:"lessons_started"`
@@ -83,7 +88,7 @@ type UserProgressSummary struct {
 	OverallProgress  int    `json:"overall_progress"`
 }
 
-// Difficulty represents exercise difficulty levels
+// Difficulty represents exercise difficulty levels.
 type Difficulty string
 
 const (
@@ -93,7 +98,7 @@ const (
 	DifficultyExpert       Difficulty = "expert"
 )
 
-// IsValid checks if the difficulty is valid
+// IsValid checks if the difficulty is valid.
 func (d Difficulty) IsValid() bool {
 	switch d {
 	case DifficultyBeginner, DifficultyIntermediate, DifficultyAdvanced, DifficultyExpert:
@@ -103,24 +108,24 @@ func (d Difficulty) IsValid() bool {
 	}
 }
 
-// String returns the string representation of difficulty
+// String returns the string representation of difficulty.
 func (d Difficulty) String() string {
 	return string(d)
 }
 
-// CreateCourseRequest represents a request to create a new course
+// CreateCourseRequest represents a request to create a new course.
 type CreateCourseRequest struct {
 	Title       string `json:"title" validate:"required,min=3,max=200"`
 	Description string `json:"description" validate:"required,min=10,max=1000"`
 }
 
-// UpdateCourseRequest represents a request to update a course
+// UpdateCourseRequest represents a request to update a course.
 type UpdateCourseRequest struct {
 	Title       *string `json:"title,omitempty" validate:"omitempty,min=3,max=200"`
 	Description *string `json:"description,omitempty" validate:"omitempty,min=10,max=1000"`
 }
 
-// CreateLessonRequest represents a request to create a new lesson
+// CreateLessonRequest represents a request to create a new lesson.
 type CreateLessonRequest struct {
 	CourseID    string `json:"course_id" validate:"required,slug"`
 	Title       string `json:"title" validate:"required,min=3,max=200"`
@@ -129,7 +134,7 @@ type CreateLessonRequest struct {
 	Order       int    `json:"order" validate:"required,min=1"`
 }
 
-// UpdateLessonRequest represents a request to update a lesson
+// UpdateLessonRequest represents a request to update a lesson.
 type UpdateLessonRequest struct {
 	Title       *string `json:"title,omitempty" validate:"omitempty,min=3,max=200"`
 	Description *string `json:"description,omitempty" validate:"omitempty,min=10,max=1000"`
@@ -137,7 +142,7 @@ type UpdateLessonRequest struct {
 	Order       *int    `json:"order,omitempty" validate:"omitempty,min=1"`
 }
 
-// CreateExerciseRequest represents a request to create a new exercise
+// CreateExerciseRequest represents a request to create a new exercise.
 type CreateExerciseRequest struct {
 	LessonID    string     `json:"lesson_id" validate:"required,slug"`
 	Title       string     `json:"title" validate:"required,min=3,max=200"`
@@ -146,7 +151,7 @@ type CreateExerciseRequest struct {
 	Difficulty  Difficulty `json:"difficulty" validate:"required"`
 }
 
-// UpdateExerciseRequest represents a request to update an exercise
+// UpdateExerciseRequest represents a request to update an exercise.
 type UpdateExerciseRequest struct {
 	Title       *string     `json:"title,omitempty" validate:"omitempty,min=3,max=200"`
 	Description *string     `json:"description,omitempty" validate:"omitempty,min=10,max=1000"`
@@ -154,24 +159,24 @@ type UpdateExerciseRequest struct {
 	Difficulty  *Difficulty `json:"difficulty,omitempty"`
 }
 
-// CreateProgressRequest represents a request to create a new progress record
+// CreateProgressRequest represents a request to create a new progress record.
 type CreateProgressRequest struct {
 	UserID   string `json:"user_id" validate:"required"`
 	LessonID string `json:"lesson_id" validate:"required,slug"`
 	Status   Status `json:"status" validate:"required"`
 }
 
-// UpdateProgressRequest represents a request to update a progress record
+// UpdateProgressRequest represents a request to update a progress record.
 type UpdateProgressRequest struct {
 	Status *Status `json:"status,omitempty"`
 }
 
-// SubmitExerciseRequest represents a request to submit an exercise solution
+// SubmitExerciseRequest represents a request to submit an exercise solution.
 type SubmitExerciseRequest struct {
 	Code string `json:"code" validate:"required"`
 }
 
-// ExerciseSubmissionResult represents the result of an exercise submission
+// ExerciseSubmissionResult represents the result of an exercise submission.
 type ExerciseSubmissionResult struct {
 	ExerciseID  string       `json:"exercise_id"`
 	Score       int          `json:"score"`
@@ -181,7 +186,7 @@ type ExerciseSubmissionResult struct {
 	SubmittedAt time.Time    `json:"submitted_at"`
 }
 
-// TestResult represents the result of a single test case
+// TestResult represents the result of a single test case.
 type TestResult struct {
 	Name     string `json:"name"`
 	Passed   bool   `json:"passed"`
@@ -190,7 +195,7 @@ type TestResult struct {
 	Error    string `json:"error,omitempty"`
 }
 
-// User represents a user in the system
+// User represents a user in the system.
 type User struct {
 	ID           string     `json:"id"`
 	Username     string     `json:"username" validate:"required,min=3,max=50"`
@@ -205,7 +210,7 @@ type User struct {
 	LastLoginAt  *time.Time `json:"last_login_at,omitempty"`
 }
 
-// RegisterRequest represents a user registration request
+// RegisterRequest represents a user registration request.
 type RegisterRequest struct {
 	Username  string `json:"username" validate:"required,min=3,max=50"`
 	Email     string `json:"email" validate:"required,email"`
@@ -214,31 +219,31 @@ type RegisterRequest struct {
 	LastName  string `json:"last_name,omitempty" validate:"max=50"`
 }
 
-// LoginRequest represents a user login request
+// LoginRequest represents a user login request.
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
 
-// RefreshTokenRequest represents a token refresh request
+// RefreshTokenRequest represents a token refresh request.
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
-// ChangePasswordRequest represents a password change request
+// ChangePasswordRequest represents a password change request.
 type ChangePasswordRequest struct {
 	OldPassword string `json:"old_password" validate:"required"`
 	NewPassword string `json:"new_password" validate:"required,min=8,max=100"`
 }
 
-// UpdateProfileRequest represents a profile update request
+// UpdateProfileRequest represents a profile update request.
 type UpdateProfileRequest struct {
 	FirstName *string `json:"first_name,omitempty" validate:"omitempty,max=50"`
 	LastName  *string `json:"last_name,omitempty" validate:"omitempty,max=50"`
 	Username  *string `json:"username,omitempty" validate:"omitempty,min=3,max=50"`
 }
 
-// HealthResponse represents a health check response
+// HealthResponse represents a health check response.
 type HealthResponse struct {
 	Status    string    `json:"status"`
 	Timestamp time.Time `json:"timestamp"`
@@ -246,7 +251,7 @@ type HealthResponse struct {
 	Uptime    string    `json:"uptime"`
 }
 
-// APIResponse represents a standard API response
+// APIResponse represents a standard API response.
 type APIResponse struct {
 	Success   bool        `json:"success"`
 	Data      interface{} `json:"data,omitempty"`
@@ -256,20 +261,20 @@ type APIResponse struct {
 	Timestamp time.Time   `json:"timestamp"`
 }
 
-// APIError represents an error in API responses
+// APIError represents an error in API responses.
 type APIError struct {
 	Type    string            `json:"type"`
 	Message string            `json:"message"`
 	Details map[string]string `json:"details,omitempty"`
 }
 
-// PaginationRequest represents pagination parameters
+// PaginationRequest represents pagination parameters.
 type PaginationRequest struct {
 	Page     int `json:"page" validate:"min=1"`
 	PageSize int `json:"page_size" validate:"min=1,max=100"`
 }
 
-// PaginationResponse represents pagination metadata
+// PaginationResponse represents pagination metadata.
 type PaginationResponse struct {
 	Page       int   `json:"page"`
 	PageSize   int   `json:"page_size"`
@@ -279,13 +284,13 @@ type PaginationResponse struct {
 	HasPrev    bool  `json:"has_prev"`
 }
 
-// ListResponse represents a paginated list response
+// ListResponse represents a paginated list response.
 type ListResponse struct {
 	Items      interface{}         `json:"items"`
 	Pagination *PaginationResponse `json:"pagination,omitempty"`
 }
 
-// Curriculum represents the complete learning curriculum
+// Curriculum represents the complete learning curriculum.
 type Curriculum struct {
 	ID          string            `json:"id"`
 	Title       string            `json:"title"`
@@ -297,7 +302,7 @@ type Curriculum struct {
 	UpdatedAt   time.Time         `json:"updated_at"`
 }
 
-// CurriculumPhase represents a phase in the curriculum
+// CurriculumPhase represents a phase in the curriculum.
 type CurriculumPhase struct {
 	ID          string             `json:"id"`
 	Title       string             `json:"title"`
@@ -310,7 +315,7 @@ type CurriculumPhase struct {
 	Progress    int                `json:"progress"`
 }
 
-// CurriculumLesson represents a lesson in the curriculum
+// CurriculumLesson represents a lesson in the curriculum.
 type CurriculumLesson struct {
 	ID          int        `json:"id"`
 	Title       string     `json:"title"`
@@ -323,7 +328,7 @@ type CurriculumLesson struct {
 	Order       int        `json:"order"`
 }
 
-// Project represents a hands-on project
+// Project represents a hands-on project.
 type Project struct {
 	ID          string     `json:"id"`
 	Title       string     `json:"title"`
@@ -337,7 +342,7 @@ type Project struct {
 	Order       int        `json:"order"`
 }
 
-// LessonDetail represents detailed lesson content
+// LessonDetail represents detailed lesson content.
 type LessonDetail struct {
 	ID           int              `json:"id"`
 	Title        string           `json:"title"`
@@ -354,7 +359,7 @@ type LessonDetail struct {
 	PrevLessonID *int             `json:"prev_lesson_id,omitempty"`
 }
 
-// LessonExercise represents an exercise within a lesson
+// LessonExercise represents an exercise within a lesson.
 type LessonExercise struct {
 	ID           string   `json:"id"`
 	Title        string   `json:"title"`

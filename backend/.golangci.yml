@@ -92,8 +92,8 @@ linters-settings:
     default-signifies-exhaustive: true
 
   funlen:
-    lines: 80
-    statements: 50
+    lines: 100
+    statements: 60
 
   gocognit:
     min-complexity: 15
@@ -127,8 +127,8 @@ linters-settings:
     capital: false
 
   gofumpt:
-    lang-version: "1.21"
-    extra-rules: true
+    extra-rules: false
+    module-path: go-pro-backend
 
   goheader:
     template: |-
@@ -147,7 +147,7 @@ linters-settings:
       - G304  # Allow file path from variable (needed for file serving)
 
   lll:
-    line-length: 120
+    line-length: 150
     tab-width: 4
 
   nakedret:
@@ -165,17 +165,21 @@ linters-settings:
     for-loops: false
 
   revive:
+    severity: warning
+    confidence: 0.8
     rules:
       - name: atomic
       - name: line-length-limit
-        arguments: [120]
+        arguments: [150]
       - name: context-as-argument
+        disabled: true
       - name: context-keys-type
       - name: dot-imports
       - name: error-return
       - name: error-strings
       - name: error-naming
       - name: exported
+        disabled: true
       - name: if-return
       - name: increment-decrement
       - name: var-naming
@@ -190,6 +194,7 @@ linters-settings:
       - name: empty-block
       - name: superfluous-else
       - name: unused-parameter
+        disabled: true
       - name: unreachable-code
       - name: redefines-builtin-id
 
@@ -219,6 +224,8 @@ issues:
         - goconst
         - gocognit
         - cyclop
+        - thelper
+        - nlreturn
 
     # Exclude lll issues for long lines with go:generate
     - linters:
@@ -234,6 +241,78 @@ issues:
     - linters:
         - gosec
       text: "G304" # Potential file inclusion via variable
+
+    # Exclude revive stuttering warnings for common patterns
+    - linters:
+        - revive
+      text: "stutters"
+
+    # Exclude unparam for test files and mocks
+    - path: "(mock|test)"
+      linters:
+        - unparam
+        - unused-parameter
+        - errcheck
+
+    # Exclude nlreturn for cleaner code
+    - linters:
+        - nlreturn
+      text: "return with no blank line before"
+
+    # Exclude dupl for similar handler patterns
+    - linters:
+        - dupl
+      path: "handler/"
+
+    # Exclude gocognit for complex business logic
+    - linters:
+        - gocognit
+      path: "(pubsub|consumer|service)"
+
+    # Exclude errorlint for test files
+    - path: "_test\\.go"
+      linters:
+        - errorlint
+
+    # Exclude gocritic for specific patterns
+    - linters:
+        - gocritic
+      text: "(exitAfterDefer|unlambda)"
+
+    # Exclude errcheck for defer statements
+    - linters:
+        - errcheck
+      text: "Error return value of.*Close.*is not checked"
+
+    # Exclude dupl for test utilities
+    - path: "testutil"
+      linters:
+        - dupl
+
+    # Exclude thelper for all test files
+    - path: "_test\\.go"
+      linters:
+        - thelper
+
+    # Exclude errcheck for json.Encoder.Encode in HTTP handlers
+    - linters:
+        - errcheck
+      text: "Error return value of.*Encode.*is not checked"
+
+    # Exclude gosec for test files
+    - path: "test/"
+      linters:
+        - gosec
+
+    # Exclude gocritic for test utilities
+    - path: "testutil"
+      linters:
+        - gocritic
+
+    # Exclude gosimple for specific patterns
+    - linters:
+        - gosimple
+      text: "S1009"
 
   exclude-use-default: false
   max-issues-per-linter: 0

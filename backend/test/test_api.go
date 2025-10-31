@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package main provides functionality for the GO-PRO Learning Platform.
 package main
 
 import (
@@ -11,10 +16,10 @@ import (
 func main() {
 	fmt.Println("🧪 Testing GO-PRO API Endpoints...")
 
-	// Wait a moment for server to be ready
+	// Wait a moment for server to be ready.
 	time.Sleep(1 * time.Second)
 
-	// Test endpoints
+	// Test endpoints.
 	testEndpoint("Health Check", "http://localhost:8080/api/v1/health")
 	testEndpoint("All Courses", "http://localhost:8080/api/v1/courses")
 	testEndpoint("GO-PRO Course", "http://localhost:8080/api/v1/courses/go-pro")
@@ -43,7 +48,7 @@ func testEndpoint(name, url string) {
 
 	fmt.Printf("Status: %s\n", resp.Status)
 
-	// Pretty print JSON if possible
+	// Pretty print JSON if possible.
 	var jsonData interface{}
 	if err := json.Unmarshal(body, &jsonData); err == nil {
 		prettyJSON, _ := json.MarshalIndent(jsonData, "", "  ")

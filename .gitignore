@@ -104,3 +104,4 @@ frontend/package-lock.json
 mcp.json
 # Snyk Security Extension - AI Rules (auto-generated)
 .github/instructions/snyk_rules.instructions.md
+advanced

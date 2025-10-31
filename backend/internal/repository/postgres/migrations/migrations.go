@@ -1,3 +1,7 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
 package migrations
 
 import (
@@ -6,7 +10,7 @@ import (
 	"go-pro-backend/internal/repository/postgres"
 )
 
-// GetAllMigrations returns all database migrations
+// GetAllMigrations returns all database migrations.
 func GetAllMigrations() []postgres.MigrationV2 {
 	return []postgres.MigrationV2{
 		createUsersTable(),
@@ -18,7 +22,7 @@ func GetAllMigrations() []postgres.MigrationV2 {
 	}
 }
 
-// createUsersTable creates the users table
+// createUsersTable creates the users table.
 func createUsersTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     1,
@@ -40,6 +44,7 @@ func createUsersTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -49,7 +54,7 @@ func createUsersTable() postgres.MigrationV2 {
 	}
 }
 
-// createCoursesTable creates the courses table
+// createCoursesTable creates the courses table.
 func createCoursesTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     2,
@@ -71,6 +76,7 @@ func createCoursesTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -80,7 +86,7 @@ func createCoursesTable() postgres.MigrationV2 {
 	}
 }
 
-// createLessonsTable creates the lessons table
+// createLessonsTable creates the lessons table.
 func createLessonsTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     3,
@@ -103,6 +109,7 @@ func createLessonsTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -112,7 +119,7 @@ func createLessonsTable() postgres.MigrationV2 {
 	}
 }
 
-// createExercisesTable creates the exercises table
+// createExercisesTable creates the exercises table.
 func createExercisesTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     4,
@@ -132,6 +139,7 @@ func createExercisesTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -141,7 +149,7 @@ func createExercisesTable() postgres.MigrationV2 {
 	}
 }
 
-// createProgressTable creates the progress table
+// createProgressTable creates the progress table.
 func createProgressTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     5,
@@ -163,6 +171,7 @@ func createProgressTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -172,7 +181,7 @@ func createProgressTable() postgres.MigrationV2 {
 	}
 }
 
-// addIndexes adds performance indexes
+// addIndexes adds performance indexes.
 func addIndexes() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     6,

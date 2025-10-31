@@ -1,4 +1,8 @@
-// Package container provides dependency injection container for the GO-PRO application
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package container provides functionality for the GO-PRO Learning Platform.
 package container
 
 import (
@@ -16,28 +20,28 @@ import (
 	"go-pro-backend/pkg/validator"
 )
 
-// Container holds all application dependencies
+// Container holds all application dependencies.
 type Container struct {
-	// Configuration
+	// Configuration.
 	Config *config.Config
 
-	// Infrastructure
+	// Infrastructure.
 	Logger    logger.Logger
 	Validator validator.Validator
 	Cache     cache.CacheManager
 	Messaging *messaging.Service
 
-	// Repositories
+	// Repositories.
 	Repositories *repository.Repositories
 
-	// Services
+	// Services.
 	Services *service.Services
 
-	// Lifecycle management
+	// Lifecycle management.
 	shutdownFuncs []func() error
 }
 
-// ContainerConfig holds configuration for container initialization
+// ContainerConfig holds configuration for container initialization.
 type ContainerConfig struct {
 	Config        *config.Config
 	Logger        logger.Logger
@@ -45,7 +49,7 @@ type ContainerConfig struct {
 	SkipCache     bool
 }
 
-// NewContainer creates a new dependency injection container
+// NewContainer creates a new dependency injection container.
 func NewContainer(cfg *ContainerConfig) (*Container, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("container config is required")
@@ -57,7 +61,7 @@ func NewContainer(cfg *ContainerConfig) (*Container, error) {
 		shutdownFuncs: make([]func() error, 0),
 	}
 
-	// Initialize components in dependency order
+	// Initialize components in dependency order.
 	if err := container.initializeValidator(); err != nil {
 		return nil, fmt.Errorf("failed to initialize validator: %w", err)
 	}
@@ -85,19 +89,20 @@ func NewContainer(cfg *ContainerConfig) (*Container, error) {
 	return container, nil
 }
 
-// initializeValidator initializes the validator
+// initializeValidator initializes the validator.
 func (c *Container) initializeValidator() error {
 	c.Validator = validator.New()
 	return nil
 }
 
-// initializeCache initializes the cache manager
+// initializeCache initializes the cache manager.
 func (c *Container) initializeCache() error {
 	cacheManager, err := cache.NewManagerFromEnv()
 	if err != nil {
 		c.Logger.Warn(context.Background(), "Failed to initialize cache manager, using no-op cache", "error", err)
-		// Use a no-op cache implementation
+		// Use a no-op cache implementation.
 		c.Cache = &NoOpCacheManager{}
+
 		return nil
 	}
 
@@ -105,24 +110,26 @@ func (c *Container) initializeCache() error {
 	c.addShutdownFunc(cacheManager.Close)
 
 	c.Logger.Info(context.Background(), "Cache manager initialized successfully")
+
 	return nil
 }
 
-// initializeMessaging initializes the messaging service
+// initializeMessaging initializes the messaging service.
 func (c *Container) initializeMessaging() error {
 	messagingConfig := messaging.LoadConfigFromEnv()
 	messagingService, err := messaging.NewService(messagingConfig)
 	if err != nil {
 		c.Logger.Warn(context.Background(), "Failed to initialize messaging service", "error", err)
-		// Use a no-op messaging service
+		// Use a no-op messaging service.
 		c.Messaging = &messaging.Service{}
+
 		return nil
 	}
 
 	c.Messaging = messagingService
 	c.addShutdownFunc(messagingService.Close)
 
-	// Start consumer in background if enabled
+	// Start consumer in background if enabled.
 	if messagingService.IsEnabled() {
 		go func() {
 			if err := messagingService.StartConsumer(context.Background()); err != nil {
@@ -135,17 +142,18 @@ func (c *Container) initializeMessaging() error {
 	return nil
 }
 
-// initializeRepositories initializes the repository layer
+// initializeRepositories initializes the repository layer.
 func (c *Container) initializeRepositories() error {
 	if c.Config.Database.Driver == "postgres" {
 		pgRepos, err := postgres.NewRepositoriesFromEnv()
 		if err != nil {
 			c.Logger.Error(context.Background(), "Failed to initialize PostgreSQL repositories, falling back to memory", "error", err)
 			c.Repositories = repository.NewRepositoriesSimple()
+
 			return nil
 		}
 
-		// PostgreSQL repositories initialized successfully
+		// PostgreSQL repositories initialized successfully.
 
 		c.Repositories = &repository.Repositories{
 			Course:   pgRepos.Course,
@@ -167,7 +175,7 @@ func (c *Container) initializeRepositories() error {
 	return nil
 }
 
-// initializeServices initializes the service layer
+// initializeServices initializes the service layer.
 func (c *Container) initializeServices() error {
 	serviceConfig := &service.Config{
 		Logger:    c.Logger,
@@ -183,15 +191,16 @@ func (c *Container) initializeServices() error {
 
 	c.Services = services
 	c.Logger.Info(context.Background(), "Services initialized successfully")
+
 	return nil
 }
 
-// addShutdownFunc adds a function to be called during shutdown
+// addShutdownFunc adds a function to be called during shutdown.
 func (c *Container) addShutdownFunc(fn func() error) {
 	c.shutdownFuncs = append(c.shutdownFuncs, fn)
 }
 
-// Shutdown gracefully shuts down all components
+// Shutdown gracefully shuts down all components.
 func (c *Container) Shutdown(ctx context.Context) error {
 	c.Logger.Info(ctx, "Shutting down container...")
 
@@ -204,36 +213,37 @@ func (c *Container) Shutdown(ctx context.Context) error {
 	}
 
 	c.Logger.Info(ctx, "Container shutdown completed")
+
 	return lastErr
 }
 
-// HealthCheck performs health checks on all components
+// HealthCheck performs health checks on all components.
 func (c *Container) HealthCheck(ctx context.Context) error {
-	// Check cache
+	// Check cache.
 	if c.Cache != nil {
 		if err := c.Cache.HealthCheck(ctx); err != nil {
 			return fmt.Errorf("cache health check failed: %w", err)
 		}
 	}
 
-	// Check repositories - basic check that they exist
+	// Check repositories - basic check that they exist.
 	if c.Repositories == nil {
 		return fmt.Errorf("repositories not initialized")
 	}
 
-	// Check messaging - basic check that it's enabled if configured
+	// Check messaging - basic check that it's enabled if configured.
 	if c.Messaging != nil && c.Messaging.IsEnabled() {
-		// Messaging is enabled and available
+		// Messaging is enabled and available.
 	}
 
 	return nil
 }
 
-// GetStats returns statistics about the container components
+// GetStats returns statistics about the container components.
 func (c *Container) GetStats(ctx context.Context) map[string]interface{} {
 	stats := make(map[string]interface{})
 
-	// Cache stats - basic info
+	// Cache stats - basic info.
 	if c.Cache != nil {
 		stats["cache"] = map[string]interface{}{
 			"enabled": true,
@@ -241,7 +251,7 @@ func (c *Container) GetStats(ctx context.Context) map[string]interface{} {
 		}
 	}
 
-	// Add more stats as needed
+	// Add more stats as needed.
 	stats["components"] = map[string]bool{
 		"cache":     c.Cache != nil,
 		"messaging": c.Messaging != nil && c.Messaging.IsEnabled(),
@@ -251,10 +261,10 @@ func (c *Container) GetStats(ctx context.Context) map[string]interface{} {
 	return stats
 }
 
-// NoOpCacheManager is a no-op implementation of CacheManager
+// NoOpCacheManager is a no-op implementation of CacheManager.
 type NoOpCacheManager struct{}
 
-// Cache interface implementation
+// Cache interface implementation.
 func (n *NoOpCacheManager) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
 	return nil
 }
@@ -331,7 +341,7 @@ func (n *NoOpCacheManager) Close() error {
 	return nil
 }
 
-// SessionStore interface implementation
+// SessionStore interface implementation.
 func (n *NoOpCacheManager) CreateSession(ctx context.Context, sessionID string, data map[string]interface{}, expiration time.Duration) error {
 	return nil
 }
@@ -364,7 +374,7 @@ func (n *NoOpCacheManager) CleanupExpiredSessions(ctx context.Context) error {
 	return nil
 }
 
-// DistributedLock interface implementation
+// DistributedLock interface implementation.
 func (n *NoOpCacheManager) Lock(ctx context.Context, key string, expiration time.Duration) (bool, error) {
 	return false, nil
 }
@@ -385,12 +395,12 @@ func (n *NoOpCacheManager) GetLockTTL(ctx context.Context, key string) (time.Dur
 	return 0, nil
 }
 
-// RateLimiter interface implementation
+// RateLimiter interface implementation.
 func (n *NoOpCacheManager) Allow(ctx context.Context, key string, limit int64, window time.Duration) (bool, error) {
 	return true, nil
 }
 
-func (n *NoOpCacheManager) AllowN(ctx context.Context, key string, count int64, limit int64, window time.Duration) (bool, error) {
+func (n *NoOpCacheManager) AllowN(ctx context.Context, key string, count, limit int64, window time.Duration) (bool, error) {
 	return true, nil
 }
 
@@ -402,7 +412,7 @@ func (n *NoOpCacheManager) Reset(ctx context.Context, key string) error {
 	return nil
 }
 
-// PubSub interface implementation
+// PubSub interface implementation.
 func (n *NoOpCacheManager) Publish(ctx context.Context, channel string, message interface{}) error {
 	return nil
 }
@@ -410,6 +420,7 @@ func (n *NoOpCacheManager) Publish(ctx context.Context, channel string, message 
 func (n *NoOpCacheManager) Subscribe(ctx context.Context, channels ...string) (<-chan cache.Message, error) {
 	ch := make(chan cache.Message)
 	close(ch) // Return closed channel
+
 	return ch, nil
 }
 
@@ -420,6 +431,7 @@ func (n *NoOpCacheManager) Unsubscribe(ctx context.Context, channels ...string) 
 func (n *NoOpCacheManager) PSubscribe(ctx context.Context, patterns ...string) (<-chan cache.Message, error) {
 	ch := make(chan cache.Message)
 	close(ch) // Return closed channel
+
 	return ch, nil
 }
 

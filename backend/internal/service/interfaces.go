@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package service provides functionality for the GO-PRO Learning Platform.
 package service
 
 import (
@@ -12,7 +17,7 @@ import (
 	"go-pro-backend/pkg/validator"
 )
 
-// CourseService defines business logic for course operations
+// CourseService defines business logic for course operations.
 type CourseService interface {
 	CreateCourse(ctx context.Context, req *domain.CreateCourseRequest) (*domain.Course, error)
 	GetCourseByID(ctx context.Context, id string) (*domain.Course, error)
@@ -21,7 +26,7 @@ type CourseService interface {
 	DeleteCourse(ctx context.Context, id string) error
 }
 
-// LessonService defines business logic for lesson operations
+// LessonService defines business logic for lesson operations.
 type LessonService interface {
 	CreateLesson(ctx context.Context, req *domain.CreateLessonRequest) (*domain.Lesson, error)
 	GetLessonByID(ctx context.Context, id string) (*domain.Lesson, error)
@@ -31,7 +36,7 @@ type LessonService interface {
 	DeleteLesson(ctx context.Context, id string) error
 }
 
-// ExerciseService defines business logic for exercise operations
+// ExerciseService defines business logic for exercise operations.
 type ExerciseService interface {
 	CreateExercise(ctx context.Context, req *domain.CreateExerciseRequest) (*domain.Exercise, error)
 	GetExerciseByID(ctx context.Context, id string) (*domain.Exercise, error)
@@ -42,7 +47,7 @@ type ExerciseService interface {
 	SubmitExercise(ctx context.Context, exerciseID string, req *domain.SubmitExerciseRequest) (*domain.ExerciseSubmissionResult, error)
 }
 
-// ProgressService defines business logic for progress tracking
+// ProgressService defines business logic for progress tracking.
 type ProgressService interface {
 	CreateProgress(ctx context.Context, req *domain.CreateProgressRequest) (*domain.Progress, error)
 	GetProgressByID(ctx context.Context, id string) (*domain.Progress, error)
@@ -52,18 +57,18 @@ type ProgressService interface {
 	DeleteProgress(ctx context.Context, id string) error
 }
 
-// CurriculumService defines business logic for curriculum operations
+// CurriculumService defines business logic for curriculum operations.
 type CurriculumService interface {
 	GetCurriculum(ctx context.Context) (*domain.Curriculum, error)
 	GetLessonDetail(ctx context.Context, lessonID int) (*domain.LessonDetail, error)
 }
 
-// HealthService defines health check operations
+// HealthService defines health check operations.
 type HealthService interface {
 	GetHealthStatus(ctx context.Context) (*domain.HealthResponse, error)
 }
 
-// Config holds configuration for service layer
+// Config holds configuration for service layer.
 type Config struct {
 	Logger    logger.Logger
 	Validator validator.Validator
@@ -71,7 +76,7 @@ type Config struct {
 	Messaging *messaging.Service
 }
 
-// Services aggregates all service interfaces
+// Services aggregates all service interfaces.
 type Services struct {
 	Course     CourseService
 	Lesson     LessonService
@@ -81,7 +86,7 @@ type Services struct {
 	Health     HealthService
 }
 
-// NewServices creates a new Services instance with all dependencies
+// NewServices creates a new Services instance with all dependencies.
 func NewServices(repos *repository.Repositories, config *Config) (*Services, error) {
 	if repos == nil {
 		return nil, fmt.Errorf("repositories cannot be nil")

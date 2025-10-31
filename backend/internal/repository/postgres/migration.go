@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package postgres provides functionality for the GO-PRO Learning Platform.
 package postgres
 
 import (
@@ -10,7 +15,7 @@ import (
 	"go-pro-backend/pkg/logger"
 )
 
-// MigrationV2 represents a database migration with function-based up/down
+// MigrationV2 represents a database migration with function-based up/down.
 type MigrationV2 struct {
 	Version     int64
 	Description string
@@ -18,14 +23,14 @@ type MigrationV2 struct {
 	Down        func(*sql.Tx) error
 }
 
-// MigrationManager manages database migrations
+// MigrationManager manages database migrations.
 type MigrationManager struct {
 	db         *DB
 	logger     logger.Logger
 	migrations []MigrationV2
 }
 
-// NewMigrationManager creates a new migration manager
+// NewMigrationManager creates a new migration manager.
 func NewMigrationManager(db *DB, logger logger.Logger) *MigrationManager {
 	return &MigrationManager{
 		db:         db,
@@ -34,17 +39,17 @@ func NewMigrationManager(db *DB, logger logger.Logger) *MigrationManager {
 	}
 }
 
-// Register registers a migration
+// Register registers a migration.
 func (mm *MigrationManager) Register(migration MigrationV2) {
 	mm.migrations = append(mm.migrations, migration)
 }
 
-// RegisterMultiple registers multiple migrations
+// RegisterMultiple registers multiple migrations.
 func (mm *MigrationManager) RegisterMultiple(migrations []MigrationV2) {
 	mm.migrations = append(mm.migrations, migrations...)
 }
 
-// ensureMigrationTable creates the migration tracking table if it doesn't exist
+// ensureMigrationTable creates the migration tracking table if it doesn't exist.
 func (mm *MigrationManager) ensureMigrationTable(ctx context.Context) error {
 	query := `
 		CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -63,7 +68,7 @@ func (mm *MigrationManager) ensureMigrationTable(ctx context.Context) error {
 	return nil
 }
 
-// getAppliedMigrations returns a map of applied migration versions
+// getAppliedMigrations returns a map of applied migration versions.
 func (mm *MigrationManager) getAppliedMigrations(ctx context.Context) (map[int64]bool, error) {
 	query := "SELECT version FROM schema_migrations ORDER BY version"
 	rows, err := mm.db.QueryContext(ctx, query)
@@ -88,7 +93,7 @@ func (mm *MigrationManager) getAppliedMigrations(ctx context.Context) (map[int64
 	return applied, nil
 }
 
-// recordMigration records a migration as applied
+// recordMigration records a migration as applied.
 func (mm *MigrationManager) recordMigration(ctx context.Context, tx *sql.Tx, version int64, description string, executionTimeMs int64) error {
 	query := `
 		INSERT INTO schema_migrations (version, description, execution_time_ms)
@@ -102,7 +107,7 @@ func (mm *MigrationManager) recordMigration(ctx context.Context, tx *sql.Tx, ver
 	return nil
 }
 
-// removeMigration removes a migration record
+// removeMigration removes a migration record.
 func (mm *MigrationManager) removeMigration(ctx context.Context, tx *sql.Tx, version int64) error {
 	query := "DELETE FROM schema_migrations WHERE version = $1"
 
@@ -113,33 +118,34 @@ func (mm *MigrationManager) removeMigration(ctx context.Context, tx *sql.Tx, ver
 	return nil
 }
 
-// Up applies all pending migrations
+// Up applies all pending migrations.
 func (mm *MigrationManager) Up(ctx context.Context) error {
 	mm.logger.Info(ctx, "Starting database migrations")
 
-	// Ensure migration table exists
+	// Ensure migration table exists.
 	if err := mm.ensureMigrationTable(ctx); err != nil {
 		return err
 	}
 
-	// Get applied migrations
+	// Get applied migrations.
 	applied, err := mm.getAppliedMigrations(ctx)
 	if err != nil {
 		return err
 	}
 
-	// Sort migrations by version
+	// Sort migrations by version.
 	sort.Slice(mm.migrations, func(i, j int) bool {
 		return mm.migrations[i].Version < mm.migrations[j].Version
 	})
 
-	// Apply pending migrations
+	// Apply pending migrations.
 	appliedCount := 0
 	for _, migration := range mm.migrations {
 		if applied[migration.Version] {
 			mm.logger.Debug(ctx, "Migration already applied",
 				"version", migration.Version,
 				"description", migration.Description)
+
 			continue
 		}
 
@@ -149,7 +155,7 @@ func (mm *MigrationManager) Up(ctx context.Context) error {
 
 		start := time.Now()
 
-		// Execute migration in a transaction
+		// Execute migration in a transaction.
 		err := mm.db.WithTransaction(ctx, func(tx *sql.Tx) error {
 			if err := migration.Up(tx); err != nil {
 				return fmt.Errorf("migration up failed: %w", err)
@@ -162,12 +168,12 @@ func (mm *MigrationManager) Up(ctx context.Context) error {
 
 			return nil
 		})
-
 		if err != nil {
 			mm.logger.Error(ctx, "Migration failed",
 				"version", migration.Version,
 				"description", migration.Description,
 				"error", err)
+
 			return fmt.Errorf("migration %d failed: %w", migration.Version, err)
 		}
 
@@ -190,16 +196,16 @@ func (mm *MigrationManager) Up(ctx context.Context) error {
 	return nil
 }
 
-// Down rolls back the last N migrations
+// Down rolls back the last N migrations.
 func (mm *MigrationManager) Down(ctx context.Context, steps int) error {
 	mm.logger.Info(ctx, "Rolling back migrations", "steps", steps)
 
-	// Ensure migration table exists
+	// Ensure migration table exists.
 	if err := mm.ensureMigrationTable(ctx); err != nil {
 		return err
 	}
 
-	// Get applied migrations in reverse order
+	// Get applied migrations in reverse order.
 	query := "SELECT version FROM schema_migrations ORDER BY version DESC LIMIT $1"
 	rows, err := mm.db.QueryContext(ctx, query, steps)
 	if err != nil {
@@ -225,19 +231,20 @@ func (mm *MigrationManager) Down(ctx context.Context, steps int) error {
 		return nil
 	}
 
-	// Create a map of migrations by version
+	// Create a map of migrations by version.
 	migrationMap := make(map[int64]MigrationV2)
 	for _, migration := range mm.migrations {
 		migrationMap[migration.Version] = migration
 	}
 
-	// Rollback migrations
+	// Rollback migrations.
 	rolledBackCount := 0
 	for _, version := range versionsToRollback {
 		migration, exists := migrationMap[version]
 		if !exists {
 			mm.logger.Warn(ctx, "Migration not found in code",
 				"version", version)
+
 			continue
 		}
 
@@ -245,6 +252,7 @@ func (mm *MigrationManager) Down(ctx context.Context, steps int) error {
 			mm.logger.Warn(ctx, "Migration has no down function",
 				"version", version,
 				"description", migration.Description)
+
 			continue
 		}
 
@@ -254,7 +262,7 @@ func (mm *MigrationManager) Down(ctx context.Context, steps int) error {
 
 		start := time.Now()
 
-		// Execute rollback in a transaction
+		// Execute rollback in a transaction.
 		err := mm.db.WithTransaction(ctx, func(tx *sql.Tx) error {
 			if err := migration.Down(tx); err != nil {
 				return fmt.Errorf("migration down failed: %w", err)
@@ -266,12 +274,12 @@ func (mm *MigrationManager) Down(ctx context.Context, steps int) error {
 
 			return nil
 		})
-
 		if err != nil {
 			mm.logger.Error(ctx, "Migration rollback failed",
 				"version", version,
 				"description", migration.Description,
 				"error", err)
+
 			return fmt.Errorf("migration %d rollback failed: %w", version, err)
 		}
 
@@ -290,25 +298,25 @@ func (mm *MigrationManager) Down(ctx context.Context, steps int) error {
 	return nil
 }
 
-// Status returns the current migration status
+// Status returns the current migration status.
 func (mm *MigrationManager) Status(ctx context.Context) ([]MigrationStatus, error) {
-	// Ensure migration table exists
+	// Ensure migration table exists.
 	if err := mm.ensureMigrationTable(ctx); err != nil {
 		return nil, err
 	}
 
-	// Get applied migrations
+	// Get applied migrations.
 	applied, err := mm.getAppliedMigrations(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Sort migrations by version
+	// Sort migrations by version.
 	sort.Slice(mm.migrations, func(i, j int) bool {
 		return mm.migrations[i].Version < mm.migrations[j].Version
 	})
 
-	// Build status list
+	// Build status list.
 	statuses := make([]MigrationStatus, 0, len(mm.migrations))
 	for _, migration := range mm.migrations {
 		status := MigrationStatus{
@@ -322,7 +330,7 @@ func (mm *MigrationManager) Status(ctx context.Context) ([]MigrationStatus, erro
 	return statuses, nil
 }
 
-// MigrationStatus represents the status of a migration
+// MigrationStatus represents the status of a migration.
 type MigrationStatus struct {
 	Version     int64  `json:"version"`
 	Description string `json:"description"`
