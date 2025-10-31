@@ -20,9 +20,9 @@ Working with Microservices in Go
 Working with Design Patterns in Go
 Working with Concurrency in Go
 Web Architecture With Golang
-Ethical Hacking with Go
 Doker Kubernetes and Teraform with go
 Kafka and RabbitMQ with go
+Ethical Hacking with Go
 
 ### Repository structure (high-level)
 - `backend/` — Go HTTP API (sample course data, exercises, progress)

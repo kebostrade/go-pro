@@ -4459,6 +4459,1950 @@ Go's concurrency model is **simple yet powerful**:
 
 ---
 
+## 🏗️ Tutorial 16: Web Architecture with Go
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🔵 INTERMEDIATE                                ⏱️  90 minutes             │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  🎯 PROJECT: Production-Ready Web Architecture                          │
+│                                                                          │
+│  📚 WHAT YOU'LL LEARN:                                                   │
+│     ✓ Clean Architecture - Layered design with separation of concerns  │
+│     ✓ RESTful API - Standard HTTP methods and status codes             │
+│     ✓ Repository Pattern - Data access abstraction                     │
+│     ✓ Service Layer - Business logic isolation                         │
+│     ✓ Middleware Chain - Logging, auth, recovery, CORS                 │
+│     ✓ JWT Authentication - Secure token-based authentication           │
+│     ✓ Graceful Shutdown - Proper server lifecycle management           │
+│                                                                          │
+│  🛠️ TECH STACK: chi router, JWT, bcrypt, PostgreSQL                    │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📝 Step-by-Step Instructions
+
+#### Step 1: Navigate to the Project
+```bash
+cd basic/projects/web-architecture
+```
+
+#### Step 2: Understand Clean Architecture
+
+**📖 What is Clean Architecture?**
+
+Clean Architecture is a software design philosophy that separates concerns into layers, making code:
+- **Testable** - Easy to test without external dependencies
+- **Maintainable** - Changes in one layer don't affect others
+- **Flexible** - Easy to swap implementations
+- **Scalable** - Can grow without becoming messy
+
+**🎯 Architecture Layers:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  PRESENTATION LAYER (HTTP Handlers)                         │
+│  • Receives HTTP requests                                   │
+│  • Validates input                                          │
+│  • Calls service layer                                      │
+│  • Returns HTTP responses                                   │
+└─────────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────────┐
+│  BUSINESS LOGIC LAYER (Services)                            │
+│  • Implements business rules                                │
+│  • Coordinates between handlers and repositories            │
+│  • Handles authentication, authorization                    │
+│  • Performs data transformations                            │
+└─────────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────────┐
+│  DATA ACCESS LAYER (Repositories)                           │
+│  • Abstracts data storage                                   │
+│  • Implements CRUD operations                               │
+│  • Can swap implementations (memory → PostgreSQL)           │
+│  • Handles database queries                                 │
+└─────────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────────┐
+│  DOMAIN LAYER (Models)                                      │
+│  • Defines business entities                                │
+│  • No dependencies on other layers                          │
+│  • Pure data structures                                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Step 3: Install Dependencies
+```bash
+go mod tidy
+```
+
+**Key Dependencies:**
+- **chi** - Lightweight, idiomatic HTTP router
+- **jwt** - JSON Web Token authentication
+- **bcrypt** - Password hashing
+- **cors** - Cross-Origin Resource Sharing
+
+#### Step 4: Understand the Repository Pattern
+
+**🗄️ What is the Repository Pattern?**
+
+The Repository Pattern abstracts data access logic, providing a collection-like interface for accessing domain objects.
+
+**Benefits:**
+- ✅ Decouples business logic from data storage
+- ✅ Easy to swap implementations (memory → database)
+- ✅ Simplifies testing with mock repositories
+- ✅ Centralizes data access logic
+
+**Example:**
+
+```go
+// Define interface
+type UserRepository interface {
+    Create(ctx context.Context, user *User) error
+    GetByID(ctx context.Context, id int64) (*User, error)
+    GetByEmail(ctx context.Context, email string) (*User, error)
+    List(ctx context.Context, limit, offset int) ([]*User, error)
+    Update(ctx context.Context, user *User) error
+    Delete(ctx context.Context, id int64) error
+}
+
+// In-memory implementation
+type MemoryUserRepository struct {
+    mu    sync.RWMutex
+    users map[int64]*User
+}
+
+// PostgreSQL implementation
+type PostgresUserRepository struct {
+    db *sql.DB
+}
+```
+
+**Why this matters:**
+- Start with in-memory for development
+- Switch to PostgreSQL for production
+- No changes to business logic!
+
+#### Step 5: Understand the Service Layer
+
+**⚙️ What is the Service Layer?**
+
+The Service Layer contains business logic and coordinates between handlers and repositories.
+
+**Responsibilities:**
+- Validate business rules
+- Coordinate multiple repository calls
+- Handle authentication/authorization
+- Transform data between layers
+
+**Example:**
+
+```go
+type UserService struct {
+    repo      UserRepository
+    jwtSecret []byte
+}
+
+func (s *UserService) Register(ctx context.Context, req *CreateUserRequest) (*User, error) {
+    // 1. Validate business rules
+    if _, err := s.repo.GetByEmail(ctx, req.Email); err == nil {
+        return nil, ErrUserExists
+    }
+
+    // 2. Hash password
+    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+    if err != nil {
+        return nil, err
+    }
+
+    // 3. Create user
+    user := &User{
+        Email:    req.Email,
+        Password: string(hashedPassword),
+        Role:     "user",
+    }
+
+    // 4. Save to repository
+    if err := s.repo.Create(ctx, user); err != nil {
+        return nil, err
+    }
+
+    return user, nil
+}
+```
+
+#### Step 6: Build and Run the Server
+
+```bash
+# Build the application
+make build
+
+# Run the server
+make run
+```
+
+**Server starts on:** `http://localhost:8080`
+
+**Available endpoints:**
+- Health check: `GET /health`
+- Register: `POST /api/v1/register`
+- Login: `POST /api/v1/login`
+- Users: `/api/v1/users/*` (protected)
+- Products: `/api/v1/products/*` (protected)
+
+#### Step 7: Test the API
+
+**1. Register a User**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "alice@example.com",
+    "username": "alice",
+    "password": "password123",
+    "first_name": "Alice",
+    "last_name": "Smith"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "email": "alice@example.com",
+    "username": "alice",
+    "first_name": "Alice",
+    "last_name": "Smith",
+    "role": "user",
+    "active": true,
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z"
+  }
+}
+```
+
+**2. Login**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "alice@example.com",
+    "password": "password123"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": 1,
+      "email": "alice@example.com",
+      "username": "alice",
+      "role": "user"
+    }
+  }
+}
+```
+
+**3. Create a Product (Protected)**
+
+```bash
+# Save token from login response
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+curl -X POST http://localhost:8080/api/v1/products \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Laptop",
+    "description": "High-performance laptop",
+    "price": 999.99,
+    "stock": 10,
+    "category": "Electronics"
+  }'
+```
+
+**4. List Products with Pagination**
+
+```bash
+curl -X GET "http://localhost:8080/api/v1/products?limit=10&offset=0" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Response with Metadata:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "Laptop",
+      "description": "High-performance laptop",
+      "price": 999.99,
+      "stock": 10,
+      "category": "Electronics",
+      "active": true
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "per_page": 10,
+    "total_pages": 1,
+    "total_count": 1
+  }
+}
+```
+
+#### Step 8: Understand Middleware
+
+**🔗 What is Middleware?**
+
+Middleware is a function that wraps HTTP handlers to add cross-cutting concerns like logging, authentication, and error recovery.
+
+**Middleware Chain:**
+
+```
+Request → Logging → Recovery → CORS → Auth → Handler → Response
+```
+
+**1. Logging Middleware**
+
+Logs every HTTP request with method, path, status code, and duration.
+
+```go
+func Logging(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        start := time.Now()
+
+        // Wrap response writer to capture status code
+        rw := &responseWriter{ResponseWriter: w, statusCode: 200}
+
+        // Call next handler
+        next.ServeHTTP(rw, r)
+
+        // Log request
+        duration := time.Since(start)
+        log.Printf("%s %s %d %s", r.Method, r.RequestURI, rw.statusCode, duration)
+    })
+}
+```
+
+**Output:**
+```
+POST /api/v1/register 201 15ms
+POST /api/v1/login 200 8ms
+GET /api/v1/products 200 2ms
+```
+
+**2. Recovery Middleware**
+
+Catches panics and returns a 500 error instead of crashing the server.
+
+```go
+func Recovery(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        defer func() {
+            if err := recover(); err != nil {
+                log.Printf("Panic: %v\n%s", err, debug.Stack())
+                response.InternalServerError(w, "Internal server error")
+            }
+        }()
+        next.ServeHTTP(w, r)
+    })
+}
+```
+
+**3. Authentication Middleware**
+
+Validates JWT tokens and adds user claims to request context.
+
+```go
+func Auth(userService *UserService) func(http.Handler) http.Handler {
+    return func(next http.Handler) http.Handler {
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            // Extract token from Authorization header
+            authHeader := r.Header.Get("Authorization")
+            if authHeader == "" {
+                response.Unauthorized(w, "Missing authorization header")
+                return
+            }
+
+            // Parse "Bearer <token>"
+            parts := strings.Split(authHeader, " ")
+            if len(parts) != 2 || parts[0] != "Bearer" {
+                response.Unauthorized(w, "Invalid authorization format")
+                return
+            }
+
+            // Validate token
+            claims, err := userService.ValidateToken(parts[1])
+            if err != nil {
+                response.Unauthorized(w, "Invalid or expired token")
+                return
+            }
+
+            // Add claims to context
+            ctx := context.WithValue(r.Context(), UserContextKey, claims)
+            next.ServeHTTP(w, r.WithContext(ctx))
+        })
+    }
+}
+```
+
+**4. CORS Middleware**
+
+Enables Cross-Origin Resource Sharing for frontend applications.
+
+```go
+cors.Handler(cors.Options{
+    AllowedOrigins:   []string{"*"},
+    AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+    AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+    AllowCredentials: true,
+    MaxAge:           300,
+})
+```
+
+#### Step 9: Understand Routing
+
+**🛣️ Chi Router**
+
+Chi is a lightweight, idiomatic HTTP router for Go.
+
+**Route Groups:**
+
+```go
+r.Route("/api/v1", func(r chi.Router) {
+    // Public routes
+    r.Post("/register", userHandler.Register)
+    r.Post("/login", userHandler.Login)
+
+    // Protected routes
+    r.Group(func(r chi.Router) {
+        r.Use(middleware.Auth(userService))
+
+        // User routes
+        r.Route("/users", func(r chi.Router) {
+            r.Get("/", userHandler.List)
+            r.Get("/{id}", userHandler.GetByID)
+            r.Put("/{id}", userHandler.Update)
+            r.Delete("/{id}", userHandler.Delete)
+        })
+
+        // Product routes
+        r.Route("/products", func(r chi.Router) {
+            r.Get("/", productHandler.List)
+            r.Get("/{id}", productHandler.GetByID)
+            r.Post("/", productHandler.Create)
+            r.Put("/{id}", productHandler.Update)
+            r.Delete("/{id}", productHandler.Delete)
+        })
+    })
+})
+```
+
+**URL Parameters:**
+
+```go
+// Extract ID from URL
+idStr := chi.URLParam(r, "id")
+id, err := strconv.ParseInt(idStr, 10, 64)
+```
+
+**Query Parameters:**
+
+```go
+// Extract query parameters
+limit := r.URL.Query().Get("limit")
+offset := r.URL.Query().Get("offset")
+category := r.URL.Query().Get("category")
+```
+
+#### Step 10: Understand Graceful Shutdown
+
+**🛑 Why Graceful Shutdown?**
+
+Graceful shutdown ensures:
+- ✅ In-flight requests complete
+- ✅ Database connections close properly
+- ✅ Resources are cleaned up
+- ✅ No data loss
+
+**Implementation:**
+
+```go
+srv := &http.Server{
+    Addr:         ":8080",
+    Handler:      r,
+    ReadTimeout:  15 * time.Second,
+    WriteTimeout: 15 * time.Second,
+    IdleTimeout:  60 * time.Second,
+}
+
+// Start server in goroutine
+go func() {
+    if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+        log.Fatalf("Server failed: %v", err)
+    }
+}()
+
+// Wait for interrupt signal
+quit := make(chan os.Signal, 1)
+signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+<-quit
+
+log.Println("Shutting down server...")
+
+// Give 30 seconds for graceful shutdown
+ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+defer cancel()
+
+if err := srv.Shutdown(ctx); err != nil {
+    log.Fatalf("Server forced to shutdown: %v", err)
+}
+
+log.Println("Server stopped gracefully")
+```
+
+**Test graceful shutdown:**
+```bash
+# Start server
+make run
+
+# Press Ctrl+C
+# Server will finish current requests before stopping
+```
+
+### 🎯 Key Concepts
+
+#### 1. Dependency Injection
+
+**Inject dependencies through constructors:**
+
+```go
+// Service depends on repository
+func NewUserService(repo UserRepository, jwtSecret string) *UserService {
+    return &UserService{
+        repo:      repo,
+        jwtSecret: []byte(jwtSecret),
+    }
+}
+
+// Handler depends on service
+func NewUserHandler(service *UserService) *UserHandler {
+    return &UserHandler{
+        service: service,
+    }
+}
+```
+
+**Benefits:**
+- Loose coupling
+- Easy testing (inject mocks)
+- Flexible configuration
+
+#### 2. Context Propagation
+
+**Pass context through all layers:**
+
+```go
+// Handler
+func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+    user, err := h.service.GetByID(r.Context(), id)
+    // ...
+}
+
+// Service
+func (s *UserService) GetByID(ctx context.Context, id int64) (*User, error) {
+    return s.repo.GetByID(ctx, id)
+}
+
+// Repository
+func (r *MemoryUserRepository) GetByID(ctx context.Context, id int64) (*User, error) {
+    // Can check ctx.Done() for cancellation
+    return r.users[id], nil
+}
+```
+
+**Why?**
+- Request cancellation
+- Timeouts
+- Request-scoped values
+- Distributed tracing
+
+#### 3. Error Handling
+
+**Wrap errors with context:**
+
+```go
+// Service layer
+if err != nil {
+    return nil, fmt.Errorf("failed to create user: %w", err)
+}
+
+// Handler layer
+if err != nil {
+    if errors.Is(err, service.ErrUserExists) {
+        response.Conflict(w, "User already exists")
+        return
+    }
+    response.InternalServerError(w, "Failed to create user")
+    return
+}
+```
+
+#### 4. Standardized Responses
+
+**Use consistent response format:**
+
+```go
+// Success response
+{
+  "success": true,
+  "data": { ... }
+}
+
+// Error response
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "User not found"
+  }
+}
+
+// Paginated response
+{
+  "success": true,
+  "data": [ ... ],
+  "meta": {
+    "page": 1,
+    "per_page": 10,
+    "total_pages": 5,
+    "total_count": 50
+  }
+}
+```
+
+### 💪 Practice Challenges
+
+#### Challenge 1: Add Email Verification
+Implement email verification for new users.
+
+**Requirements:**
+- Generate verification token
+- Send verification email
+- Verify token endpoint
+- Update user status
+
+#### Challenge 2: Add Password Reset
+Implement password reset functionality.
+
+**Requirements:**
+- Request password reset
+- Generate reset token
+- Validate reset token
+- Update password
+
+#### Challenge 3: Add Role-Based Access Control
+Implement role-based permissions.
+
+**Requirements:**
+- Admin role
+- User role
+- RequireRole middleware
+- Protected admin endpoints
+
+#### Challenge 4: Add PostgreSQL Support
+Replace in-memory repository with PostgreSQL.
+
+**Requirements:**
+- Database migrations
+- PostgreSQL repository implementation
+- Connection pooling
+- Transaction support
+
+#### Challenge 5: Add Caching
+Implement Redis caching for frequently accessed data.
+
+**Requirements:**
+- Cache user data
+- Cache product listings
+- Cache invalidation
+- TTL management
+
+### 📚 Additional Resources
+
+**Official Documentation:**
+- [Go HTTP Server](https://pkg.go.dev/net/http)
+- [Chi Router](https://github.com/go-chi/chi)
+- [JWT Go](https://github.com/golang-jwt/jwt)
+
+**Books:**
+- Clean Architecture by Robert C. Martin
+- Domain-Driven Design by Eric Evans
+- Building Microservices by Sam Newman
+
+**Articles:**
+- [Go Web Examples](https://gowebexamples.com/)
+- [Practical Go Lessons](https://www.practical-go-lessons.com/)
+
+### 🎓 What You've Learned
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ CLEAN ARCHITECTURE                                           │
+│     • Layered design with separation of concerns                │
+│     • Dependency inversion principle                            │
+│     • Testable and maintainable code                            │
+│                                                                  │
+│  ✅ RESTFUL API                                                  │
+│     • Standard HTTP methods (GET, POST, PUT, DELETE)            │
+│     • Proper status codes (200, 201, 400, 401, 404, 500)        │
+│     • JSON request/response format                              │
+│     • Pagination and filtering                                  │
+│                                                                  │
+│  ✅ REPOSITORY PATTERN                                           │
+│     • Data access abstraction                                   │
+│     • Swappable implementations                                 │
+│     • Easy testing with mocks                                   │
+│                                                                  │
+│  ✅ SERVICE LAYER                                                │
+│     • Business logic isolation                                  │
+│     • Reusable across handlers                                  │
+│     • Testable without HTTP layer                               │
+│                                                                  │
+│  ✅ MIDDLEWARE                                                   │
+│     • Logging - Request/response logging                        │
+│     • Recovery - Panic recovery                                 │
+│     • Authentication - JWT validation                           │
+│     • CORS - Cross-origin support                               │
+│                                                                  │
+│  ✅ BEST PRACTICES                                               │
+│     • Dependency injection                                      │
+│     • Context propagation                                       │
+│     • Error handling with wrapping                              │
+│     • Graceful shutdown                                         │
+│     • Standardized responses                                    │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 🚀 Next Steps
+
+1. **Add Database** - Implement PostgreSQL repository
+2. **Add Caching** - Implement Redis for performance
+3. **Add Validation** - Use validator library for input validation
+4. **Add Testing** - Write unit and integration tests
+5. **Add Monitoring** - Implement Prometheus metrics
+6. **Add Documentation** - Generate OpenAPI/Swagger docs
+7. **Deploy** - Deploy to cloud (AWS, GCP, Azure)
+
+### 📊 Architecture Comparison
+
+| Pattern | Complexity | Testability | Scalability | Maintainability |
+|---------|------------|-------------|-------------|-----------------|
+| Monolithic | Low | Medium | Low | Low |
+| Layered | Medium | High | Medium | High |
+| **Clean Architecture** | **High** | **Very High** | **High** | **Very High** |
+| Microservices | Very High | High | Very High | Medium |
+
+### 🎯 Summary
+
+**Clean Architecture** provides:
+- ✅ **Separation of Concerns** - Each layer has a single responsibility
+- ✅ **Dependency Inversion** - High-level modules don't depend on low-level modules
+- ✅ **Testability** - Easy to test each layer independently
+- ✅ **Flexibility** - Easy to swap implementations
+- ✅ **Maintainability** - Changes are isolated to specific layers
+
+**Key Principles:**
+- ✅ Depend on abstractions, not concretions
+- ✅ Business logic is independent of frameworks
+- ✅ UI can change without affecting business logic
+- ✅ Database can change without affecting business logic
+- ✅ External services can change without affecting business logic
+
+**Common Mistakes to Avoid:**
+- ❌ Mixing business logic in handlers
+- ❌ Direct database access from handlers
+- ❌ Not using interfaces for repositories
+- ❌ Ignoring error handling
+- ❌ Not implementing graceful shutdown
+- ❌ Hardcoding configuration values
+
+**You're now ready to build production-ready web applications with Go!** 🏗️
+
+---
+
+## Tutorial 17: DevOps with Go - Docker, Kubernetes, and Terraform
+
+**Project:** `basic/projects/devops-with-go/`
+
+Learn modern DevOps practices by containerizing, orchestrating, and deploying Go applications using industry-standard tools.
+
+### 🎯 What You'll Learn
+
+- **Docker**: Multi-stage builds, Docker Compose, container optimization
+- **Kubernetes**: Deployments, Services, ConfigMaps, Secrets, Auto-scaling
+- **Terraform**: Infrastructure as Code for AWS deployment
+- **Observability**: Prometheus metrics, health checks, logging
+- **Production Practices**: Graceful shutdown, resource limits, monitoring
+
+### 📋 Prerequisites
+
+- Docker and Docker Compose installed
+- kubectl (for Kubernetes)
+- Terraform (for infrastructure deployment)
+- AWS account (optional, for Terraform deployment)
+- Basic understanding of containers and cloud infrastructure
+
+### 🏗️ Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     DevOps Pipeline                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. Development                                                 │
+│     ├── Go Application (main.go)                               │
+│     ├── Prometheus Metrics                                     │
+│     └── Health Checks                                          │
+│                                                                 │
+│  2. Containerization (Docker)                                  │
+│     ├── Multi-stage Build                                      │
+│     ├── Minimal Image (~10MB)                                  │
+│     └── Docker Compose Stack                                   │
+│                                                                 │
+│  3. Orchestration (Kubernetes)                                 │
+│     ├── Deployment (3 replicas)                                │
+│     ├── Service (LoadBalancer)                                 │
+│     ├── ConfigMaps & Secrets                                   │
+│     ├── Ingress (HTTPS)                                        │
+│     └── HPA (Auto-scaling)                                     │
+│                                                                 │
+│  4. Infrastructure (Terraform)                                 │
+│     ├── AWS VPC                                                │
+│     ├── ECS Fargate                                            │
+│     ├── Application Load Balancer                              │
+│     └── CloudWatch Logging                                     │
+│                                                                 │
+│  5. Monitoring                                                 │
+│     ├── Prometheus (Metrics)                                   │
+│     ├── Grafana (Dashboards)                                   │
+│     └── CloudWatch (AWS Logs)                                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 1: Navigate to Project
+
+```bash
+cd basic/projects/devops-with-go
+```
+
+#### Step 2: Understand the Go Application
+
+The application includes production-ready features:
+
+**main.go highlights:**
+
+```go
+// Prometheus metrics
+var (
+    httpRequestsTotal = prometheus.NewCounterVec(
+        prometheus.CounterOpts{
+            Name: "http_requests_total",
+            Help: "Total number of HTTP requests",
+        },
+        []string{"method", "endpoint", "status"},
+    )
+
+    httpRequestDuration = prometheus.NewHistogramVec(
+        prometheus.HistogramOpts{
+            Name:    "http_request_duration_seconds",
+            Help:    "HTTP request duration in seconds",
+            Buckets: prometheus.DefBuckets,
+        },
+        []string{"method", "endpoint"},
+    )
+)
+
+// Health check endpoints
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+    checks := map[string]string{
+        "application": "healthy",
+        "database":    "healthy",
+        "cache":       "healthy",
+    }
+    jsonResponse(w, http.StatusOK, checks)
+}
+
+func livenessHandler(w http.ResponseWriter, r *http.Request) {
+    // Kubernetes liveness probe
+    jsonResponse(w, http.StatusOK, map[string]string{"status": "alive"})
+}
+
+func readinessHandler(w http.ResponseWriter, r *http.Request) {
+    // Kubernetes readiness probe
+    jsonResponse(w, http.StatusOK, map[string]string{"status": "ready"})
+}
+```
+
+**Key Features:**
+- ✅ Prometheus metrics for monitoring
+- ✅ Health check endpoints for Kubernetes
+- ✅ Graceful shutdown
+- ✅ Environment-based configuration
+- ✅ Structured logging
+
+#### Step 3: Run Locally
+
+```bash
+# Install dependencies
+go mod tidy
+
+# Build application
+go build -o bin/app ./app
+
+# Run application
+./bin/app
+
+# Or use Makefile
+make run
+```
+
+**Test endpoints:**
+
+```bash
+# Home endpoint
+curl http://localhost:8080/
+
+# Health check
+curl http://localhost:8080/health
+
+# Liveness probe
+curl http://localhost:8080/health/live
+
+# Readiness probe
+curl http://localhost:8080/health/ready
+
+# Prometheus metrics
+curl http://localhost:8080/metrics
+
+# API endpoint
+curl http://localhost:8080/api/hello?name=DevOps
+```
+
+#### Step 4: Docker - Multi-Stage Build
+
+**Dockerfile structure:**
+
+```dockerfile
+# Stage 1: Build
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY app/ ./app/
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags='-w -s -extldflags "-static"' \
+    -o /app \
+    ./app
+
+# Stage 2: Runtime
+FROM scratch
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /app /app
+
+EXPOSE 8080
+ENTRYPOINT ["/app"]
+```
+
+**Why multi-stage builds?**
+- ✅ **Small image size**: ~10MB vs ~800MB
+- ✅ **Security**: No build tools in production image
+- ✅ **Fast deployment**: Smaller images deploy faster
+- ✅ **Minimal attack surface**: Only runtime dependencies
+
+**Build Docker image:**
+
+```bash
+# Build image
+docker build -t devops-go-app:latest -f docker/Dockerfile .
+
+# Check image size
+docker images devops-go-app
+
+# Run container
+docker run -p 8080:8080 devops-go-app:latest
+
+# Test
+curl http://localhost:8080/health
+```
+
+#### Step 5: Docker Compose - Full Stack
+
+**docker-compose.yml** includes:
+- Go Application
+- PostgreSQL database
+- Redis cache
+- Prometheus monitoring
+- Grafana dashboards
+
+**Start the stack:**
+
+```bash
+# Start all services
+make docker-run
+
+# Or manually
+docker-compose -f docker/docker-compose.yml up -d
+
+# Check running containers
+docker-compose -f docker/docker-compose.yml ps
+
+# View logs
+docker-compose -f docker/docker-compose.yml logs -f app
+```
+
+**Access services:**
+- **App**: http://localhost:8080
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **PostgreSQL**: localhost:5432
+- **Redis**: localhost:6379
+
+**Stop services:**
+
+```bash
+make docker-stop
+```
+
+#### Step 6: Kubernetes - Deploy to K8s
+
+**Kubernetes resources:**
+
+1. **Namespace** - Isolated environment
+2. **ConfigMap** - Non-sensitive configuration
+3. **Secret** - Sensitive data (passwords, tokens)
+4. **Deployment** - 3 replicas with rolling updates
+5. **Service** - LoadBalancer exposing port 80
+6. **Ingress** - HTTPS with TLS termination
+7. **HPA** - Auto-scaling 2-10 pods
+
+**Deploy to Kubernetes:**
+
+```bash
+# Deploy all resources
+make k8s-deploy
+
+# Or manually
+kubectl apply -f kubernetes/namespace.yaml
+kubectl apply -f kubernetes/configmap.yaml
+kubectl apply -f kubernetes/secret.yaml
+kubectl apply -f kubernetes/deployment.yaml
+kubectl apply -f kubernetes/service.yaml
+kubectl apply -f kubernetes/ingress.yaml
+kubectl apply -f kubernetes/hpa.yaml
+```
+
+**Check deployment:**
+
+```bash
+# Check pods
+kubectl get pods -n devops-demo
+
+# Expected output:
+# NAME                            READY   STATUS    RESTARTS   AGE
+# devops-go-app-xxxxxxxxx-xxxxx   1/1     Running   0          30s
+# devops-go-app-xxxxxxxxx-xxxxx   1/1     Running   0          30s
+# devops-go-app-xxxxxxxxx-xxxxx   1/1     Running   0          30s
+
+# Check services
+kubectl get svc -n devops-demo
+
+# Check HPA
+kubectl get hpa -n devops-demo
+
+# View logs
+kubectl logs -f deployment/devops-go-app -n devops-demo
+
+# Describe pod
+kubectl describe pod <pod-name> -n devops-demo
+```
+
+**Port forward to access locally:**
+
+```bash
+kubectl port-forward svc/devops-go-service 8080:80 -n devops-demo
+
+# Test
+curl http://localhost:8080/health
+```
+
+#### Step 7: Kubernetes - Health Checks
+
+**Liveness Probe** - Is the app running?
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+```
+
+**Readiness Probe** - Can the app serve traffic?
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+```
+
+**What happens:**
+- **Liveness fails** → Kubernetes restarts the pod
+- **Readiness fails** → Kubernetes removes pod from load balancer
+
+#### Step 8: Kubernetes - Auto-Scaling
+
+**Horizontal Pod Autoscaler (HPA):**
+
+```yaml
+spec:
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+```
+
+**How it works:**
+- Monitors CPU and memory usage
+- Scales up when usage > 70% CPU or 80% memory
+- Scales down when usage is low
+- Min 2 pods, max 10 pods
+
+**Test auto-scaling:**
+
+```bash
+# Generate load
+kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh
+
+# Inside the pod
+while true; do wget -q -O- http://devops-go-service.devops-demo.svc.cluster.local; done
+
+# Watch HPA in another terminal
+kubectl get hpa -n devops-demo --watch
+```
+
+#### Step 9: Terraform - Infrastructure as Code
+
+**Terraform creates:**
+- AWS VPC with 2 public subnets
+- Internet Gateway
+- Security Groups
+- Application Load Balancer
+- ECS Fargate Cluster
+- ECR Repository
+- CloudWatch Log Groups
+- IAM Roles and Policies
+
+**Initialize Terraform:**
+
+```bash
+cd terraform
+
+# Initialize
+terraform init
+
+# Validate configuration
+terraform validate
+
+# Format code
+terraform fmt
+```
+
+**Plan infrastructure:**
+
+```bash
+# See what will be created
+terraform plan
+
+# Output shows:
+# - 20+ resources to be created
+# - VPC, subnets, security groups
+# - Load balancer, target groups
+# - ECS cluster, task definition, service
+# - ECR repository
+# - CloudWatch logs
+```
+
+**Deploy to AWS:**
+
+```bash
+# Apply changes
+terraform apply
+
+# Type 'yes' to confirm
+
+# Wait 5-10 minutes for deployment
+```
+
+**Get application URL:**
+
+```bash
+# Get load balancer DNS
+terraform output application_url
+
+# Example output:
+# http://devops-go-app-alb-123456789.us-east-1.elb.amazonaws.com
+
+# Test
+curl http://<load-balancer-dns>/health
+```
+
+**Destroy infrastructure:**
+
+```bash
+# Destroy all resources
+terraform destroy
+
+# Type 'yes' to confirm
+```
+
+#### Step 10: Monitoring with Prometheus
+
+**Prometheus metrics endpoint:**
+
+```bash
+curl http://localhost:8080/metrics
+```
+
+**Sample metrics:**
+
+```
+# HELP http_requests_total Total number of HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{endpoint="/",method="GET",status="200"} 42
+
+# HELP http_request_duration_seconds HTTP request duration in seconds
+# TYPE http_request_duration_seconds histogram
+http_request_duration_seconds_bucket{endpoint="/",method="GET",le="0.005"} 35
+http_request_duration_seconds_bucket{endpoint="/",method="GET",le="0.01"} 40
+http_request_duration_seconds_bucket{endpoint="/",method="GET",le="0.025"} 42
+
+# HELP app_info Application information
+# TYPE app_info gauge
+app_info{environment="production",version="1.0.0"} 1
+```
+
+**Prometheus queries:**
+
+```promql
+# Request rate (requests per second)
+rate(http_requests_total[5m])
+
+# 95th percentile latency
+histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+
+# Error rate
+rate(http_requests_total{status=~"5.."}[5m])
+
+# Total requests by endpoint
+sum by (endpoint) (http_requests_total)
+```
+
+**Access Prometheus UI:**
+
+```bash
+# With Docker Compose
+open http://localhost:9090
+
+# With Kubernetes port-forward
+kubectl port-forward svc/prometheus 9090:9090 -n monitoring
+```
+
+#### Step 11: Grafana Dashboards
+
+**Access Grafana:**
+
+```bash
+# With Docker Compose
+open http://localhost:3000
+
+# Login: admin / admin
+```
+
+**Add Prometheus data source:**
+
+1. Go to Configuration → Data Sources
+2. Add Prometheus
+3. URL: `http://prometheus:9090` (Docker) or `http://prometheus.monitoring.svc.cluster.local:9090` (K8s)
+4. Save & Test
+
+**Create dashboard:**
+
+1. Create → Dashboard
+2. Add panel
+3. Query: `rate(http_requests_total[5m])`
+4. Visualization: Graph
+5. Save dashboard
+
+**Useful panels:**
+- Request rate over time
+- Response time percentiles (p50, p95, p99)
+- Error rate
+- Active connections
+- Memory usage
+- CPU usage
+
+### 🎯 Key Concepts
+
+#### 1. Multi-Stage Docker Builds
+
+**Benefits:**
+- ✅ **Smaller images**: 10MB vs 800MB
+- ✅ **Faster deployments**: Less data to transfer
+- ✅ **More secure**: No build tools in production
+- ✅ **Cheaper**: Less storage and bandwidth costs
+
+**Pattern:**
+
+```dockerfile
+# Stage 1: Build
+FROM golang:1.21-alpine AS builder
+# ... build steps ...
+
+# Stage 2: Runtime
+FROM scratch
+COPY --from=builder /app /app
+```
+
+#### 2. Kubernetes Health Checks
+
+**Liveness Probe:**
+- Checks if container is alive
+- Restarts container if failing
+- Use for deadlock detection
+
+**Readiness Probe:**
+- Checks if container can serve traffic
+- Removes from load balancer if failing
+- Use for startup and dependency checks
+
+**Startup Probe:**
+- Checks if application has started
+- Disables liveness/readiness until passing
+- Use for slow-starting applications
+
+#### 3. Infrastructure as Code
+
+**Benefits:**
+- ✅ **Version control**: Track infrastructure changes
+- ✅ **Reproducible**: Same config = same infrastructure
+- ✅ **Automated**: No manual clicking in console
+- ✅ **Documented**: Code is documentation
+- ✅ **Testable**: Validate before applying
+
+**Terraform workflow:**
+
+```bash
+terraform init    # Initialize providers
+terraform plan    # Preview changes
+terraform apply   # Apply changes
+terraform destroy # Destroy resources
+```
+
+#### 4. Observability
+
+**Three Pillars:**
+
+1. **Metrics** (Prometheus)
+   - Request rate, latency, errors
+   - Resource usage (CPU, memory)
+   - Business metrics
+
+2. **Logs** (CloudWatch, ELK)
+   - Application logs
+   - Error traces
+   - Audit logs
+
+3. **Traces** (Jaeger, Zipkin)
+   - Request flow across services
+   - Performance bottlenecks
+   - Dependency mapping
+
+### 💪 Practice Challenges
+
+#### Challenge 1: Add Database
+Add PostgreSQL to the application with migrations.
+
+**Requirements:**
+- Database connection pool
+- Health check for database
+- Migrations with golang-migrate
+- CRUD operations
+
+#### Challenge 2: Add Redis Caching
+Implement Redis caching for API responses.
+
+**Requirements:**
+- Cache GET requests
+- TTL configuration
+- Cache invalidation
+- Health check for Redis
+
+#### Challenge 3: Add CI/CD Pipeline
+Create GitHub Actions workflow.
+
+**Requirements:**
+- Build and test on push
+- Build Docker image
+- Push to ECR
+- Deploy to ECS
+
+#### Challenge 4: Multi-Region Deployment
+Deploy to multiple AWS regions.
+
+**Requirements:**
+- Route53 for DNS
+- Multi-region ECS deployment
+- Cross-region replication
+- Failover configuration
+
+#### Challenge 5: Service Mesh
+Implement Istio or Linkerd.
+
+**Requirements:**
+- Traffic management
+- Circuit breaking
+- Mutual TLS
+- Observability
+
+### 📚 Additional Resources
+
+**Docker:**
+- [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
+- [Multi-stage Builds](https://docs.docker.com/build/building/multi-stage/)
+
+**Kubernetes:**
+- [Kubernetes Documentation](https://kubernetes.io/docs/)
+- [Production Best Practices](https://kubernetes.io/docs/setup/best-practices/)
+
+**Terraform:**
+- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+- [Terraform Best Practices](https://www.terraform-best-practices.com/)
+
+**Monitoring:**
+- [Prometheus Documentation](https://prometheus.io/docs/)
+- [Grafana Tutorials](https://grafana.com/tutorials/)
+
+### 🎓 What You've Learned
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ DOCKER                                                       │
+│     • Multi-stage builds for minimal images                     │
+│     • Docker Compose for local development                      │
+│     • Container networking and volumes                          │
+│     • Health checks and restart policies                        │
+│                                                                  │
+│  ✅ KUBERNETES                                                   │
+│     • Deployments with replica management                       │
+│     • Services and load balancing                               │
+│     • ConfigMaps and Secrets                                    │
+│     • Liveness and readiness probes                             │
+│     • Horizontal Pod Autoscaling                                │
+│     • Ingress and TLS termination                               │
+│                                                                  │
+│  ✅ TERRAFORM                                                    │
+│     • Infrastructure as Code principles                         │
+│     • AWS resource provisioning                                 │
+│     • State management                                          │
+│     • Variables and outputs                                     │
+│     • ECS Fargate deployment                                    │
+│                                                                  │
+│  ✅ OBSERVABILITY                                                │
+│     • Prometheus metrics collection                             │
+│     • Grafana visualization                                     │
+│     • Health check endpoints                                    │
+│     • Structured logging                                        │
+│                                                                  │
+│  ✅ PRODUCTION PRACTICES                                         │
+│     • Graceful shutdown                                         │
+│     • Resource limits                                           │
+│     • Auto-scaling                                              │
+│     • Security best practices                                   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 🚀 Next Steps
+
+1. **Add CI/CD** - GitHub Actions, GitLab CI, Jenkins
+2. **Add Database** - PostgreSQL with migrations
+3. **Add Caching** - Redis integration
+4. **Add Tracing** - OpenTelemetry or Jaeger
+5. **Add Security** - Vault for secrets, RBAC
+6. **Service Mesh** - Istio or Linkerd
+7. **Multi-Region** - Deploy across regions
+
+### 📊 Deployment Comparison
+
+| Platform | Complexity | Cost | Scalability | Management |
+|----------|------------|------|-------------|------------|
+| **Docker Compose** | Low | Free | Low | Manual |
+| **Kubernetes** | High | Medium | High | Semi-Auto |
+| **ECS Fargate** | Medium | Pay-per-use | High | Managed |
+| **EKS** | High | Medium-High | Very High | Managed K8s |
+
+### 🎯 Summary
+
+**DevOps with Go** provides:
+- ✅ **Containerization** - Package apps with dependencies
+- ✅ **Orchestration** - Manage containers at scale
+- ✅ **Infrastructure as Code** - Automate provisioning
+- ✅ **Observability** - Monitor and debug production
+- ✅ **Automation** - Reduce manual operations
+
+**Key Principles:**
+- ✅ Automate everything
+- ✅ Make infrastructure reproducible
+- ✅ Monitor all the things
+- ✅ Fail fast and recover quickly
+- ✅ Security by default
+
+**Common Mistakes to Avoid:**
+- ❌ Large Docker images
+- ❌ Missing health checks
+- ❌ No resource limits
+- ❌ Hardcoded configuration
+- ❌ No monitoring
+- ❌ Manual deployments
+
+**You're now ready to deploy Go applications to production using modern DevOps practices!** 🚀
+
+---
+
+## Tutorial 18: Messaging with Go - Kafka and RabbitMQ
+
+**Project:** `basic/projects/messaging-with-go/`
+
+Learn message brokers and event streaming by building producers, consumers, and implementing messaging patterns with Apache Kafka and RabbitMQ.
+
+### 🎯 What You'll Learn
+
+- **Apache Kafka**: Event streaming, topics, partitions, consumer groups
+- **RabbitMQ**: Message queuing, exchanges, routing, work queues
+- **Messaging Patterns**: Pub/Sub, Point-to-Point, Request/Reply
+- **Production Practices**: Error handling, acknowledgments, graceful shutdown
+
+### 📋 Prerequisites
+
+- Docker and Docker Compose installed
+- Basic understanding of asynchronous messaging
+- Familiarity with distributed systems concepts
+
+### 🏗️ Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   Messaging Architecture                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  KAFKA (Event Streaming)                                        │
+│  ┌──────────┐    ┌───────────────┐    ┌──────────┐            │
+│  │ Producer │───▶│ Topic (events)│───▶│ Consumer │            │
+│  └──────────┘    │  - Partition 0│    └──────────┘            │
+│                  │  - Partition 1│    ┌──────────┐            │
+│                  │  - Partition 2│───▶│ Consumer │            │
+│                  └───────────────┘    └──────────┘            │
+│                                       (Consumer Group)          │
+│                                                                 │
+│  RABBITMQ (Message Broker)                                      │
+│  ┌───────────┐   ┌──────────┐   ┌───────┐   ┌────────────┐   │
+│  │ Publisher │──▶│ Exchange │──▶│ Queue │──▶│ Subscriber │   │
+│  └───────────┘   │ (topic)  │   └───────┘   └────────────┘   │
+│                  └──────────┘   ┌───────┐   ┌────────────┐   │
+│                                 │ Queue │──▶│   Worker   │   │
+│                                 └───────┘   └────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Step 1: Navigate to Project
+
+```bash
+cd basic/projects/messaging-with-go
+```
+
+#### Step 2: Install Dependencies
+
+```bash
+go mod tidy
+```
+
+#### Step 3: Start Kafka
+
+```bash
+# Start Kafka, Zookeeper, and Kafka UI
+make kafka-up
+
+# Services available:
+# - Kafka: localhost:9092
+# - Kafka UI: http://localhost:8080
+```
+
+#### Step 4: Run Kafka Producer
+
+**Terminal 1:**
+
+```bash
+make kafka-producer
+```
+
+**Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                  📤 Kafka Producer                          ║
+╚══════════════════════════════════════════════════════════════╝
+
+✅ Kafka producer connected
+📤 Sending messages to topic 'events'...
+✅ Message sent: partition=0 offset=0 id=event-1
+✅ Message sent: partition=0 offset=1 id=event-2
+✅ Message sent: partition=0 offset=2 id=event-3
+```
+
+#### Step 5: Run Kafka Consumer
+
+**Terminal 2:**
+
+```bash
+make kafka-consumer
+```
+
+**Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                  📥 Kafka Consumer                          ║
+╚══════════════════════════════════════════════════════════════╝
+
+✅ Kafka consumer connected
+📥 Consuming messages from topic 'events'...
+✅ Message received [1]: partition=0 offset=0 key=event-1
+   Event: ID=event-1 Type=user.created Data=User 1 created
+✅ Message received [2]: partition=0 offset=1 key=event-2
+   Event: ID=event-2 Type=user.created Data=User 2 created
+```
+
+#### Step 6: Run Kafka Consumer Group
+
+**Terminal 2 & 3:**
+
+```bash
+# Terminal 2
+make kafka-consumer-group
+
+# Terminal 3 (run another instance)
+make kafka-consumer-group
+```
+
+**What happens:**
+- Messages are distributed across consumers
+- Each partition assigned to one consumer
+- Automatic rebalancing when consumers join/leave
+
+#### Step 7: Start RabbitMQ
+
+```bash
+# Start RabbitMQ with Management UI
+make rabbitmq-up
+
+# Services available:
+# - RabbitMQ: localhost:5672
+# - Management UI: http://localhost:15672 (guest/guest)
+```
+
+#### Step 8: Run RabbitMQ Publisher
+
+**Terminal 1:**
+
+```bash
+make rabbitmq-publisher
+```
+
+**Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                📤 RabbitMQ Publisher                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+✅ RabbitMQ publisher connected
+📤 Publishing messages to exchange 'events'...
+✅ Message published: id=msg-1 routing_key=notification.email
+✅ Message published: id=msg-2 routing_key=notification.email
+```
+
+#### Step 9: Run RabbitMQ Subscriber
+
+**Terminal 2:**
+
+```bash
+make rabbitmq-subscriber
+```
+
+**Output:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║               📥 RabbitMQ Subscriber                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+✅ RabbitMQ subscriber connected
+📥 Consuming messages from queue 'notifications'...
+✅ Message received [1]: id=msg-1
+   Type=notification Payload=Notification 1
+✅ Message received [2]: id=msg-2
+   Type=notification Payload=Notification 2
+```
+
+#### Step 10: Run RabbitMQ Worker
+
+**Terminal 2 & 3:**
+
+```bash
+# Terminal 2
+make rabbitmq-worker
+
+# Terminal 3 (run another worker)
+make rabbitmq-worker
+```
+
+**What happens:**
+- Tasks distributed across workers
+- Fair dispatch with QoS
+- Manual acknowledgments ensure reliability
+
+### 🎯 Key Concepts
+
+#### 1. Kafka Topics and Partitions
+
+**Topics:**
+- Logical channels for messages
+- Divided into partitions for parallelism
+- Messages ordered within partitions
+
+**Partitions:**
+- Enable horizontal scaling
+- Each partition is an ordered log
+- Messages have sequential offsets
+
+**Example:**
+
+```
+Topic: events (3 partitions)
+├── Partition 0: [msg1, msg4, msg7, ...]
+├── Partition 1: [msg2, msg5, msg8, ...]
+└── Partition 2: [msg3, msg6, msg9, ...]
+```
+
+#### 2. Kafka Consumer Groups
+
+**Benefits:**
+- Load balancing across consumers
+- Fault tolerance
+- Scalability
+
+**How it works:**
+
+```
+Consumer Group: events-group
+├── Consumer 1 → Partition 0, 1
+└── Consumer 2 → Partition 2
+
+(If Consumer 1 fails, Consumer 2 takes over all partitions)
+```
+
+#### 3. RabbitMQ Exchanges
+
+**Types:**
+
+1. **Direct**: Exact routing key match
+2. **Topic**: Pattern matching (*.error, app.*)
+3. **Fanout**: Broadcast to all queues
+4. **Headers**: Route based on headers
+
+**Example (Topic Exchange):**
+
+```
+Exchange: logs (topic)
+├── Routing key: app.error → Error Queue
+├── Routing key: app.info → Info Queue
+└── Routing key: system.* → System Queue
+```
+
+#### 4. Message Acknowledgments
+
+**Manual Ack (RabbitMQ):**
+
+```go
+msg.Ack(false)  // Acknowledge message
+msg.Nack(false, true)  // Reject and requeue
+msg.Reject(false)  // Reject without requeue
+```
+
+**Why manual acks?**
+- Ensure message processing
+- Handle failures gracefully
+- Prevent message loss
+
+### 📊 Kafka vs RabbitMQ
+
+| Feature | Kafka | RabbitMQ |
+|---------|-------|----------|
+| **Type** | Event Streaming Platform | Message Broker |
+| **Use Case** | Event sourcing, logs, analytics | Task queues, RPC, routing |
+| **Ordering** | Per partition | Per queue |
+| **Retention** | Configurable (days/weeks) | Until consumed |
+| **Throughput** | Very High (millions/sec) | High (tens of thousands/sec) |
+| **Latency** | Low (~10ms) | Very Low (~1ms) |
+| **Message Replay** | Yes | No |
+| **Complexity** | Higher | Lower |
+
+**When to use Kafka:**
+- ✅ Event sourcing
+- ✅ Log aggregation
+- ✅ Stream processing
+- ✅ Real-time analytics
+- ✅ Need message replay
+
+**When to use RabbitMQ:**
+- ✅ Task queues
+- ✅ Request/Reply patterns
+- ✅ Complex routing
+- ✅ Priority queues
+- ✅ Low latency required
+
+### 🎨 Messaging Patterns
+
+#### 1. Publish/Subscribe (Kafka)
+
+```
+Producer → Topic → Consumer 1 (Email Service)
+                 → Consumer 2 (Analytics)
+                 → Consumer 3 (Audit Log)
+```
+
+**Use Case:** User registration event
+
+#### 2. Work Queue (RabbitMQ)
+
+```
+Producer → Queue → Worker 1
+                 → Worker 2
+                 → Worker 3
+```
+
+**Use Case:** Image processing tasks
+
+#### 3. Topic Routing (RabbitMQ)
+
+```
+Publisher → Exchange (topic) → Queue (*.error) → Error Handler
+                             → Queue (app.*) → App Logger
+```
+
+**Use Case:** Log routing by severity
+
+### 💪 Practice Challenges
+
+#### Challenge 1: Add Dead Letter Queue
+Implement DLQ for failed messages in RabbitMQ.
+
+#### Challenge 2: Add Schema Registry
+Use Avro schemas with Kafka.
+
+#### Challenge 3: Add Monitoring
+Implement Prometheus metrics for both systems.
+
+#### Challenge 4: Add Transactions
+Implement exactly-once semantics in Kafka.
+
+#### Challenge 5: Add Priority Queues
+Implement priority-based message processing in RabbitMQ.
+
+### 🎓 What You've Learned
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ✅ KAFKA                                                        │
+│     • Event streaming architecture                              │
+│     • Topics and partitions                                     │
+│     • Producer configuration                                    │
+│     • Consumer groups                                           │
+│     • Offset management                                         │
+│                                                                  │
+│  ✅ RABBITMQ                                                     │
+│     • Message queuing patterns                                  │
+│     • Exchanges and routing                                     │
+│     • Queue management                                          │
+│     • Manual acknowledgments                                    │
+│     • QoS and fair dispatch                                     │
+│                                                                  │
+│  ✅ MESSAGING PATTERNS                                           │
+│     • Publish/Subscribe                                         │
+│     • Point-to-Point                                            │
+│     • Work Queues                                               │
+│     • Topic Routing                                             │
+│                                                                  │
+│  ✅ PRODUCTION PRACTICES                                         │
+│     • Error handling                                            │
+│     • Graceful shutdown                                         │
+│     • Message persistence                                       │
+│     • Load balancing                                            │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**You're now ready to build scalable messaging systems with Go!** 📨
+
+---
+
 ## 🎬 AI Content Creation Course
 
 **Master cutting-edge AI tools to create viral content and generate passive income**
