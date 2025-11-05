@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 // Executor provides Go code execution

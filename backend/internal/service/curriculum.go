@@ -48,7 +48,9 @@ func (s *curriculumService) GetCurriculum(ctx context.Context) (*domain.Curricul
 	curriculum := &domain.Curriculum{
 		ID:          "go-pro-curriculum",
 		Title:       "GO-PRO: Complete Go Programming Mastery",
-		Description: "Master Go programming from basics to advanced production systems. Learn Go's syntax, concurrency patterns, web development, testing, performance optimization, security, and best practices through hands-on exercises and real-world projects.",
+		Description: "Master Go programming from basics to advanced production systems. " +
+			"Learn Go's syntax, concurrency patterns, web development, testing, " +
+			"performance optimization, security, and best practices through hands-on exercises and real-world projects.",
 		Duration:    "16 weeks",
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -436,15 +438,15 @@ func (s *curriculumService) GetLessonDetail(ctx context.Context, lessonID int) (
 // generateLessonMockData generates mock lesson data for all 20 lessons.
 func (s *curriculumService) generateLessonMockData() map[int]*domain.LessonDetail {
 	return map[int]*domain.LessonDetail{
-		1: s.getLessonData1(),
-		2: s.getLessonData2(),
-		3: s.getLessonData3(),
-		4: s.getLessonData4(),
-		5: s.getLessonData5(),
-		6: s.getLessonData6(),
-		7: s.getLessonData7(),
-		8: s.getLessonData8(),
-		9: s.getLessonData9(),
+		1:  s.getLessonData1(),
+		2:  s.getLessonData2(),
+		3:  s.getLessonData3(),
+		4:  s.getLessonData4(),
+		5:  s.getLessonData5(),
+		6:  s.getLessonData6(),
+		7:  s.getLessonData7(),
+		8:  s.getLessonData8(),
+		9:  s.getLessonData9(),
 		10: s.getLessonData10(),
 		11: s.getLessonData11(),
 		12: s.getLessonData12(),
@@ -1343,11 +1345,15 @@ func main() {
 
 // Lessons 11-20 with simpler implementations
 func (s *curriculumService) getLessonData11() *domain.LessonDetail {
-	return s.createGenericLesson(11, "Advanced Concurrency Patterns", "Master worker pools, pipelines, context package, and sync primitives.", "8-9 hours", domain.DifficultyAdvanced, "Advanced", 12, 10)
+	return s.createGenericLesson(11, "Advanced Concurrency Patterns",
+		"Master worker pools, pipelines, context package, and sync primitives.",
+		"8-9 hours", domain.DifficultyAdvanced, "Advanced", 12, 10)
 }
 
 func (s *curriculumService) getLessonData12() *domain.LessonDetail {
-	return s.createGenericLesson(12, "Testing and Benchmarking", "Learn unit testing, table-driven tests, benchmarking, and profiling.", "6-7 hours", domain.DifficultyAdvanced, "Advanced", 13, 11)
+	return s.createGenericLesson(12, "Testing and Benchmarking",
+		"Learn unit testing, table-driven tests, benchmarking, and profiling.",
+		"6-7 hours", domain.DifficultyAdvanced, "Advanced", 13, 11)
 }
 
 func (s *curriculumService) getLessonData13() *domain.LessonDetail {
@@ -1385,7 +1391,13 @@ func (s *curriculumService) getLessonData20() *domain.LessonDetail {
 }
 
 // Helper function to create generic lesson data
-func (s *curriculumService) createGenericLesson(id int, title, description, duration string, difficulty domain.Difficulty, phase string, nextID, prevID int) *domain.LessonDetail {
+func (s *curriculumService) createGenericLesson(
+	id int,
+	title, description, duration string,
+	difficulty domain.Difficulty,
+	phase string,
+	nextID, prevID int,
+) *domain.LessonDetail {
 	lesson := &domain.LessonDetail{
 		ID:          id,
 		Title:       title,

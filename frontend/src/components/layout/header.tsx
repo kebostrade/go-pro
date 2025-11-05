@@ -117,15 +117,15 @@ const Header = () => {
       className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       role="banner"
     >
-      <div className="container flex h-14 sm:h-16 lg:h-18 max-w-screen-2xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Enhanced Logo - Responsive sizing */}
-        <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group flex-shrink-0">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 lg:h-10 lg:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg group-hover:shadow-xl group-hover:shadow-primary/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-            <span className="text-base sm:text-lg lg:text-xl font-bold text-primary-foreground">G</span>
+      <div className="container flex h-14 sm:h-16 lg:h-18 xl:h-20 max-w-screen-2xl items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8">
+        {/* Enhanced Logo - Fully Responsive */}
+        <Link href="/" className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 group flex-shrink-0 min-w-0">
+          <div className="flex h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 lg:h-10 lg:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg group-hover:shadow-xl group-hover:shadow-primary/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0">
+            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary-foreground">G</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-base sm:text-lg lg:text-xl font-bold go-gradient-text group-hover:scale-105 transition-transform duration-300 whitespace-nowrap">GO-PRO</span>
-            <span className="hidden sm:block text-[10px] sm:text-xs lg:text-sm text-muted-foreground -mt-1 group-hover:text-foreground/80 transition-colors whitespace-nowrap">Learn Go Programming</span>
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold go-gradient-text group-hover:scale-105 transition-transform duration-300 whitespace-nowrap truncate">GO-PRO</span>
+            <span className="hidden sm:block text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-muted-foreground -mt-0.5 sm:-mt-1 group-hover:text-foreground/80 transition-colors whitespace-nowrap truncate">Learn Go Programming</span>
           </div>
         </Link>
 
@@ -168,9 +168,9 @@ const Header = () => {
           </NavigationMenuList>
         </NavigationMenu>
 
-        {/* Tablet Navigation - Compact links */}
-        <nav className="hidden md:flex lg:hidden" aria-label="Tablet navigation">
-          <div className="flex items-center space-x-1 overflow-x-auto">
+        {/* Tablet Navigation - Compact links with overflow scroll */}
+        <nav className="hidden md:flex lg:hidden flex-1 mx-4 overflow-x-auto scrollbar-hide" aria-label="Tablet navigation">
+          <div className="flex items-center space-x-0.5 min-w-max">
             {navigationItems.map((item) => (
               <Link
                 key={item.title}
@@ -179,51 +179,52 @@ const Header = () => {
                 title={item.description}
               >
                 <item.icon className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden md:inline">{item.title}</span>
+                <span>{item.title}</span>
               </Link>
             ))}
           </div>
         </nav>
 
-        {/* Right side actions */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-          {/* Enhanced Theme toggle */}
+        {/* Right side actions - Better mobile spacing */}
+        <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2 flex-shrink-0">
+          {/* Enhanced Theme toggle with better touch targets */}
           {mounted && (
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="h-9 w-9 sm:h-10 sm:w-10 relative overflow-hidden group hover:bg-primary/10 transition-all duration-300"
+              className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 relative overflow-hidden group hover:bg-primary/10 transition-all duration-300 touch-manipulation"
               aria-label="Toggle theme"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               {isDark ? (
-                <Sun className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-yellow-500 group-hover:rotate-90 transition-transform duration-500 relative z-10" />
+                <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-[18px] md:w-[18px] text-yellow-500 group-hover:rotate-90 transition-transform duration-500 relative z-10" />
               ) : (
-                <Moon className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-blue-600 dark:text-blue-400 group-hover:-rotate-12 transition-transform duration-500 relative z-10" />
+                <Moon className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-[18px] md:w-[18px] text-blue-600 dark:text-blue-400 group-hover:-rotate-12 transition-transform duration-500 relative z-10" />
               )}
               <span className="sr-only">Toggle theme</span>
             </Button>
           )}
 
-          {/* CTA Section - Responsive visibility and sizing */}
-          <div className="hidden sm:flex items-center gap-2 ml-1 md:ml-2">
-            <Badge variant="secondary" className="hidden md:flex text-xs whitespace-nowrap">
+          {/* CTA Section - Progressive visibility */}
+          <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 ml-0.5 sm:ml-1 md:ml-2">
+            <Badge variant="secondary" className="hidden md:flex text-[10px] md:text-xs whitespace-nowrap px-2 py-0.5">
               Beta
             </Badge>
             <Button
               size="sm"
-              className="go-gradient text-white text-xs sm:text-sm px-3 sm:px-4 h-9 whitespace-nowrap"
+              className="go-gradient text-white text-xs sm:text-sm px-2.5 sm:px-3 md:px-4 h-8 sm:h-9 whitespace-nowrap shadow-md hover:shadow-lg transition-shadow touch-manipulation"
             >
-              Get Started
+              <span className="hidden sm:inline">Get Started</span>
+              <span className="sm:hidden">Start</span>
             </Button>
           </div>
 
-          {/* Mobile menu button - Shows on mobile and small tablets */}
+          {/* Mobile menu button with better touch target */}
           <Button
             variant="ghost"
             size="icon"
-            className="flex md:hidden h-8 w-8 sm:h-9 sm:w-9 ml-1"
+            className="flex md:hidden h-8 w-8 sm:h-9 sm:w-9 ml-0.5 sm:ml-1 touch-manipulation"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-menu"
@@ -244,7 +245,7 @@ const Header = () => {
         />
       )}
 
-      {/* Mobile Navigation - Shows only on mobile and small tablets */}
+      {/* Mobile Navigation - Enhanced touch-friendly design */}
       {isMobileMenuOpen && (
         <nav
           id="mobile-menu"
@@ -252,22 +253,24 @@ const Header = () => {
           role="navigation"
           aria-label="Mobile navigation"
         >
-          <div className="container px-4 py-4 space-y-2 max-w-screen-2xl">
+          <div className="container px-3 sm:px-4 py-3 sm:py-4 space-y-1 sm:space-y-2 max-w-screen-2xl max-h-[calc(100vh-4rem)] overflow-y-auto">
             {navigationItems.map((item) => (
               <Link
                 key={item.title}
                 href={item.href}
-                className="flex items-start space-x-3 rounded-lg p-3 text-sm hover:bg-accent hover:text-accent-foreground transition-colors active:scale-98 active:bg-accent/80"
+                className="flex items-start space-x-2.5 sm:space-x-3 rounded-lg p-2.5 sm:p-3 text-sm min-h-[56px] sm:min-h-[60px] hover:bg-accent hover:text-accent-foreground transition-colors active:scale-98 active:bg-accent/80 touch-manipulation"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <item.icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <div className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 rounded-md bg-primary/10 flex-shrink-0">
+                  <item.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                </div>
                 <div className="flex-1 min-w-0 space-y-0.5">
-                  <div className="font-semibold">{item.title}</div>
-                  <div className="text-xs text-muted-foreground leading-relaxed">
+                  <div className="font-semibold text-sm sm:text-base">{item.title}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2">
                     {item.description}
                   </div>
                   {item.badge && (
-                    <Badge variant="secondary" className="text-xs mt-1">
+                    <Badge variant="secondary" className="text-[10px] sm:text-xs mt-1 inline-block">
                       {item.badge}
                     </Badge>
                   )}
@@ -275,14 +278,17 @@ const Header = () => {
               </Link>
             ))}
 
-            {/* Mobile CTA Section */}
-            <div className="pt-3 mt-2 border-t border-border space-y-2">
-              <Button size="default" className="w-full go-gradient text-white font-semibold">
+            {/* Mobile CTA Section - Better spacing */}
+            <div className="pt-3 sm:pt-4 mt-2 sm:mt-3 border-t border-border space-y-2 sm:space-y-3">
+              <Button
+                size="default"
+                className="w-full h-11 sm:h-12 go-gradient text-white font-semibold text-sm sm:text-base shadow-md hover:shadow-lg transition-all touch-manipulation"
+              >
                 Get Started
               </Button>
-              <div className="flex items-center justify-center">
-                <Badge variant="secondary" className="text-xs">
-                  Beta
+              <div className="flex items-center justify-center py-1">
+                <Badge variant="secondary" className="text-[10px] sm:text-xs">
+                  Beta Version
                 </Badge>
               </div>
             </div>

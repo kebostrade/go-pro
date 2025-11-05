@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 // OpenAIEmbedder implements the Embedder interface using OpenAI's API

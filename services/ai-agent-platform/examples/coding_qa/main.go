@@ -6,12 +6,12 @@ import (
 	"log"
 	"os"
 
-	"ai-agent-platform/internal/agent"
-	"ai-agent-platform/internal/languages/common"
-	"ai-agent-platform/internal/languages/golang"
-	"ai-agent-platform/internal/llm"
-	"ai-agent-platform/internal/tools/programming"
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/agent"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/languages/common"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/languages/golang"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/llm"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/tools/programming"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 func main() {

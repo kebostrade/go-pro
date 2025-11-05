@@ -696,4 +696,44 @@
   .duration-500 { animation-duration: 500ms; }
   .duration-700 { animation-duration: 700ms; }
   .duration-1000 { animation-duration: 1000ms; }
+
+  /* Scrollbar utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Touch manipulation for better mobile performance */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  /* Responsive padding utilities */
+  .padding-responsive-x {
+    @apply px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12;
+  }
+
+  .padding-responsive-y {
+    @apply py-6 sm:py-8 md:py-10 lg:py-12 xl:py-16;
+  }
+
+  /* Better safe area support for iOS */
+  @supports (padding: max(0px)) {
+    .safe-area-inset-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+
+    .safe-area-inset-top {
+      padding-top: max(1rem, env(safe-area-inset-top));
+    }
+
+    .safe-area-inset-x {
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+  }
 }

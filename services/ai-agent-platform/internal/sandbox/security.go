@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 // SecurityPolicy defines security rules for code execution

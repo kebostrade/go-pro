@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 // ResourceLimitsManager manages resource limits for code execution

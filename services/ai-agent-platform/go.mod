@@ -1,4 +1,4 @@
-module ai-agent-platform
+module github.com/DimaJoyti/go-pro/services/ai-agent-platform
 
 go 1.22
 

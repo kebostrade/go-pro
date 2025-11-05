@@ -1,0 +1,151 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+
+    function isInstructor() {
+      return isAuthenticated() && (getUserRole() == 'instructor' || getUserRole() == 'admin');
+    }
+
+    function isEmailVerified() {
+      return isAuthenticated() && request.auth.token.email_verified == true;
+    }
+
+    // User profiles
+    match /users/{userId} {
+      // Anyone authenticated can read user profiles (for leaderboards, etc.)
+      allow read: if isAuthenticated();
+
+      // Users can create their own profile during signup
+      allow create: if isOwner(userId) &&
+                      request.resource.data.uid == userId &&
+                      request.resource.data.role == 'student'; // Default role
+
+      // Users can update their own profile, but not their role or uid
+      allow update: if isOwner(userId) &&
+                      request.resource.data.uid == userId &&
+                      request.resource.data.role == resource.data.role;
+
+      // Only admins can delete user profiles
+      allow delete: if isAdmin();
+
+      // Admins can update any user including role changes
+      allow update: if isAdmin();
+    }
+
+    // Courses
+    match /courses/{courseId} {
+      // Anyone can read courses (public content)
+      allow read: if true;
+
+      // Only instructors and admins can create/update/delete courses
+      allow create, update, delete: if isInstructor();
+    }
+
+    // Lessons
+    match /lessons/{lessonId} {
+      // Anyone can read lessons (public content)
+      allow read: if true;
+
+      // Only instructors and admins can create/update/delete lessons
+      allow create, update, delete: if isInstructor();
+    }
+
+    // Tutorials
+    match /tutorials/{tutorialId} {
+      // Anyone can read tutorials (public content)
+      allow read: if true;
+
+      // Only instructors and admins can create/update/delete tutorials
+      allow create, update, delete: if isInstructor();
+    }
+
+    // User progress
+    match /progress/{userId} {
+      // Users can only read their own progress
+      allow read: if isOwner(userId);
+
+      // Users can create/update their own progress
+      allow create, update: if isOwner(userId);
+
+      // Admins can read all progress (for analytics)
+      allow read: if isAdmin();
+
+      // No one can delete progress
+      allow delete: if false;
+    }
+
+    // User submissions (code challenges, exercises)
+    match /submissions/{submissionId} {
+      // Users can read their own submissions
+      allow read: if isAuthenticated() &&
+                    resource.data.userId == request.auth.uid;
+
+      // Users can create submissions with their own userId
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid;
+
+      // Users can update their own submissions (e.g., improve solution)
+      allow update: if isAuthenticated() &&
+                      resource.data.userId == request.auth.uid;
+
+      // Instructors and admins can read all submissions (for grading)
+      allow read: if isInstructor();
+
+      // No one can delete submissions (audit trail)
+      allow delete: if false;
+    }
+
+    // Comments and discussions
+    match /comments/{commentId} {
+      // Anyone authenticated can read comments
+      allow read: if isAuthenticated();
+
+      // Authenticated users can create comments with their userId
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      isEmailVerified();
+
+      // Users can update/delete their own comments
+      allow update, delete: if isAuthenticated() &&
+                              resource.data.userId == request.auth.uid;
+
+      // Admins can delete any comment (moderation)
+      allow delete: if isAdmin();
+    }
+
+    // Analytics and metrics (read-only for students)
+    match /analytics/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Site configuration (admin only)
+    match /config/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Deny all other access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

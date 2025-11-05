@@ -34,7 +34,10 @@ func (r *LessonRepository) Create(ctx context.Context, lesson *domain.Lesson) er
 	}
 
 	query := `
-		INSERT INTO gopro.lessons (id, course_id, slug, title, description, content, lesson_order, estimated_duration_minutes, status, created_at, updated_at)
+		INSERT INTO gopro.lessons (
+			id, course_id, slug, title, description, content, lesson_order,
+			estimated_duration_minutes, status, created_at, updated_at
+		)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	`
 
@@ -111,7 +114,11 @@ func (r *LessonRepository) GetByID(ctx context.Context, id string) (*domain.Less
 }
 
 // GetByCourseID retrieves all lessons for a specific course.
-func (r *LessonRepository) GetByCourseID(ctx context.Context, courseID string, pagination *domain.PaginationRequest) ([]*domain.Lesson, int64, error) {
+func (r *LessonRepository) GetByCourseID(
+	ctx context.Context,
+	courseID string,
+	pagination *domain.PaginationRequest,
+) ([]*domain.Lesson, int64, error) {
 	// Count total lessons for the course.
 	countQuery := "SELECT COUNT(*) FROM gopro.lessons WHERE course_id = $1 AND status = 'published'"
 	var total int64

@@ -3,8 +3,8 @@ package golang
 import (
 	"context"
 
-	"ai-agent-platform/internal/languages/common"
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/languages/common"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 // Provider combines Go analyzer and executor

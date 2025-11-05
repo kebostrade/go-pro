@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"ai-agent-platform/pkg/errors"
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/errors"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 // ReActAgent implements the ReAct (Reasoning + Acting) pattern

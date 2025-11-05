@@ -230,6 +230,31 @@ export const tutorials: Tutorial[] = [
       'Choose the right API technology for your use case'
     ],
     featured: true
+  },
+  {
+    id: 'cloud-cicd',
+    number: 22,
+    title: 'Cloud Platforms & CI/CD',
+    description: 'Deploy Go applications to Google Cloud Platform and AWS with production-grade CI/CD pipelines. Master serverless, containers, messaging, and infrastructure as code.',
+    category: 'advanced',
+    difficulty: 'intermediate',
+    duration: '10 hours',
+    topics: ['GCP', 'AWS', 'Cloud Run', 'Lambda', 'S3', 'Cloud Storage', 'Pub/Sub', 'SQS', 'Terraform', 'GitHub Actions', 'Docker', 'Kubernetes'],
+    projectPath: 'basic/projects/cloud-cicd-go',
+    icon: '☁️',
+    color: 'from-blue-500 to-cyan-600',
+    prerequisites: ['Docker basics', 'REST APIs', 'Cloud concepts'],
+    learningOutcomes: [
+      'Deploy serverless apps to Cloud Run and Lambda',
+      'Use cloud storage (GCS, S3) and messaging (Pub/Sub, SQS)',
+      'Work with NoSQL databases (Firestore, DynamoDB)',
+      'Build CI/CD pipelines with GitHub Actions',
+      'Manage infrastructure with Terraform',
+      'Containerize applications with Docker',
+      'Deploy to Kubernetes (GKE)',
+      'Implement cloud best practices'
+    ],
+    featured: true
   }
 ];
 

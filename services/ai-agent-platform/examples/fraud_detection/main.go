@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"ai-agent-platform/internal/agent"
-	"ai-agent-platform/internal/llm"
-	"ai-agent-platform/internal/tools/financial"
-	"ai-agent-platform/internal/tools/general"
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/agent"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/llm"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/tools/financial"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/tools/general"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 func main() {

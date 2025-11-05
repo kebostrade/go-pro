@@ -131,7 +131,11 @@ func (s *lessonService) GetLessonByID(ctx context.Context, id string) (*domain.L
 }
 
 // GetLessonsByCourseID retrieves lessons for a specific course.
-func (s *lessonService) GetLessonsByCourseID(ctx context.Context, courseID string, pagination *domain.PaginationRequest) (*domain.ListResponse, error) {
+func (s *lessonService) GetLessonsByCourseID(
+	ctx context.Context,
+	courseID string,
+	pagination *domain.PaginationRequest,
+) (*domain.ListResponse, error) {
 	if courseID == "" {
 		return nil, errors.NewBadRequestError("course ID is required")
 	}

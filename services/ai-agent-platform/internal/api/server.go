@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"ai-agent-platform/internal/agent"
-	"ai-agent-platform/internal/languages/common"
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/agent"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/languages/common"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 // CodingAgentServer provides HTTP API for coding agents

@@ -1,6 +1,6 @@
 module go-pro-backend
 
-go 1.25
+go 1.23.0
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
@@ -19,7 +19,6 @@ require (
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sashabaranov/go-openai v1.20.4 // indirect
 	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

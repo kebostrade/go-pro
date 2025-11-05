@@ -119,7 +119,11 @@ func (r *ProgressRepository) GetByID(ctx context.Context, id string) (*domain.Pr
 }
 
 // GetByUserID retrieves all progress records for a specific user.
-func (r *ProgressRepository) GetByUserID(ctx context.Context, userID string, pagination *domain.PaginationRequest) ([]*domain.Progress, int64, error) {
+func (r *ProgressRepository) GetByUserID(
+	ctx context.Context,
+	userID string,
+	pagination *domain.PaginationRequest,
+) ([]*domain.Progress, int64, error) {
 	// Count total progress records for the user.
 	countQuery := "SELECT COUNT(*) FROM gopro.user_lesson_progress WHERE user_id = $1"
 	var total int64

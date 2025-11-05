@@ -41,13 +41,14 @@
 - [Tutorial 14](#-tutorial-14-performance-optimization) - Performance Optimization ⏱️ 50 min
 - [Tutorial 15](#-tutorial-15-docker--deployment) - Docker & Deployment ⏱️ 45 min
 
-### 🚀 [Advanced Topics](#-advanced-tutorials) (43+ hours)
+### 🚀 [Advanced Topics](#-advanced-tutorials) (53+ hours)
 - [Tutorial 16](#%EF%B8%8F-tutorial-16-web-architecture-with-go) - Web Architecture with Go ⏱️ 6 hours
 - [Tutorial 17](#-tutorial-17-devops-with-go---docker-kubernetes-and-terraform) - DevOps with Go ⏱️ 7 hours
 - [Tutorial 18](#-tutorial-18-messaging-with-go---kafka-and-rabbitmq) - Messaging with Go ⏱️ 6 hours
 - [Tutorial 19](#-tutorial-19-ethical-hacking-with-go) - Ethical Hacking with Go ⏱️ 7 hours
 - [Tutorial 20](#-tutorial-20-postgresql--redis-with-go) - PostgreSQL & Redis with Go ⏱️ 8 hours
 - [Tutorial 21](#-tutorial-21-restful-apis-grpc--graphql-with-go) - RESTful APIs, gRPC & GraphQL ⏱️ 8 hours
+- [Tutorial 22](#-tutorial-22-cloud-platforms--cicd-with-go) - Cloud Platforms & CI/CD ⏱️ 10 hours
 
 ### 🤖 [AI Engineering](#-ai-engineering-tutorials) (6-8 hours)
 - [AI Tutorial 0](#-ai-tutorial-0-ai-engineering-overview) - AI Engineering Overview ⏱️ 20 min
@@ -8283,6 +8284,521 @@ make run-gateway
 - **GraphQL**: [gqlgen](https://gqlgen.com/), [GraphQL spec](https://spec.graphql.org/)
 
 **You're now ready to build modern APIs with REST, gRPC, and GraphQL!** 🌐🚀
+
+---
+
+## ☁️ Tutorial 22: Cloud Platforms & CI/CD with Go
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ 🟡 INTERMEDIATE                              ⏱️  10 hours         │
+├──────────────────────────────────────────────────────────────────┤
+│ Master cloud deployment on GCP and AWS with production CI/CD     │
+│                                                                  │
+│ 📦 What You'll Build:                                            │
+│   • Serverless apps on Cloud Run and Lambda                      │
+│   • Cloud storage with GCS and S3                                │
+│   • Messaging with Pub/Sub and SQS                               │
+│   • NoSQL databases (Firestore, DynamoDB)                        │
+│   • Complete CI/CD pipelines                                     │
+│   • Infrastructure as Code with Terraform                        │
+│                                                                  │
+│ 🎯 Learning Outcomes:                                            │
+│   ✅ Deploy to GCP Cloud Run                                     │
+│   ✅ Create AWS Lambda functions                                 │
+│   ✅ Use cloud storage services                                  │
+│   ✅ Implement messaging patterns                                │
+│   ✅ Build CI/CD pipelines                                       │
+│   ✅ Manage infrastructure with Terraform                        │
+│   ✅ Containerize with Docker                                    │
+│   ✅ Deploy to Kubernetes                                        │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 📁 Project Structure
+
+```
+basic/projects/cloud-cicd-go/
+├── gcp/                    # Google Cloud Platform
+│   ├── cloud-run/         # Serverless containers
+│   ├── cloud-functions/   # Serverless functions
+│   ├── cloud-storage/     # Object storage
+│   ├── pubsub/            # Messaging
+│   ├── firestore/         # NoSQL database
+│   └── gke/               # Kubernetes Engine
+├── aws/                    # Amazon Web Services
+│   ├── lambda/            # Serverless functions
+│   ├── s3/                # Object storage
+│   ├── dynamodb/          # NoSQL database
+│   ├── sqs/               # Message queuing
+│   ├── sns/               # Notifications
+│   ├── ecs/               # Container service
+│   └── api-gateway/       # API management
+├── cicd/                   # CI/CD pipelines
+│   ├── github-actions/    # GitHub Actions
+│   ├── gitlab-ci/         # GitLab CI
+│   ├── circleci/          # CircleCI
+│   └── jenkins/           # Jenkins
+├── terraform/              # Infrastructure as Code
+│   ├── gcp/               # GCP Terraform
+│   └── aws/               # AWS Terraform
+├── docker/                 # Docker configs
+├── kubernetes/             # K8s manifests
+└── scripts/                # Deployment scripts
+```
+
+---
+
+### ☁️ Part 1: Google Cloud Platform (3 hours)
+
+#### Step 1: Setup GCP
+
+```bash
+# Install Google Cloud SDK
+curl https://sdk.cloud.google.com | bash
+gcloud init
+
+# Set project
+export GCP_PROJECT_ID=your-project-id
+gcloud config set project $GCP_PROJECT_ID
+
+# Enable APIs
+gcloud services enable run.googleapis.com
+gcloud services enable cloudfunctions.googleapis.com
+gcloud services enable storage.googleapis.com
+gcloud services enable pubsub.googleapis.com
+gcloud services enable firestore.googleapis.com
+```
+
+#### Step 2: Cloud Run - Serverless Containers
+
+**Deploy a REST API to Cloud Run:**
+
+```bash
+cd basic/projects/cloud-cicd-go/gcp/cloud-run
+
+# Run locally
+go run main.go
+
+# Deploy to Cloud Run
+gcloud run deploy cloud-cicd-app \
+  --source . \
+  --region us-central1 \
+  --platform managed \
+  --allow-unauthenticated
+
+# Get service URL
+gcloud run services describe cloud-cicd-app \
+  --region us-central1 \
+  --format 'value(status.url)'
+```
+
+**Features:**
+- ✅ Auto-scaling (0 to N instances)
+- ✅ Pay per use (billed per 100ms)
+- ✅ HTTPS endpoints automatically
+- ✅ Custom domains support
+- ✅ Traffic splitting for canary deployments
+
+#### Step 3: Cloud Storage - Object Storage
+
+**Upload and download files:**
+
+```bash
+cd gcp/cloud-storage
+
+# Set bucket name
+export GCP_BUCKET_NAME=your-bucket-name
+
+# Run example
+go run main.go
+```
+
+**Operations:**
+- Upload files
+- Download files
+- List files with prefix
+- Generate signed URLs
+- Set file metadata
+- Make files public
+
+#### Step 4: Pub/Sub - Messaging
+
+**Publish and subscribe to messages:**
+
+```bash
+cd gcp/pubsub
+
+# Create topic
+gcloud pubsub topics create demo-topic
+
+# Create subscription
+gcloud pubsub subscriptions create demo-sub \
+  --topic demo-topic
+
+# Run publisher
+go run publisher/main.go
+
+# Run subscriber
+go run subscriber/main.go
+```
+
+**Use Cases:**
+- Event-driven architecture
+- Asynchronous processing
+- Decoupling services
+- Fan-out messaging
+- Dead letter queues
+
+---
+
+### 🌐 Part 2: Amazon Web Services (3 hours)
+
+#### Step 1: Setup AWS
+
+```bash
+# Install AWS CLI
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+# Configure credentials
+aws configure
+# Enter: Access Key ID, Secret Access Key, Region, Output format
+```
+
+#### Step 2: Lambda - Serverless Functions
+
+**Create and deploy Lambda function:**
+
+```bash
+cd basic/projects/cloud-cicd-go/aws/lambda
+
+# Build for Lambda
+GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+
+# Create deployment package
+zip function.zip bootstrap
+
+# Create Lambda function
+aws lambda create-function \
+  --function-name cloud-cicd-app \
+  --runtime provided.al2 \
+  --handler bootstrap \
+  --zip-file fileb://function.zip \
+  --role arn:aws:iam::ACCOUNT_ID:role/lambda-role
+
+# Create function URL
+aws lambda create-function-url-config \
+  --function-name cloud-cicd-app \
+  --auth-type NONE
+
+# Invoke function
+aws lambda invoke \
+  --function-name cloud-cicd-app \
+  --payload '{"name":"John","email":"john@example.com"}' \
+  response.json
+```
+
+**Triggers:**
+- API Gateway
+- S3 events
+- SQS messages
+- CloudWatch Events
+- DynamoDB Streams
+
+#### Step 3: S3 - Object Storage
+
+**Upload and download files:**
+
+```bash
+cd aws/s3
+
+# Set bucket name
+export AWS_BUCKET_NAME=your-bucket-name
+
+# Run example
+go run main.go
+```
+
+**Operations:**
+- Upload files
+- Download files
+- List objects
+- Generate presigned URLs
+- Copy objects
+- Set lifecycle policies
+
+#### Step 4: DynamoDB - NoSQL Database
+
+**CRUD operations:**
+
+```bash
+cd aws/dynamodb
+
+# Create table
+aws dynamodb create-table \
+  --table-name users \
+  --attribute-definitions \
+    AttributeName=id,AttributeType=S \
+  --key-schema \
+    AttributeName=id,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST
+
+# Run example
+go run main.go
+```
+
+**Features:**
+- Single-digit millisecond latency
+- Automatic scaling
+- Global tables
+- Transactions
+- Streams for change data capture
+
+---
+
+### 🔄 Part 3: CI/CD Pipelines (2 hours)
+
+#### GitHub Actions Workflow
+
+**File:** `.github/workflows/deploy.yml`
+
+```yaml
+name: Deploy to Cloud
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - run: go test -v -race -cover ./...
+
+  deploy-gcp:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - run: |
+          gcloud run deploy cloud-cicd-app \
+            --source . \
+            --region us-central1 \
+            --allow-unauthenticated
+
+  deploy-aws:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - run: |
+          cd aws/lambda
+          GOOS=linux GOARCH=amd64 go build -o bootstrap main.go
+          zip function.zip bootstrap
+          aws lambda update-function-code \
+            --function-name cloud-cicd-app \
+            --zip-file fileb://function.zip
+```
+
+**Pipeline Stages:**
+1. **Test** - Run unit tests with coverage
+2. **Lint** - Code quality checks
+3. **Build** - Compile binaries
+4. **Docker** - Build and push images
+5. **Deploy GCP** - Deploy to Cloud Run
+6. **Deploy AWS** - Deploy to Lambda
+7. **Integration Test** - Verify deployment
+8. **Notify** - Send notifications
+
+---
+
+### 🏗️ Part 4: Infrastructure as Code (2 hours)
+
+#### Terraform for GCP
+
+**File:** `terraform/gcp/main.tf`
+
+```hcl
+# Cloud Run Service
+resource "google_cloud_run_service" "app" {
+  name     = "cloud-cicd-app"
+  location = "us-central1"
+
+  template {
+    spec {
+      containers {
+        image = "gcr.io/${var.project_id}/cloud-cicd-app:latest"
+
+        env {
+          name  = "ENV"
+          value = var.environment
+        }
+      }
+    }
+  }
+}
+
+# Cloud Storage Bucket
+resource "google_storage_bucket" "app_bucket" {
+  name     = "${var.project_id}-app-bucket"
+  location = "US"
+
+  versioning {
+    enabled = true
+  }
+}
+
+# Pub/Sub Topic
+resource "google_pubsub_topic" "app_topic" {
+  name = "app-topic"
+}
+```
+
+**Deploy:**
+
+```bash
+cd terraform/gcp
+
+# Initialize
+terraform init
+
+# Plan
+terraform plan -var="project_id=your-project"
+
+# Apply
+terraform apply -var="project_id=your-project"
+```
+
+#### Terraform for AWS
+
+**File:** `terraform/aws/main.tf`
+
+```hcl
+# Lambda Function
+resource "aws_lambda_function" "app" {
+  filename      = "function.zip"
+  function_name = "cloud-cicd-app"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "bootstrap"
+  runtime       = "provided.al2"
+}
+
+# S3 Bucket
+resource "aws_s3_bucket" "app_bucket" {
+  bucket = "cloud-cicd-app-bucket"
+}
+
+# DynamoDB Table
+resource "aws_dynamodb_table" "app_table" {
+  name         = "users"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+}
+```
+
+---
+
+### ✅ Checkpoints
+
+**After Part 1 (GCP):**
+```
+✓ Deployed app to Cloud Run
+✓ Used Cloud Storage for files
+✓ Implemented Pub/Sub messaging
+✓ Worked with Firestore database
+```
+
+**After Part 2 (AWS):**
+```
+✓ Created Lambda functions
+✓ Used S3 for object storage
+✓ Implemented SQS messaging
+✓ Worked with DynamoDB
+```
+
+**After Part 3 (CI/CD):**
+```
+✓ Created GitHub Actions workflow
+✓ Automated testing and deployment
+✓ Deployed to multiple clouds
+✓ Implemented notifications
+```
+
+**After Part 4 (IaC):**
+```
+✓ Managed infrastructure with Terraform
+✓ Version-controlled infrastructure
+✓ Automated resource provisioning
+✓ Implemented best practices
+```
+
+---
+
+### 🎯 Best Practices
+
+**Security:**
+- ✅ Use service accounts with minimal permissions
+- ✅ Store secrets in Secret Manager/Parameter Store
+- ✅ Enable VPC for private resources
+- ✅ Use HTTPS/TLS everywhere
+- ✅ Implement authentication and authorization
+
+**Performance:**
+- ✅ Use connection pooling
+- ✅ Implement caching strategies
+- ✅ Optimize cold starts
+- ✅ Use CDN for static assets
+- ✅ Monitor and profile applications
+
+**Cost Optimization:**
+- ✅ Use auto-scaling
+- ✅ Implement lifecycle policies
+- ✅ Use spot/preemptible instances
+- ✅ Monitor usage and set budgets
+- ✅ Clean up unused resources
+
+**Reliability:**
+- ✅ Implement health checks
+- ✅ Use multiple availability zones
+- ✅ Set up monitoring and alerting
+- ✅ Implement retry logic
+- ✅ Use circuit breakers
+
+---
+
+### 📚 Additional Resources
+
+- **GCP Documentation**: https://cloud.google.com/docs
+- **AWS Documentation**: https://docs.aws.amazon.com/
+- **Terraform**: https://www.terraform.io/docs
+- **GitHub Actions**: https://docs.github.com/en/actions
+- **Docker**: https://docs.docker.com/
+- **Kubernetes**: https://kubernetes.io/docs/
+
+**You're now ready to deploy Go applications to production on GCP and AWS with CI/CD!** ☁️🚀
 
 ---
 

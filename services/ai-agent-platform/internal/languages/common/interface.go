@@ -2,7 +2,7 @@ package common
 
 import (
 	"context"
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 // LanguageProvider combines analyzer and executor interfaces

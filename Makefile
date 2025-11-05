@@ -48,9 +48,7 @@ start-dev: ## Start backend and frontend development servers
 	@echo "$(YELLOW)Starting development environment...$(NC)"
 	@./scripts/start-dev.sh
 
-test-integration: ## Run integration tests
-	@echo "$(YELLOW)Running integration tests...$(NC)"
-	@./scripts/test-integration.sh
+
 
 install-tools: ## Install development tools
 	@echo "$(YELLOW)Installing development tools...$(NC)"

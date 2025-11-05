@@ -135,7 +135,11 @@ func (s *exerciseService) GetExerciseByID(ctx context.Context, id string) (*doma
 }
 
 // GetExercisesByLessonID retrieves exercises for a specific lesson.
-func (s *exerciseService) GetExercisesByLessonID(ctx context.Context, lessonID string, pagination *domain.PaginationRequest) (*domain.ListResponse, error) {
+func (s *exerciseService) GetExercisesByLessonID(
+	ctx context.Context,
+	lessonID string,
+	pagination *domain.PaginationRequest,
+) (*domain.ListResponse, error) {
 	if lessonID == "" {
 		return nil, errors.NewBadRequestError("lesson ID is required")
 	}
@@ -325,7 +329,11 @@ func (s *exerciseService) DeleteExercise(ctx context.Context, id string) error {
 }
 
 // SubmitExercise handles exercise submission and evaluation.
-func (s *exerciseService) SubmitExercise(ctx context.Context, exerciseID string, req *domain.SubmitExerciseRequest) (*domain.ExerciseSubmissionResult, error) {
+func (s *exerciseService) SubmitExercise(
+	ctx context.Context,
+	exerciseID string,
+	req *domain.SubmitExerciseRequest,
+) (*domain.ExerciseSubmissionResult, error) {
 	if exerciseID == "" {
 		return nil, errors.NewBadRequestError("exercise ID is required")
 	}

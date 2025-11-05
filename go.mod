@@ -1,3 +1,3 @@
-module crash~
+module github.com/DimaJoyti/go-pro
 
-go 1.25.3
+go 1.23

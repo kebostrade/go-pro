@@ -6,10 +6,10 @@ import (
 	"log"
 	"os"
 
-	"ai-agent-platform/internal/embeddings"
-	"ai-agent-platform/internal/rag"
-	"ai-agent-platform/internal/vectorstore"
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/embeddings"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/rag"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/vectorstore"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 func main() {

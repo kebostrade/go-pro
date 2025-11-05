@@ -372,7 +372,12 @@ func (s *Service) PublishExerciseDeleted(ctx context.Context, exerciseID, lesson
 }
 
 // PublishExerciseSubmitted publishes an exercise submitted event.
-func (s *Service) PublishExerciseSubmitted(ctx context.Context, userID, exerciseID, lessonID string, score int, submissionData map[string]interface{}) error {
+func (s *Service) PublishExerciseSubmitted(
+	ctx context.Context,
+	userID, exerciseID, lessonID string,
+	score int,
+	submissionData map[string]interface{},
+) error {
 	if !s.enabled {
 		return nil
 	}
@@ -406,7 +411,12 @@ func (s *Service) PublishExerciseSubmitted(ctx context.Context, userID, exercise
 }
 
 // PublishAuditLog publishes an audit log event.
-func (s *Service) PublishAuditLog(ctx context.Context, userID, action, resource, resourceID string, success bool, oldValues, newValues map[string]interface{}) error {
+func (s *Service) PublishAuditLog(
+	ctx context.Context,
+	userID, action, resource, resourceID string,
+	success bool,
+	oldValues, newValues map[string]interface{},
+) error {
 	if !s.enabled {
 		return nil
 	}

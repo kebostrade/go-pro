@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"ai-agent-platform/pkg/types"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
 
 // FraudCheckTool checks a transaction for fraud indicators

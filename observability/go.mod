@@ -1,6 +1,6 @@
 module go-pro-observability
 
-go 1.25
+go 1.23
 
 require (
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.48.0

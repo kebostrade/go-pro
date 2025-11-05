@@ -35,7 +35,11 @@ func (r *CourseRepository) Create(ctx context.Context, course *domain.Course) er
 	}
 
 	query := `
-		INSERT INTO gopro.courses (id, slug, title, description, long_description, difficulty, estimated_duration_hours, is_published, instructor_id, thumbnail_url, created_at, updated_at)
+		INSERT INTO gopro.courses (
+			id, slug, title, description, long_description, difficulty,
+			estimated_duration_hours, is_published, instructor_id, thumbnail_url,
+			created_at, updated_at
+		)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 	`
 

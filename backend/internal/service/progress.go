@@ -150,7 +150,11 @@ func (s *progressService) GetProgressByID(ctx context.Context, id string) (*doma
 }
 
 // GetProgressByUserID retrieves progress records for a specific user.
-func (s *progressService) GetProgressByUserID(ctx context.Context, userID string, pagination *domain.PaginationRequest) (*domain.ListResponse, error) {
+func (s *progressService) GetProgressByUserID(
+	ctx context.Context,
+	userID string,
+	pagination *domain.PaginationRequest,
+) (*domain.ListResponse, error) {
 	if userID == "" {
 		return nil, errors.NewBadRequestError("user ID is required")
 	}

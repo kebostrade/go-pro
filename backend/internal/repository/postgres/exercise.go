@@ -34,7 +34,10 @@ func (r *ExerciseRepository) Create(ctx context.Context, exercise *domain.Exerci
 	}
 
 	query := `
-		INSERT INTO gopro.exercises (id, lesson_id, slug, title, description, instructions, starter_code, solution_code, test_cases, difficulty, exercise_order, created_at, updated_at)
+		INSERT INTO gopro.exercises (
+			id, lesson_id, slug, title, description, instructions, starter_code,
+			solution_code, test_cases, difficulty, exercise_order, created_at, updated_at
+		)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 	`
 
@@ -119,7 +122,11 @@ func (r *ExerciseRepository) GetByID(ctx context.Context, id string) (*domain.Ex
 }
 
 // GetByLessonID retrieves all exercises for a specific lesson.
-func (r *ExerciseRepository) GetByLessonID(ctx context.Context, lessonID string, pagination *domain.PaginationRequest) ([]*domain.Exercise, int64, error) {
+func (r *ExerciseRepository) GetByLessonID(
+	ctx context.Context,
+	lessonID string,
+	pagination *domain.PaginationRequest,
+) ([]*domain.Exercise, int64, error) {
 	// Count total exercises for the lesson.
 	countQuery := "SELECT COUNT(*) FROM gopro.exercises WHERE lesson_id = $1"
 	var total int64
