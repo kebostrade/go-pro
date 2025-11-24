@@ -449,11 +449,10 @@ const CodeEditor = ({
                     bracketPairs: true,
                     indentation: true,
                   },
-                  suggest: {
-                    enabled: enableAutoComplete,
+                  suggest: enableAutoComplete ? {
                     showKeywords: true,
                     showSnippets: true,
-                  },
+                  } : undefined,
                   quickSuggestions: enableAutoComplete,
                   parameterHints: { enabled: enableAutoComplete },
                   scrollbar: {

@@ -76,6 +76,12 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/progress/{userId}", h.handleGetProgress)
 	mux.HandleFunc("POST /api/v1/progress/{userId}/lesson/{lessonId}", h.handleUpdateProgress)
 
+	// New progress endpoints (REST-compliant).
+	mux.HandleFunc("GET /api/v1/users/{userId}/progress", h.handleGetUserProgress)
+	mux.HandleFunc("GET /api/v1/users/{userId}/progress/stats", h.handleGetProgressStats)
+	mux.HandleFunc("POST /api/v1/users/{userId}/lessons/{lessonId}/progress", h.handleUpdateUserLessonProgress)
+	mux.HandleFunc("GET /api/v1/progress/{id}", h.handleGetProgressByID)
+
 	// Curriculum.
 	mux.HandleFunc("GET /api/v1/curriculum", h.handleGetCurriculum)
 	mux.HandleFunc("GET /api/v1/curriculum/lesson/{id}", h.handleGetLessonDetail)
@@ -356,6 +362,101 @@ func (h *Handler) handleUpdateProgress(w http.ResponseWriter, r *http.Request) {
 	h.writeSuccessResponse(w, r, progress, "progress updated successfully")
 }
 
+// New progress handlers (REST-compliant).
+
+// handleGetUserProgress retrieves user's lesson progress with pagination.
+// GET /api/v1/users/:userId/progress?page=1&pageSize=20
+func (h *Handler) handleGetUserProgress(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("userId")
+	if userID == "" {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("user ID is required"))
+		return
+	}
+
+	pagination := getPaginationFromContext(r.Context())
+
+	// Get progress records from service.
+	response, err := h.services.Progress.GetProgressByUserID(r.Context(), userID, pagination)
+	if err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	h.writeSuccessResponse(w, r, response, "user progress retrieved successfully")
+}
+
+// handleGetProgressStats retrieves user's progress statistics.
+// GET /api/v1/users/:userId/progress/stats
+func (h *Handler) handleGetProgressStats(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("userId")
+	if userID == "" {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("user ID is required"))
+		return
+	}
+
+	// For now, calculate stats from progress records.
+	// In future, this could be cached or pre-calculated.
+	pagination := &domain.PaginationRequest{
+		Page:     1,
+		PageSize: 1000, // Get all progress for stats calculation
+	}
+
+	response, err := h.services.Progress.GetProgressByUserID(r.Context(), userID, pagination)
+	if err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	// Calculate statistics.
+	stats := calculateProgressStats(response.Items)
+
+	h.writeSuccessResponse(w, r, stats, "progress statistics retrieved successfully")
+}
+
+// handleUpdateUserLessonProgress updates progress for a specific lesson.
+// POST /api/v1/users/:userId/lessons/:lessonId/progress
+func (h *Handler) handleUpdateUserLessonProgress(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("userId")
+	lessonID := r.PathValue("lessonId")
+
+	if userID == "" || lessonID == "" {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("user ID and lesson ID are required"))
+		return
+	}
+
+	var req domain.UpdateProgressRequest
+	if err := h.validator.ValidateJSON(r, &req); err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	progress, err := h.services.Progress.UpdateProgress(r.Context(), userID, lessonID, &req)
+	if err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	h.writeSuccessResponse(w, r, progress, "progress updated successfully")
+}
+
+// handleGetProgressByID retrieves a specific progress record by ID.
+// GET /api/v1/progress/:id
+func (h *Handler) handleGetProgressByID(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("progress ID is required"))
+		return
+	}
+
+	progress, err := h.services.Progress.GetProgressByID(r.Context(), id)
+	if err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	h.writeSuccessResponse(w, r, progress, "progress retrieved successfully")
+}
+
 // Curriculum handlers.
 func (h *Handler) handleGetCurriculum(w http.ResponseWriter, r *http.Request) {
 	curriculum, err := h.services.Curriculum.GetCurriculum(r.Context())
@@ -628,4 +729,60 @@ func getClientIP(r *http.Request) string {
 	}
 
 	return r.RemoteAddr
+}
+
+// calculateProgressStats calculates progress statistics from progress records.
+func calculateProgressStats(items interface{}) map[string]interface{} {
+	stats := map[string]interface{}{
+		"total_lessons":       0,
+		"completed_lessons":   0,
+		"in_progress_lessons": 0,
+		"average_score":       0.0,
+		"total_time_spent":    0,
+	}
+
+	// Type assert items to progress array.
+	progressList, ok := items.([]interface{})
+	if !ok {
+		return stats
+	}
+
+	totalLessons := len(progressList)
+	completedCount := 0
+	inProgressCount := 0
+	totalScore := 0
+	scoreCount := 0
+
+	for _, item := range progressList {
+		progress, ok := item.(*domain.Progress)
+		if !ok {
+			continue
+		}
+
+		switch progress.Status {
+		case domain.StatusCompleted:
+			completedCount++
+			// For now, assume 100 score for completed lessons.
+			// In future, this should come from actual exercise scores.
+			totalScore += 100
+			scoreCount++
+		case domain.StatusInProgress:
+			inProgressCount++
+		}
+	}
+
+	stats["total_lessons"] = totalLessons
+	stats["completed_lessons"] = completedCount
+	stats["in_progress_lessons"] = inProgressCount
+
+	// Calculate average score.
+	if scoreCount > 0 {
+		stats["average_score"] = float64(totalScore) / float64(scoreCount)
+	}
+
+	// Total time spent would need to be tracked separately.
+	// For now, estimate based on completed lessons (30 minutes per lesson).
+	stats["total_time_spent"] = completedCount * 30
+
+	return stats
 }

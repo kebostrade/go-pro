@@ -84,7 +84,7 @@ export default function LessonPage() {
   const [timeSpent, setTimeSpent] = useState(0);
   const [startTime] = useState(Date.now());
 
-  const lessonId = parseInt(params.id as string);
+  const lessonId = parseInt((params?.id as string) || '1');
 
   useEffect(() => {
     const loadLessonData = async () => {

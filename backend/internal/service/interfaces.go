@@ -84,6 +84,7 @@ type Services struct {
 	Progress   ProgressService
 	Curriculum CurriculumService
 	Health     HealthService
+	Executor   ExecutorService
 }
 
 // NewServices creates a new Services instance with all dependencies.
@@ -102,5 +103,6 @@ func NewServices(repos *repository.Repositories, config *Config) (*Services, err
 		Progress:   NewProgressService(repos.Progress, config),
 		Curriculum: NewCurriculumService(config),
 		Health:     NewHealthService("1.0.0"), // TODO: Get version from config
+		Executor:   NewMockExecutorService(),  // Use mock for now, replace with Docker executor when ready
 	}, nil
 }

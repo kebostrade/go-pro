@@ -75,7 +75,7 @@ export default function PostDetailPage() {
   const [userVote, setUserVote] = useState<"up" | "down" | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
-  const postId = params.id as string;
+  const postId = (params?.id as string) || '1';
 
   useEffect(() => {
     // Mock data loading

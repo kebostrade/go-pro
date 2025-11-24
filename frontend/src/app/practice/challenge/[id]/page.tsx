@@ -66,7 +66,7 @@ export default function ChallengePage() {
   const [attempts, setAttempts] = useState(0);
   const [completed, setCompleted] = useState(false);
 
-  const challengeId = params.id as string;
+  const challengeId = (params?.id as string) || '1';
 
   useEffect(() => {
     // Mock data loading
