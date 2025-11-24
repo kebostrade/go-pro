@@ -27,6 +27,7 @@
 		"clsx": "^2.1.1",
 		"firebase": "^12.5.0",
 		"lucide-react": "^0.544.0",
+		"monaco-editor": "^0.55.1",
 		"next": "^15.5.4",
 		"react": "19.1.0",
 		"react-dom": "19.1.0",
