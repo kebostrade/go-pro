@@ -459,6 +459,14 @@ func (h *Handler) handleGetProgressByID(w http.ResponseWriter, r *http.Request) 
 
 // Curriculum handlers.
 func (h *Handler) handleGetCurriculum(w http.ResponseWriter, r *http.Request) {
+	// Performance optimization: Add HTTP caching headers
+	// Cache-Control: public allows CDN and browser caching
+	// max-age=3600 caches for 1 hour (curriculum changes infrequently)
+	w.Header().Set("Cache-Control", "public, max-age=3600, stale-while-revalidate=7200")
+
+	// Add Vary header to ensure proper caching behavior
+	w.Header().Set("Vary", "Accept-Encoding")
+
 	curriculum, err := h.services.Curriculum.GetCurriculum(r.Context())
 	if err != nil {
 		h.writeErrorResponse(w, r, err)
@@ -482,11 +490,33 @@ func (h *Handler) handleGetLessonDetail(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Performance optimization: ETag support for conditional requests
+	// Generate ETag based on lesson ID and timestamp (simplified approach)
+	etag := fmt.Sprintf(`"lesson-%d-%d"`, lessonID, time.Now().Unix()/(60*15)) // 15-minute granularity
+
+	// Check If-None-Match header for cached version
+	if match := r.Header.Get("If-None-Match"); match != "" {
+		// Remove weak ETag prefix if present
+		if len(match) > 2 && match[:2] == "W/" {
+			match = match[2:]
+		}
+		if match == etag {
+			// Content hasn't changed, return 304 Not Modified
+			w.WriteHeader(http.StatusNotModified)
+			return
+		}
+	}
+
 	lesson, err := h.services.Curriculum.GetLessonDetail(r.Context(), lessonID)
 	if err != nil {
 		h.writeErrorResponse(w, r, err)
 		return
 	}
+
+	// Set ETag header for this response
+	w.Header().Set("ETag", etag)
+	// Cache for 5 minutes on client, must revalidate with server
+	w.Header().Set("Cache-Control", "private, max-age=300, must-revalidate")
 
 	h.writeSuccessResponse(w, r, lesson, "lesson detail retrieved successfully")
 }

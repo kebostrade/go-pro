@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, memo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,8 +43,9 @@ const getDifficultyVariant = (difficulty: string) => {
   return 'outline';
 };
 
-// Loading skeleton component
-function LoadingSkeleton() {
+// Loading skeleton component - Memoized for better perceived performance
+// Performance optimization: Prevents unnecessary re-renders during loading state
+const LoadingSkeleton = memo(function LoadingSkeleton() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {[1, 2, 3, 4].map(i => (
@@ -59,7 +60,7 @@ function LoadingSkeleton() {
       ))}
     </div>
   );
-}
+});
 
 // Error message component
 function ErrorMessage({ error, onRetry }: { error: string; onRetry: () => void }) {
@@ -77,8 +78,8 @@ function ErrorMessage({ error, onRetry }: { error: string; onRetry: () => void }
   );
 }
 
-// Empty state component
-function EmptyState() {
+// Empty state component - Memoized for performance
+const EmptyState = memo(function EmptyState() {
   return (
     <div className="text-center py-12 animate-in fade-in duration-500">
       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
@@ -88,7 +89,82 @@ function EmptyState() {
       <p className="text-muted-foreground">The curriculum is being prepared. Check back soon!</p>
     </div>
   );
-}
+});
+
+// Lesson card component - Memoized to prevent re-rendering unchanged lessons
+// Performance optimization: Only re-renders when lesson data changes
+const LessonCard = memo(function LessonCard({ lesson }: { lesson: CurriculumLesson }) {
+  return (
+    <Card className={`lesson-card ${lesson.locked ? 'opacity-60' : ''}`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-2">
+              <Badge variant="outline" className="text-xs">
+                Lesson {lesson.id}
+              </Badge>
+              <Badge variant={getDifficultyVariant(lesson.difficulty)} className="text-xs">
+                {lesson.difficulty.charAt(0).toUpperCase() + lesson.difficulty.slice(1)}
+              </Badge>
+            </div>
+            <CardTitle className="text-lg leading-tight">{lesson.title}</CardTitle>
+            <CardDescription className="text-sm mt-1">
+              {lesson.description}
+            </CardDescription>
+          </div>
+          <div className="ml-3">
+            {lesson.completed ? (
+              <CheckCircle className="h-5 w-5 text-green-500" />
+            ) : lesson.locked ? (
+              <Lock className="h-5 w-5 text-muted-foreground" />
+            ) : (
+              <Play className="h-5 w-5 text-primary" />
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1">
+              <Clock className="h-3 w-3" />
+              <span>{lesson.duration}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Code2 className="h-3 w-3" />
+              <span>{lesson.exercises} exercises</span>
+            </div>
+          </div>
+        </div>
+        <Link href={lesson.locked ? "#" : `/learn/${lesson.id}`}>
+          <Button
+            className="w-full"
+            variant={lesson.completed ? "outline" : "default"}
+            disabled={lesson.locked}
+          >
+            {lesson.completed ? (
+              <>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Review Lesson
+              </>
+            ) : lesson.locked ? (
+              <>
+                <Lock className="mr-2 h-4 w-4" />
+                Locked
+              </>
+            ) : (
+              <>
+                <Play className="mr-2 h-4 w-4" />
+                Start Lesson
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </Link>
+      </CardContent>
+    </Card>
+  );
+});
 
 export default function CurriculumPage() {
   const [curriculum, setCurriculum] = useState<Curriculum | null>(null);
@@ -147,30 +223,41 @@ export default function CurriculumPage() {
     );
   }
 
-  // Calculate overall progress
-  const overallProgress = Math.round(
-    curriculum.phases.reduce((acc, phase) => acc + phase.progress, 0) / curriculum.phases.length
-  );
+  // Performance optimization: useMemo for expensive calculations
+  // Prevents recalculation on every render unless curriculum changes
+  const stats = useMemo(() => {
+    if (!curriculum) return null;
 
-  // Count total lessons and exercises
-  const totalLessons = curriculum.phases.reduce((acc, phase) => acc + phase.lessons.length, 0);
-  const totalExercises = curriculum.phases.reduce(
-    (acc, phase) => acc + phase.lessons.reduce((sum, lesson) => sum + lesson.exercises, 0),
-    0
-  );
+    // Calculate overall progress
+    const overallProgress = Math.round(
+      curriculum.phases.reduce((acc, phase) => acc + phase.progress, 0) / curriculum.phases.length
+    );
 
-  // Calculate total weeks
-  const totalWeeks = curriculum.phases.reduce((acc, phase) => {
-    const match = phase.weeks.match(/\d+/g);
-    if (match) {
-      const weeks = match.map(Number);
-      return Math.max(acc, Math.max(...weeks));
-    }
-    return acc;
-  }, 0);
+    // Count total lessons and exercises
+    const totalLessons = curriculum.phases.reduce((acc, phase) => acc + phase.lessons.length, 0);
+    const totalExercises = curriculum.phases.reduce(
+      (acc, phase) => acc + phase.lessons.reduce((sum, lesson) => sum + lesson.exercises, 0),
+      0
+    );
 
-  // Calculate total XP
-  const totalXP = curriculum.projects.reduce((acc, project) => acc + project.points, 0);
+    // Calculate total weeks
+    const totalWeeks = curriculum.phases.reduce((acc, phase) => {
+      const match = phase.weeks.match(/\d+/g);
+      if (match) {
+        const weeks = match.map(Number);
+        return Math.max(acc, Math.max(...weeks));
+      }
+      return acc;
+    }, 0);
+
+    // Calculate total XP
+    const totalXP = curriculum.projects.reduce((acc, project) => acc + project.points, 0);
+
+    return { overallProgress, totalLessons, totalExercises, totalWeeks, totalXP };
+  }, [curriculum]);
+
+  // Extract for easier use
+  const { overallProgress, totalLessons, totalExercises, totalWeeks, totalXP } = stats || {};
 
   return (
     <div className="min-h-screen animated-gradient">
@@ -308,75 +395,9 @@ export default function CurriculumPage() {
                   <CardContent>
                     <Progress value={phase.progress} className="mb-4" />
                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-responsive">
+                      {/* Performance optimization: Use memoized LessonCard component */}
                       {phase.lessons.map((lesson) => (
-                        <Card key={lesson.id} className={`lesson-card ${lesson.locked ? 'opacity-60' : ''}`}>
-                          <CardHeader className="pb-3">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <Badge variant="outline" className="text-xs">
-                                    Lesson {lesson.id}
-                                  </Badge>
-                                  <Badge variant={getDifficultyVariant(lesson.difficulty)} className="text-xs">
-                                    {lesson.difficulty.charAt(0).toUpperCase() + lesson.difficulty.slice(1)}
-                                  </Badge>
-                                </div>
-                                <CardTitle className="text-lg leading-tight">{lesson.title}</CardTitle>
-                                <CardDescription className="text-sm mt-1">
-                                  {lesson.description}
-                                </CardDescription>
-                              </div>
-                              <div className="ml-3">
-                                {lesson.completed ? (
-                                  <CheckCircle className="h-5 w-5 text-green-500" />
-                                ) : lesson.locked ? (
-                                  <Lock className="h-5 w-5 text-muted-foreground" />
-                                ) : (
-                                  <Play className="h-5 w-5 text-primary" />
-                                )}
-                              </div>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="pt-0">
-                            <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                              <div className="flex items-center space-x-4">
-                                <div className="flex items-center space-x-1">
-                                  <Clock className="h-3 w-3" />
-                                  <span>{lesson.duration}</span>
-                                </div>
-                                <div className="flex items-center space-x-1">
-                                  <Code2 className="h-3 w-3" />
-                                  <span>{lesson.exercises} exercises</span>
-                                </div>
-                              </div>
-                            </div>
-                            <Link href={lesson.locked ? "#" : `/learn/${lesson.id}`}>
-                              <Button
-                                className="w-full"
-                                variant={lesson.completed ? "outline" : "default"}
-                                disabled={lesson.locked}
-                              >
-                                {lesson.completed ? (
-                                  <>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Review Lesson
-                                  </>
-                                ) : lesson.locked ? (
-                                  <>
-                                    <Lock className="mr-2 h-4 w-4" />
-                                    Locked
-                                  </>
-                                ) : (
-                                  <>
-                                    <Play className="mr-2 h-4 w-4" />
-                                    Start Lesson
-                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                  </>
-                                )}
-                              </Button>
-                            </Link>
-                          </CardContent>
-                        </Card>
+                        <LessonCard key={lesson.id} lesson={lesson} />
                       ))}
                     </div>
                   </CardContent>

@@ -6,10 +6,12 @@
 package middleware
 
 import (
+	"compress/gzip"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"io"
 	"net/http"
 	"runtime/debug"
 	"strconv"
@@ -366,4 +368,54 @@ func Pagination(defaultPageSize, maxPageSize int) Middleware {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+// Gzip compresses HTTP responses using gzip compression.
+// Performance optimization: Reduces response size by 70-90% for JSON/HTML.
+func Gzip() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Check if client supports gzip
+			if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// Don't compress if response is already compressed or for specific paths
+			if strings.HasPrefix(r.URL.Path, "/metrics") {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// Create gzip writer
+			gz := gzip.NewWriter(w)
+			defer gz.Close()
+
+			// Wrap response writer
+			gzw := &gzipResponseWriter{
+				ResponseWriter: w,
+				Writer:         gz,
+			}
+
+			// Set Content-Encoding header
+			w.Header().Set("Content-Encoding", "gzip")
+			w.Header().Del("Content-Length") // Length will change after compression
+
+			next.ServeHTTP(gzw, r)
+		})
+	}
+}
+
+// gzipResponseWriter wraps http.ResponseWriter to compress response.
+type gzipResponseWriter struct {
+	http.ResponseWriter
+	Writer io.Writer
+}
+
+func (w *gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
+
+func (w *gzipResponseWriter) WriteHeader(statusCode int) {
+	w.ResponseWriter.WriteHeader(statusCode)
 }

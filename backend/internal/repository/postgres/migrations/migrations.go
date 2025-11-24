@@ -20,8 +20,9 @@ func GetAllMigrations() []postgres.MigrationV2 {
 		createExercisesTable(),
 		createProgressTable(),
 		addIndexes(),
-		extendLessonsTable(), // Version 7: Add detailed content fields
-		seedLessonsData(),    // Version 8: Populate with 20 lessons
+		extendLessonsTable(),       // Version 7: Add detailed content fields
+		seedLessonsData(),          // Version 8: Populate with 20 lessons
+		addPerformanceIndexes(),    // Version 9: Add performance optimization indexes
 	}
 }
 
@@ -244,6 +245,68 @@ func addIndexes() postgres.MigrationV2 {
 				"DROP INDEX IF EXISTS idx_progress_lesson_id",
 				"DROP INDEX IF EXISTS idx_progress_status",
 				"DROP INDEX IF EXISTS idx_progress_user_lesson",
+			}
+
+			for _, query := range queries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+	}
+}
+
+// addPerformanceIndexes adds performance optimization indexes.
+// Version 9: Optimizes dashboard queries and curriculum ordering.
+func addPerformanceIndexes() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     9,
+		Description: "Add performance optimization indexes",
+		Up: func(tx *sql.Tx) error {
+			queries := []string{
+				// Progress table composite index for dashboard queries
+				// Optimizes: SELECT * FROM progress WHERE user_id = ? AND status = ? ORDER BY updated_at DESC
+				"CREATE INDEX IF NOT EXISTS idx_progress_user_status_updated ON progress(user_id, status, updated_at DESC)",
+
+				// Progress table covering index for efficient user progress lookups
+				// Optimizes: SELECT user_id, lesson_id, status FROM progress WHERE user_id = ?
+				"CREATE INDEX IF NOT EXISTS idx_progress_user_covering ON progress(user_id) INCLUDE (lesson_id, status, completed_at)",
+
+				// Lessons table composite index for curriculum ordering
+				// Optimizes: SELECT * FROM lessons WHERE course_id = ? ORDER BY order_index ASC
+				"CREATE INDEX IF NOT EXISTS idx_lessons_course_order ON lessons(course_id, order_index ASC)",
+
+				// Lessons table covering index for curriculum list views
+				// Optimizes: SELECT id, title, slug, difficulty FROM lessons WHERE is_published = true
+				"CREATE INDEX IF NOT EXISTS idx_lessons_published_covering ON lessons(is_published) INCLUDE (id, title, slug, difficulty, duration_minutes) WHERE is_published = true",
+
+				// Progress table partial index for active lessons (performance optimization)
+				// Optimizes: SELECT * FROM progress WHERE status = 'in_progress'
+				"CREATE INDEX IF NOT EXISTS idx_progress_in_progress ON progress(user_id, updated_at) WHERE status = 'in_progress'",
+
+				// Courses table covering index for published course listings
+				// Optimizes: SELECT id, title, slug, difficulty FROM courses WHERE is_published = true
+				"CREATE INDEX IF NOT EXISTS idx_courses_published_covering ON courses(is_published) INCLUDE (id, title, slug, difficulty) WHERE is_published = true",
+			}
+
+			for _, query := range queries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			queries := []string{
+				"DROP INDEX IF EXISTS idx_progress_user_status_updated",
+				"DROP INDEX IF EXISTS idx_progress_user_covering",
+				"DROP INDEX IF EXISTS idx_lessons_course_order",
+				"DROP INDEX IF EXISTS idx_lessons_published_covering",
+				"DROP INDEX IF EXISTS idx_progress_in_progress",
+				"DROP INDEX IF EXISTS idx_courses_published_covering",
 			}
 
 			for _, query := range queries {
