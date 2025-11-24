@@ -1,6 +1,6 @@
 module github.com/DimaJoyti/go-pro/basic/projects/devops-with-go
 
-go 1.21
+go 1.23
 
 require (
 	github.com/gorilla/mux v1.8.1

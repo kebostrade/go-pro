@@ -132,6 +132,15 @@ func NewInternalServerError(message string) *APIError {
 	}
 }
 
+func NewRateLimitError(message string) *APIError {
+	return &APIError{
+		Type:       "RATE_LIMIT_EXCEEDED",
+		Code:       "TOO_MANY_REQUESTS",
+		Message:    message,
+		StatusCode: http.StatusTooManyRequests,
+	}
+}
+
 // IsAPIError checks if an error is an APIError.
 func IsAPIError(err error) (*APIError, bool) {
 	var apiErr *APIError

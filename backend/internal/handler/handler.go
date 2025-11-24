@@ -26,14 +26,24 @@ type Handler struct {
 	services  *service.Services
 	logger    logger.Logger
 	validator validator.Validator
+
+	// Rate limiting for exercise submissions (per-user).
+	submissionLimits map[string]*rateLimitState
+}
+
+// rateLimitState tracks submission rate limits per user.
+type rateLimitState struct {
+	count     int
+	resetTime time.Time
 }
 
 // New creates a new HTTP handler.
 func New(services *service.Services, logger logger.Logger, validator validator.Validator) *Handler {
 	return &Handler{
-		services:  services,
-		logger:    logger,
-		validator: validator,
+		services:         services,
+		logger:           logger,
+		validator:        validator,
+		submissionLimits: make(map[string]*rateLimitState),
 	}
 }
 
@@ -277,6 +287,14 @@ func (h *Handler) handleSubmitExercise(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if id == "" {
 		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("exercise ID is required"))
+		return
+	}
+
+	// Check rate limit (10 submissions per minute per user).
+	// Phase 1: Use IP address. Phase 2: Use authenticated user ID.
+	userKey := getClientIP(r)
+	if !h.checkSubmissionRateLimit(userKey) {
+		h.writeErrorResponse(w, r, apierrors.NewRateLimitError("submission rate limit exceeded (10 per minute)"))
 		return
 	}
 
@@ -540,4 +558,74 @@ func getPaginationFromContext(ctx context.Context) *domain.PaginationRequest {
 		Page:     1,
 		PageSize: 10,
 	}
+}
+
+// checkSubmissionRateLimit checks if submission rate limit is exceeded.
+// Returns true if allowed, false if rate limit exceeded.
+func (h *Handler) checkSubmissionRateLimit(userKey string) bool {
+	const (
+		maxSubmissions = 10
+		windowDuration = time.Minute
+	)
+
+	now := time.Now()
+
+	// Get or create rate limit state for user.
+	state, exists := h.submissionLimits[userKey]
+	if !exists || now.After(state.resetTime) {
+		// Create new window.
+		h.submissionLimits[userKey] = &rateLimitState{
+			count:     1,
+			resetTime: now.Add(windowDuration),
+		}
+		return true
+	}
+
+	// Check if limit exceeded.
+	if state.count >= maxSubmissions {
+		return false
+	}
+
+	// Increment count.
+	state.count++
+	return true
+}
+
+// getClientIP extracts client IP from request.
+func getClientIP(r *http.Request) string {
+	// Check X-Forwarded-For header first (for proxies).
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		// X-Forwarded-For can contain multiple IPs, take the first one.
+		if idx := len(xff); idx > 0 {
+			if commaIdx := 0; commaIdx < idx {
+				for i, c := range xff {
+					if c == ',' {
+						commaIdx = i
+						break
+					}
+				}
+				if commaIdx > 0 {
+					return xff[:commaIdx]
+				}
+			}
+			return xff
+		}
+	}
+
+	// Check X-Real-IP header.
+	if xri := r.Header.Get("X-Real-IP"); xri != "" {
+		return xri
+	}
+
+	// Fall back to RemoteAddr.
+	// RemoteAddr format is "IP:port", extract just the IP.
+	if idx := len(r.RemoteAddr); idx > 0 {
+		for i := idx - 1; i >= 0; i-- {
+			if r.RemoteAddr[i] == ':' {
+				return r.RemoteAddr[:i]
+			}
+		}
+	}
+
+	return r.RemoteAddr
 }

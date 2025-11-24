@@ -1,6 +1,6 @@
 module github.com/DimaJoyti/go-pro/basic/projects/web-architecture
 
-go 1.21
+go 1.23
 
 require (
 	github.com/go-chi/chi/v5 v5.0.11

@@ -20,6 +20,8 @@ func GetAllMigrations() []postgres.MigrationV2 {
 		createExercisesTable(),
 		createProgressTable(),
 		addIndexes(),
+		extendLessonsTable(), // Version 7: Add detailed content fields
+		seedLessonsData(),    // Version 8: Populate with 20 lessons
 	}
 }
 
@@ -251,6 +253,103 @@ func addIndexes() postgres.MigrationV2 {
 			}
 
 			return nil
+		},
+	}
+}
+
+// extendLessonsTable adds detailed content fields to lessons table.
+func extendLessonsTable() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     7,
+		Description: "Extend lessons table with detailed content fields",
+		Up: func(tx *sql.Tx) error {
+			query := `
+				ALTER TABLE lessons
+				ADD COLUMN IF NOT EXISTS description TEXT DEFAULT '',
+				ADD COLUMN IF NOT EXISTS difficulty VARCHAR(50) DEFAULT 'beginner',
+				ADD COLUMN IF NOT EXISTS phase VARCHAR(50) DEFAULT 'Foundations',
+				ADD COLUMN IF NOT EXISTS objectives JSONB DEFAULT '[]'::jsonb,
+				ADD COLUMN IF NOT EXISTS theory TEXT DEFAULT '',
+				ADD COLUMN IF NOT EXISTS code_example TEXT DEFAULT '',
+				ADD COLUMN IF NOT EXISTS solution TEXT DEFAULT '',
+				ADD COLUMN IF NOT EXISTS exercises JSONB DEFAULT '[]'::jsonb,
+				ADD COLUMN IF NOT EXISTS next_lesson_id VARCHAR(255),
+				ADD COLUMN IF NOT EXISTS prev_lesson_id VARCHAR(255)
+			`
+			if _, err := tx.Exec(query); err != nil {
+				return err
+			}
+
+			fkQueries := []string{
+				`ALTER TABLE lessons ADD CONSTRAINT IF NOT EXISTS fk_lessons_next_lesson FOREIGN KEY (next_lesson_id) REFERENCES lessons(id) ON DELETE SET NULL`,
+				`ALTER TABLE lessons ADD CONSTRAINT IF NOT EXISTS fk_lessons_prev_lesson FOREIGN KEY (prev_lesson_id) REFERENCES lessons(id) ON DELETE SET NULL`,
+			}
+
+			for _, fkQuery := range fkQueries {
+				if _, err := tx.Exec(fkQuery); err != nil {
+					return err
+				}
+			}
+
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_lessons_difficulty ON lessons(difficulty)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_phase ON lessons(phase)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_next_lesson ON lessons(next_lesson_id)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_prev_lesson ON lessons(prev_lesson_id)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_objectives ON lessons USING GIN (objectives)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_exercises ON lessons USING GIN (exercises)",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			indexQueries := []string{
+				"DROP INDEX IF EXISTS idx_lessons_difficulty",
+				"DROP INDEX IF EXISTS idx_lessons_phase",
+				"DROP INDEX IF EXISTS idx_lessons_next_lesson",
+				"DROP INDEX IF EXISTS idx_lessons_prev_lesson",
+				"DROP INDEX IF EXISTS idx_lessons_objectives",
+				"DROP INDEX IF EXISTS idx_lessons_exercises",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			fkQueries := []string{
+				"ALTER TABLE lessons DROP CONSTRAINT IF EXISTS fk_lessons_next_lesson",
+				"ALTER TABLE lessons DROP CONSTRAINT IF EXISTS fk_lessons_prev_lesson",
+			}
+
+			for _, fkQuery := range fkQueries {
+				if _, err := tx.Exec(fkQuery); err != nil {
+					return err
+				}
+			}
+
+			query := `
+				ALTER TABLE lessons
+				DROP COLUMN IF EXISTS description,
+				DROP COLUMN IF EXISTS difficulty,
+				DROP COLUMN IF EXISTS phase,
+				DROP COLUMN IF EXISTS objectives,
+				DROP COLUMN IF EXISTS theory,
+				DROP COLUMN IF EXISTS code_example,
+				DROP COLUMN IF EXISTS solution,
+				DROP COLUMN IF EXISTS exercises,
+				DROP COLUMN IF EXISTS next_lesson_id,
+				DROP COLUMN IF EXISTS prev_lesson_id
+			`
+			_, err := tx.Exec(query)
+			return err
 		},
 	}
 }

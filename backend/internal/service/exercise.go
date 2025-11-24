@@ -24,6 +24,7 @@ import (
 // exerciseService implements the ExerciseService interface.
 type exerciseService struct {
 	repo      repository.ExerciseRepository
+	executor  ExecutorService
 	logger    logger.Logger
 	validator validator.Validator
 	cache     cache.CacheManager
@@ -37,6 +38,7 @@ func NewExerciseService(
 ) ExerciseService {
 	return &exerciseService{
 		repo:      repo,
+		executor:  NewMockExecutorService(), // Phase 2: Replace with real executor
 		logger:    config.Logger,
 		validator: config.Validator,
 		cache:     config.Cache,
@@ -344,6 +346,11 @@ func (s *exerciseService) SubmitExercise(
 		return nil, errors.NewValidationError("invalid submission data", err)
 	}
 
+	// Validate code length (prevent abuse).
+	if len(req.Code) > 50000 { // 50KB limit
+		return nil, errors.NewBadRequestError("code exceeds maximum length of 50KB")
+	}
+
 	// Get the exercise to validate it exists.
 	exercise, err := s.repo.GetByID(ctx, exerciseID)
 	if err != nil {
@@ -351,35 +358,93 @@ func (s *exerciseService) SubmitExercise(
 		return nil, fmt.Errorf("failed to get exercise: %w", err)
 	}
 
-	// For now, implement a simple submission result.
-	// In a real implementation, this would run the code against test cases.
-	result := &domain.ExerciseSubmissionResult{
-		ExerciseID: exerciseID,
-		Score:      85, // Mock score
-		Passed:     true,
-		Message:    "Good solution! Consider optimizing for edge cases.",
-		TestResults: []domain.TestResult{
-			{
-				Name:     "Basic functionality",
-				Passed:   true,
-				Expected: "expected output",
-				Actual:   "expected output",
-			},
-			{
-				Name:     "Edge case handling",
-				Passed:   false,
-				Expected: "edge case output",
-				Actual:   "different output",
-				Error:    "Edge case not handled properly",
-			},
+	// Phase 1: Mock test cases (Phase 2 will load from database).
+	testCases := []TestCase{
+		{
+			Name:     "Test basic output",
+			Input:    "",
+			Expected: "Hello, World!",
 		},
-		SubmittedAt: time.Now(),
+		{
+			Name:     "Test edge case",
+			Input:    "edge",
+			Expected: "Edge case handled",
+		},
+	}
+
+	// Execute code against test cases.
+	execReq := &ExecuteRequest{
+		Code:      req.Code,
+		Language:  req.Language,
+		TestCases: testCases,
+		Timeout:   30 * time.Second,
+	}
+
+	execResult, err := s.executor.ExecuteCode(ctx, execReq)
+	if err != nil {
+		s.logger.Error(ctx, "Failed to execute code", "error", err, "exercise_id", exerciseID)
+		return nil, errors.NewInternalError("code execution failed", err)
+	}
+
+	// Convert executor results to domain results.
+	domainResults := make([]domain.TestResult, len(execResult.Results))
+	for i, r := range execResult.Results {
+		domainResults[i] = domain.TestResult{
+			TestName: r.TestName,
+			Passed:   r.Passed,
+			Expected: r.Expected,
+			Actual:   r.Actual,
+			Error:    r.Error,
+		}
+	}
+
+	// Build result message.
+	message := "All tests passed!"
+	if !execResult.Passed {
+		message = fmt.Sprintf("Tests passed: %d/%d", countPassedTests(domainResults), len(domainResults))
+	}
+
+	result := &domain.ExerciseSubmissionResult{
+		Success:         true,
+		ExerciseID:      exerciseID,
+		Score:           execResult.Score,
+		Passed:          execResult.Passed,
+		Message:         message,
+		TestResults:     domainResults,
+		ExecutionTimeMs: execResult.ExecutionTime.Milliseconds(),
+		SubmittedAt:     time.Now(),
+	}
+
+	// Publish exercise submitted event.
+	if s.messaging != nil && s.messaging.IsEnabled() {
+		// Phase 1: Use demo user. Phase 2: Get from auth context.
+		userID := "demo-user"
+		submissionData := map[string]interface{}{
+			"code":     req.Code,
+			"language": req.Language,
+			"passed":   result.Passed,
+		}
+		if err := s.messaging.PublishExerciseSubmitted(ctx, userID, exerciseID, exercise.LessonID, result.Score, submissionData); err != nil {
+			s.logger.Warn(ctx, "Failed to publish exercise submitted event", "error", err, "exercise_id", exerciseID)
+		}
 	}
 
 	s.logger.Info(ctx, "Exercise submitted successfully",
 		"exercise_id", exerciseID,
 		"score", result.Score,
+		"passed", result.Passed,
 		"lesson_id", exercise.LessonID)
 
 	return result, nil
+}
+
+// countPassedTests counts the number of passed tests.
+func countPassedTests(results []domain.TestResult) int {
+	count := 0
+	for _, r := range results {
+		if r.Passed {
+			count++
+		}
+	}
+	return count
 }

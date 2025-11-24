@@ -1,3 +1,3 @@
 module github.com/DimaJoyti/go-pro/course
 
-go 1.21
+go 1.23

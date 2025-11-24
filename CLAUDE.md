@@ -11,14 +11,17 @@ This is a **dual-purpose Go learning platform** containing:
 ## Architecture & Module Structure
 
 ### Multi-Module Repository
-This repository uses **multiple independent Go modules** with different Go versions:
+This repository uses **multiple independent Go modules**, all standardized on **Go 1.23**:
 
 ```
 go-pro/
-├── basic/examples/fun/          # Go 1.23 - Standalone examples module
-├── basic/projects/weather-cli/  # Go 1.21 - Independent project module
-├── backend/                     # Go 1.25 - Learning platform API
-└── services/ai-agent-platform/  # Go 1.22 - Production AI agent framework
+├── basic/                       # Go 1.23 - Learning examples and exercises
+├── basic/projects/*/            # Go 1.23 - Independent project modules
+├── backend/                     # Go 1.23 - Learning platform API
+├── services/ai-agent-platform/  # Go 1.23 - Production AI agent framework
+├── services/api-gateway/        # Go 1.23 - API Gateway service
+├── services/shared/             # Go 1.23 - Shared libraries
+└── course/                      # Go 1.23 - Course content module
 ```
 
 **Critical**: Each module has its own `go.mod`. Always run `go` commands from the correct module directory.
@@ -290,8 +293,11 @@ cp .env.example .env
 
 ```bash
 make docker-dev
-# Starts: Backend API, PostgreSQL, Redis, Adminer, Prometheus, Grafana
-# Services: http://localhost:8080 (API), http://localhost:8081 (Adminer)
+# Starts: Backend API, Frontend, PostgreSQL, Redis, Adminer, Prometheus, Grafana
+# Services:
+#   - Frontend: http://localhost:3000
+#   - Backend API: http://localhost:8080
+#   - Adminer: http://localhost:8081
 ```
 
 ### AI Agent Platform
@@ -302,11 +308,56 @@ make docker-compose-up
 # Starts: PostgreSQL with pgvector, Redis, Qdrant
 ```
 
+## Frontend Development
+
+### Setup and Run
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+# Edit .env.local with your configuration
+npm run dev
+# Frontend runs on http://localhost:3000
+```
+
+### Frontend Structure
+
+```
+frontend/
+├── src/
+│   ├── app/              # Next.js app router pages
+│   ├── components/       # React components
+│   ├── contexts/         # React contexts (auth, etc.)
+│   ├── lib/              # Utilities and API client
+│   └── styles/           # CSS and styling
+├── public/               # Static assets
+└── package.json          # Dependencies
+```
+
+### API Integration
+
+The frontend uses a centralized API client (`src/lib/api.ts`) that connects to the backend:
+
+```typescript
+import { api } from '@/lib/api';
+
+// Fetch curriculum
+const curriculum = await api.getCurriculum();
+
+// Get lesson details
+const lesson = await api.getLessonDetail(1);
+
+// Update progress
+await api.updateProgress(userId, lessonId, { completed: true, score: 95 });
+```
+
 ## Dependencies & Tools
 
 ### Required Tools
 
-- **Go**: Version varies by module (1.21-1.25) - check each `go.mod`
+- **Go**: Version 1.23 (standardized across all modules)
+- **Node.js**: Version 18+ (for frontend)
 - **Make**: For build automation
 - **Docker & Docker Compose**: For containerized development
 
@@ -326,8 +377,9 @@ make install-tools     # Installs: golangci-lint, gosec, air, goimports, govulnc
 
 1. **Wrong Module Directory**: Always `cd` to the correct module before running Go commands
 2. **Missing .env Files**: Backend and AI platform require environment configuration
-3. **Go Version Mismatch**: Each module specifies its Go version in `go.mod`
+3. **Go Version**: All modules now use Go 1.23 for consistency
 4. **Dependency Issues**: Run `go mod tidy` in the specific module directory, not root
+5. **Frontend-Backend Connection**: Ensure `NEXT_PUBLIC_API_URL` is set correctly in frontend `.env.local`
 
 ## CI/CD Integration
 
@@ -354,3 +406,4 @@ The repository enforces quality through:
 - **Tutorials**: See `TUTORIALS.md` for step-by-step guides
 - **API Reference**: Backend API docs at `http://localhost:8080` when running
 - **AI Agent Docs**: See `services/ai-agent-platform/README.md`
+- **Frontend-Backend Integration**: See `FRONTEND_BACKEND_INTEGRATION.md` for full stack setup
