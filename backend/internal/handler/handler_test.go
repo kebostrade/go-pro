@@ -270,8 +270,8 @@ func setupTest() (*Handler, *mockCourseService, *mockLessonService, *mockExercis
 		Health:     healthService,
 	}
 
-	log := logger.NewNoOpLogger()
-	v := validator.NewGoPlaygroundValidator()
+	log := logger.New("info", "json")
+	v := validator.New()
 
 	handler := New(services, log, v)
 
@@ -355,7 +355,7 @@ func TestHandleGetCourse(t *testing.T) {
 			name:           "not found",
 			courseID:       "nonexistent",
 			mockCourse:     nil,
-			mockError:      errors.NewNotFoundError("course", "nonexistent"),
+			mockError:      errors.NewNotFoundError("Exercise not found"),
 			expectedStatus: http.StatusNotFound,
 		},
 	}
@@ -627,7 +627,7 @@ func TestErrorHandling(t *testing.T) {
 		{
 			name: "not found error",
 			setupMock: func(m *mockCourseService) {
-				m.On("GetCourseByID", mock.Anything, "nonexistent").Return(nil, errors.NewNotFoundError("course", "nonexistent"))
+				m.On("GetCourseByID", mock.Anything, "nonexistent").Return(nil, errors.NewNotFoundError("User progress not found"))
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedType:   "NOT_FOUND",
