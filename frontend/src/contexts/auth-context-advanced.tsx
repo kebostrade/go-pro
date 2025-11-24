@@ -480,7 +480,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error('No user logged in');
     try {
       const provider = new GoogleAuthProvider();
-      const result = await linkWithCredential(user, provider.credential(null as any, null as any));
+      const result = await linkWithCredential(user, GoogleAuthProvider.credential(null as any, null as any));
       await updateUserProfile({});
     } catch (err: any) {
       setError(err.message);

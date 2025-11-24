@@ -231,8 +231,8 @@ export default function MarkdownRenderer({
 
   const renderElement = (element: any, index: number) => {
     switch (element.type) {
-      case 'header':
-        const HeaderTag = `h${Math.min(element.level, 6)}` as keyof JSX.IntrinsicElements;
+      case 'header': {
+        const HeaderTag = `h${Math.min(element.level, 6)}`;
         const headerClasses = {
           1: "text-3xl font-bold mb-4 mt-8",
           2: "text-2xl font-semibold mb-3 mt-6",
@@ -241,15 +241,17 @@ export default function MarkdownRenderer({
           5: "text-base font-medium mb-1 mt-2",
           6: "text-sm font-medium mb-1 mt-2"
         };
+        const Component = HeaderTag as React.ElementType;
         return (
-          <HeaderTag 
-            key={index} 
+          <Component
+            key={index}
             id={element.id}
             className={`${headerClasses[element.level as keyof typeof headerClasses]} scroll-mt-20 stagger-item`}
           >
             {element.content}
-          </HeaderTag>
+          </Component>
         );
+      }
 
       case 'paragraph':
         return (

@@ -1,6 +1,6 @@
 module github.com/DimaJoyti/go-pro/basic/projects/design-patterns
 
-go 1.21
+go 1.23
 
 require github.com/stretchr/testify v1.8.4
 

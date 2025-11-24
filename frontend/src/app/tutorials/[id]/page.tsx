@@ -9,9 +9,10 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
-  const tutorial = getTutorialById(params.id);
-  
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const tutorial = getTutorialById((resolvedParams?.id as string) || 'intro');
+
   if (!tutorial) {
     return {
       title: 'Tutorial Not Found',
@@ -24,8 +25,9 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   };
 }
 
-export default function TutorialPage({ params }: { params: { id: string } }) {
-  const tutorial = getTutorialById(params.id);
+export default async function TutorialPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const tutorial = getTutorialById((resolvedParams?.id as string) || 'intro');
 
   if (!tutorial) {
     notFound();

@@ -58,7 +58,7 @@ export default function AssessmentPage() {
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
 
-  const assessmentId = params.id as string;
+  const assessmentId = (params?.id as string) || '1';
 
   useEffect(() => {
     // Mock data loading

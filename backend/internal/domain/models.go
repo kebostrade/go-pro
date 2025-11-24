@@ -173,22 +173,25 @@ type UpdateProgressRequest struct {
 
 // SubmitExerciseRequest represents a request to submit an exercise solution.
 type SubmitExerciseRequest struct {
-	Code string `json:"code" validate:"required"`
+	Code     string `json:"code" validate:"required"`
+	Language string `json:"language" validate:"required,oneof=go python javascript"`
 }
 
 // ExerciseSubmissionResult represents the result of an exercise submission.
 type ExerciseSubmissionResult struct {
-	ExerciseID  string       `json:"exercise_id"`
-	Score       int          `json:"score"`
-	Passed      bool         `json:"passed"`
-	Message     string       `json:"message"`
-	TestResults []TestResult `json:"test_results,omitempty"`
-	SubmittedAt time.Time    `json:"submitted_at"`
+	Success         bool         `json:"success"` // Always true for successful API call
+	ExerciseID      string       `json:"exercise_id"`
+	Score           int          `json:"score"`
+	Passed          bool         `json:"passed"`
+	Message         string       `json:"message"`
+	TestResults     []TestResult `json:"results,omitempty"` // Changed from test_results to results
+	ExecutionTimeMs int64        `json:"execution_time_ms"`
+	SubmittedAt     time.Time    `json:"submitted_at"`
 }
 
 // TestResult represents the result of a single test case.
 type TestResult struct {
-	Name     string `json:"name"`
+	TestName string `json:"test_name"`
 	Passed   bool   `json:"passed"`
 	Expected string `json:"expected"`
 	Actual   string `json:"actual"`

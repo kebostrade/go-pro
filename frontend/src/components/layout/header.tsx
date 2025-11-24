@@ -33,7 +33,7 @@ const Header = () => {
     setMounted(true);
     // Check for saved theme preference or default to system preference
     const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const systemPrefersDark = globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
 
     if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
       setIsDark(true);
@@ -86,17 +86,17 @@ const Header = () => {
       icon: BookOpen,
     },
     {
+      title: "Practice",
+      href: "/practice",
+      description: "Coding exercises and challenges",
+      icon: Code2,
+    },
+    {
       title: "Tutorials",
       href: "/tutorials",
       description: "19 comprehensive tutorials from basics to advanced",
       icon: GraduationCap,
       badge: "19 Tutorials",
-    },
-    {
-      title: "Practice",
-      href: "/practice",
-      description: "Coding exercises and challenges",
-      icon: Code2,
     },
     {
       title: "Projects",
@@ -117,15 +117,15 @@ const Header = () => {
       className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
       role="banner"
     >
-      <div className="container flex h-14 sm:h-16 lg:h-18 xl:h-20 max-w-screen-2xl items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8">
+      <div className="container flex h-14 sm:h-16 lg:h-18 max-w-screen-2xl items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Enhanced Logo - Fully Responsive */}
-        <Link href="/" className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 group flex-shrink-0 min-w-0">
-          <div className="flex h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 lg:h-10 lg:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg group-hover:shadow-xl group-hover:shadow-primary/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0">
-            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary-foreground">G</span>
+        <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group flex-shrink-0 min-w-0">
+          <div className="flex h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg group-hover:shadow-xl group-hover:shadow-primary/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0">
+            <span className="text-sm sm:text-lg lg:text-xl font-bold text-primary-foreground">G</span>
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold go-gradient-text group-hover:scale-105 transition-transform duration-300 whitespace-nowrap truncate">GO-PRO</span>
-            <span className="hidden sm:block text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-muted-foreground -mt-0.5 sm:-mt-1 group-hover:text-foreground/80 transition-colors whitespace-nowrap truncate">Learn Go Programming</span>
+          <div className="flex flex-col">
+            <span className="text-base sm:text-lg lg:text-xl font-bold go-gradient-text group-hover:scale-105 transition-transform duration-300 whitespace-nowrap">GO-PRO</span>
+            <span className="hidden sm:block text-xs lg:text-sm text-muted-foreground -mt-1 group-hover:text-foreground/80 transition-colors whitespace-nowrap">Learn Go Programming</span>
           </div>
         </Link>
 
@@ -134,8 +134,8 @@ const Header = () => {
           <NavigationMenuList className="gap-1">
             {navigationItems.map((item) => (
               <NavigationMenuItem key={item.title}>
-                <NavigationMenuTrigger className="h-9 px-3 xl:px-4 text-sm font-medium">
-                  <item.icon className="mr-1.5 h-4 w-4" />
+                <NavigationMenuTrigger className="h-9 px-3 text-sm font-medium">
+                  <item.icon className="mr-2 h-3 w-3 lg:h-4 lg:w-4" />
                   {item.title}
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>

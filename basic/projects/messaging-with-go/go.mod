@@ -1,6 +1,6 @@
 module github.com/DimaJoyti/go-pro/basic/projects/messaging-with-go
 
-go 1.21
+go 1.23
 
 require (
 	github.com/IBM/sarama v1.42.1

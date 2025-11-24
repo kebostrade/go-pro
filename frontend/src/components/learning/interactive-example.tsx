@@ -216,7 +216,6 @@ export default function InteractiveExample({
                       indentation: true,
                     },
                     suggest: {
-                      enabled: true,
                       showKeywords: true,
                       showSnippets: true,
                     },

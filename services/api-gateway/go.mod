@@ -1,6 +1,6 @@
 module github.com/DimaJoyti/go-pro/services/api-gateway
 
-go 1.22
+go 1.23
 
 require (
 	github.com/DimaJoyti/go-pro/services/shared v0.0.0

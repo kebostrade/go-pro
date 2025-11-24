@@ -26,14 +26,24 @@ type Handler struct {
 	services  *service.Services
 	logger    logger.Logger
 	validator validator.Validator
+
+	// Rate limiting for exercise submissions (per-user).
+	submissionLimits map[string]*rateLimitState
+}
+
+// rateLimitState tracks submission rate limits per user.
+type rateLimitState struct {
+	count     int
+	resetTime time.Time
 }
 
 // New creates a new HTTP handler.
 func New(services *service.Services, logger logger.Logger, validator validator.Validator) *Handler {
 	return &Handler{
-		services:  services,
-		logger:    logger,
-		validator: validator,
+		services:         services,
+		logger:           logger,
+		validator:        validator,
+		submissionLimits: make(map[string]*rateLimitState),
 	}
 }
 
@@ -65,6 +75,12 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	// Progress tracking.
 	mux.HandleFunc("GET /api/v1/progress/{userId}", h.handleGetProgress)
 	mux.HandleFunc("POST /api/v1/progress/{userId}/lesson/{lessonId}", h.handleUpdateProgress)
+
+	// New progress endpoints (REST-compliant).
+	mux.HandleFunc("GET /api/v1/users/{userId}/progress", h.handleGetUserProgress)
+	mux.HandleFunc("GET /api/v1/users/{userId}/progress/stats", h.handleGetProgressStats)
+	mux.HandleFunc("POST /api/v1/users/{userId}/lessons/{lessonId}/progress", h.handleUpdateUserLessonProgress)
+	mux.HandleFunc("GET /api/v1/progress/{id}", h.handleGetProgressByID)
 
 	// Curriculum.
 	mux.HandleFunc("GET /api/v1/curriculum", h.handleGetCurriculum)
@@ -280,6 +296,14 @@ func (h *Handler) handleSubmitExercise(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check rate limit (10 submissions per minute per user).
+	// Phase 1: Use IP address. Phase 2: Use authenticated user ID.
+	userKey := getClientIP(r)
+	if !h.checkSubmissionRateLimit(userKey) {
+		h.writeErrorResponse(w, r, apierrors.NewRateLimitError("submission rate limit exceeded (10 per minute)"))
+		return
+	}
+
 	var req domain.SubmitExerciseRequest
 	if err := h.validator.ValidateJSON(r, &req); err != nil {
 		h.writeErrorResponse(w, r, err)
@@ -338,8 +362,111 @@ func (h *Handler) handleUpdateProgress(w http.ResponseWriter, r *http.Request) {
 	h.writeSuccessResponse(w, r, progress, "progress updated successfully")
 }
 
+// New progress handlers (REST-compliant).
+
+// handleGetUserProgress retrieves user's lesson progress with pagination.
+// GET /api/v1/users/:userId/progress?page=1&pageSize=20
+func (h *Handler) handleGetUserProgress(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("userId")
+	if userID == "" {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("user ID is required"))
+		return
+	}
+
+	pagination := getPaginationFromContext(r.Context())
+
+	// Get progress records from service.
+	response, err := h.services.Progress.GetProgressByUserID(r.Context(), userID, pagination)
+	if err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	h.writeSuccessResponse(w, r, response, "user progress retrieved successfully")
+}
+
+// handleGetProgressStats retrieves user's progress statistics.
+// GET /api/v1/users/:userId/progress/stats
+func (h *Handler) handleGetProgressStats(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("userId")
+	if userID == "" {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("user ID is required"))
+		return
+	}
+
+	// For now, calculate stats from progress records.
+	// In future, this could be cached or pre-calculated.
+	pagination := &domain.PaginationRequest{
+		Page:     1,
+		PageSize: 1000, // Get all progress for stats calculation
+	}
+
+	response, err := h.services.Progress.GetProgressByUserID(r.Context(), userID, pagination)
+	if err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	// Calculate statistics.
+	stats := calculateProgressStats(response.Items)
+
+	h.writeSuccessResponse(w, r, stats, "progress statistics retrieved successfully")
+}
+
+// handleUpdateUserLessonProgress updates progress for a specific lesson.
+// POST /api/v1/users/:userId/lessons/:lessonId/progress
+func (h *Handler) handleUpdateUserLessonProgress(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("userId")
+	lessonID := r.PathValue("lessonId")
+
+	if userID == "" || lessonID == "" {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("user ID and lesson ID are required"))
+		return
+	}
+
+	var req domain.UpdateProgressRequest
+	if err := h.validator.ValidateJSON(r, &req); err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	progress, err := h.services.Progress.UpdateProgress(r.Context(), userID, lessonID, &req)
+	if err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	h.writeSuccessResponse(w, r, progress, "progress updated successfully")
+}
+
+// handleGetProgressByID retrieves a specific progress record by ID.
+// GET /api/v1/progress/:id
+func (h *Handler) handleGetProgressByID(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("progress ID is required"))
+		return
+	}
+
+	progress, err := h.services.Progress.GetProgressByID(r.Context(), id)
+	if err != nil {
+		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	h.writeSuccessResponse(w, r, progress, "progress retrieved successfully")
+}
+
 // Curriculum handlers.
 func (h *Handler) handleGetCurriculum(w http.ResponseWriter, r *http.Request) {
+	// Performance optimization: Add HTTP caching headers
+	// Cache-Control: public allows CDN and browser caching
+	// max-age=3600 caches for 1 hour (curriculum changes infrequently)
+	w.Header().Set("Cache-Control", "public, max-age=3600, stale-while-revalidate=7200")
+
+	// Add Vary header to ensure proper caching behavior
+	w.Header().Set("Vary", "Accept-Encoding")
+
 	curriculum, err := h.services.Curriculum.GetCurriculum(r.Context())
 	if err != nil {
 		h.writeErrorResponse(w, r, err)
@@ -363,11 +490,33 @@ func (h *Handler) handleGetLessonDetail(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Performance optimization: ETag support for conditional requests
+	// Generate ETag based on lesson ID and timestamp (simplified approach)
+	etag := fmt.Sprintf(`"lesson-%d-%d"`, lessonID, time.Now().Unix()/(60*15)) // 15-minute granularity
+
+	// Check If-None-Match header for cached version
+	if match := r.Header.Get("If-None-Match"); match != "" {
+		// Remove weak ETag prefix if present
+		if len(match) > 2 && match[:2] == "W/" {
+			match = match[2:]
+		}
+		if match == etag {
+			// Content hasn't changed, return 304 Not Modified
+			w.WriteHeader(http.StatusNotModified)
+			return
+		}
+	}
+
 	lesson, err := h.services.Curriculum.GetLessonDetail(r.Context(), lessonID)
 	if err != nil {
 		h.writeErrorResponse(w, r, err)
 		return
 	}
+
+	// Set ETag header for this response
+	w.Header().Set("ETag", etag)
+	// Cache for 5 minutes on client, must revalidate with server
+	w.Header().Set("Cache-Control", "private, max-age=300, must-revalidate")
 
 	h.writeSuccessResponse(w, r, lesson, "lesson detail retrieved successfully")
 }
@@ -540,4 +689,130 @@ func getPaginationFromContext(ctx context.Context) *domain.PaginationRequest {
 		Page:     1,
 		PageSize: 10,
 	}
+}
+
+// checkSubmissionRateLimit checks if submission rate limit is exceeded.
+// Returns true if allowed, false if rate limit exceeded.
+func (h *Handler) checkSubmissionRateLimit(userKey string) bool {
+	const (
+		maxSubmissions = 10
+		windowDuration = time.Minute
+	)
+
+	now := time.Now()
+
+	// Get or create rate limit state for user.
+	state, exists := h.submissionLimits[userKey]
+	if !exists || now.After(state.resetTime) {
+		// Create new window.
+		h.submissionLimits[userKey] = &rateLimitState{
+			count:     1,
+			resetTime: now.Add(windowDuration),
+		}
+		return true
+	}
+
+	// Check if limit exceeded.
+	if state.count >= maxSubmissions {
+		return false
+	}
+
+	// Increment count.
+	state.count++
+	return true
+}
+
+// getClientIP extracts client IP from request.
+func getClientIP(r *http.Request) string {
+	// Check X-Forwarded-For header first (for proxies).
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		// X-Forwarded-For can contain multiple IPs, take the first one.
+		if idx := len(xff); idx > 0 {
+			if commaIdx := 0; commaIdx < idx {
+				for i, c := range xff {
+					if c == ',' {
+						commaIdx = i
+						break
+					}
+				}
+				if commaIdx > 0 {
+					return xff[:commaIdx]
+				}
+			}
+			return xff
+		}
+	}
+
+	// Check X-Real-IP header.
+	if xri := r.Header.Get("X-Real-IP"); xri != "" {
+		return xri
+	}
+
+	// Fall back to RemoteAddr.
+	// RemoteAddr format is "IP:port", extract just the IP.
+	if idx := len(r.RemoteAddr); idx > 0 {
+		for i := idx - 1; i >= 0; i-- {
+			if r.RemoteAddr[i] == ':' {
+				return r.RemoteAddr[:i]
+			}
+		}
+	}
+
+	return r.RemoteAddr
+}
+
+// calculateProgressStats calculates progress statistics from progress records.
+func calculateProgressStats(items interface{}) map[string]interface{} {
+	stats := map[string]interface{}{
+		"total_lessons":       0,
+		"completed_lessons":   0,
+		"in_progress_lessons": 0,
+		"average_score":       0.0,
+		"total_time_spent":    0,
+	}
+
+	// Type assert items to progress array.
+	progressList, ok := items.([]interface{})
+	if !ok {
+		return stats
+	}
+
+	totalLessons := len(progressList)
+	completedCount := 0
+	inProgressCount := 0
+	totalScore := 0
+	scoreCount := 0
+
+	for _, item := range progressList {
+		progress, ok := item.(*domain.Progress)
+		if !ok {
+			continue
+		}
+
+		switch progress.Status {
+		case domain.StatusCompleted:
+			completedCount++
+			// For now, assume 100 score for completed lessons.
+			// In future, this should come from actual exercise scores.
+			totalScore += 100
+			scoreCount++
+		case domain.StatusInProgress:
+			inProgressCount++
+		}
+	}
+
+	stats["total_lessons"] = totalLessons
+	stats["completed_lessons"] = completedCount
+	stats["in_progress_lessons"] = inProgressCount
+
+	// Calculate average score.
+	if scoreCount > 0 {
+		stats["average_score"] = float64(totalScore) / float64(scoreCount)
+	}
+
+	// Total time spent would need to be tracked separately.
+	// For now, estimate based on completed lessons (30 minutes per lesson).
+	stats["total_time_spent"] = completedCount * 30
+
+	return stats
 }

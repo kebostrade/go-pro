@@ -1,6 +1,6 @@
 module github.com/DimaJoyti/go-pro/basic/projects/postgres-redis-go
 
-go 1.22
+go 1.23
 
 require (
 	github.com/jackc/pgx/v5 v5.5.1
@@ -21,4 +21,3 @@ require (
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 )
-

@@ -81,7 +81,7 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [currentChapter, setCurrentChapter] = useState(0);
 
-  const projectId = params.id as string;
+  const projectId = (params?.id as string) || '1';
 
   useEffect(() => {
     // Mock data loading based on project ID

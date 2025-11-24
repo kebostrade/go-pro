@@ -1,3 +1,3 @@
 module github.com/DimaJoyti/go-pro/basic/projects/concurrency-patterns
 
-go 1.21
+go 1.23

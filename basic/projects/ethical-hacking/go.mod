@@ -1,6 +1,6 @@
 module github.com/DimaJoyti/go-pro/basic/projects/ethical-hacking
 
-go 1.21
+go 1.23
 
 require (
 	github.com/google/gopacket v1.1.19
