@@ -61,12 +61,26 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Initialize HTTP handler.
+	// Initialize Firebase Auth Service adapter for middleware.
+	authServiceAdapter := &firebaseAuthAdapter{authService: appContainer.Services.Auth}
+
+	// Initialize AuthMiddleware.
+	authMiddleware := middleware.NewAuthMiddleware(
+		authServiceAdapter,
+		appContainer.Repositories.User,
+		log,
+	)
+
+	// Initialize HTTP handlers.
 	httpHandler := handler.New(appContainer.Services, log, appContainer.Validator)
+	authHandler := handler.NewAuthHandler(appContainer.Services, log, appContainer.Validator)
+	adminHandler := handler.NewAdminHandler(appContainer.Services, log, appContainer.Validator)
 
 	// Setup routes.
 	mux := http.NewServeMux()
-	httpHandler.RegisterRoutes(mux)
+	httpHandler.RegisterRoutes(mux, authMiddleware)
+	authHandler.RegisterRoutes(mux, authMiddleware)
+	adminHandler.RegisterRoutes(mux, authMiddleware)
 
 	// Setup middleware chain.
 	middlewares := []middleware.Middleware{
@@ -144,4 +158,24 @@ func initializeSampleData(ctx context.Context, services *service.Services) error
 	_ = course // Prevent unused variable warning
 
 	return nil
+}
+
+// firebaseAuthAdapter adapts service.AuthService to middleware.AuthService interface.
+type firebaseAuthAdapter struct {
+	authService service.AuthService
+}
+
+// VerifyToken verifies a Firebase ID token and returns the token information.
+func (a *firebaseAuthAdapter) VerifyToken(ctx context.Context, token string) (*middleware.FirebaseToken, error) {
+	claims, err := a.authService.VerifyToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	return &middleware.FirebaseToken{
+		UID:         claims.UserID,
+		Email:       claims.Email,
+		DisplayName: claims.DisplayName,
+		PhotoURL:    claims.Picture,
+	}, nil
 }

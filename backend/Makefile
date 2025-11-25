@@ -142,13 +142,13 @@ db-reset: ## Reset database (down and up)
 # Development helpers
 dev: ## Run in development mode with hot reload
 	@echo "Starting development server..."
-	@which air > /dev/null || (echo "air not installed. Installing..." && go install github.com/cosmtrek/air@latest)
+	@which air > /dev/null || (echo "air not installed. Installing..." && go install github.com/air-verse/air@latest)
 	air
 
 install-tools: ## Install development tools
 	@echo "Installing development tools..."
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-	go install github.com/cosmtrek/air@latest
+	go install github.com/air-verse/air@latest
 	go install github.com/stretchr/testify@latest
 	@echo "Tools installed"
 

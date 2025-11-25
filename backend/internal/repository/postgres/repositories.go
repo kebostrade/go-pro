@@ -23,6 +23,7 @@ type Repositories struct {
 	Lesson   *LessonRepository
 	Exercise *ExerciseRepository
 	Progress *ProgressRepository
+	User     *UserRepository
 }
 
 // NewRepositories creates a new PostgreSQL repositories instance.
@@ -33,6 +34,7 @@ func NewRepositories(db *DB) *Repositories {
 		Lesson:   NewLessonRepository(db),
 		Exercise: NewExerciseRepository(db),
 		Progress: NewProgressRepository(db),
+		User:     NewUserRepository(db),
 	}
 }
 
@@ -42,7 +44,7 @@ func NewRepositoriesFromEnv() (*Repositories, error) {
 		Host:            getEnv("DB_HOST", "localhost"),
 		Port:            getEnvAsInt("DB_PORT", 5432),
 		User:            getEnv("DB_USER", "gopro_user"),
-		Password:        getEnv("DB_PASSWORD", "gopro_password"),
+		Password:        getEnv("DB_PASSWORD", ""),
 		Database:        getEnv("DB_NAME", "gopro_dev"),
 		SSLMode:         getEnv("DB_SSLMODE", "disable"),
 		MaxOpenConns:    getEnvAsInt("DB_MAX_OPEN_CONNS", 25),
@@ -208,4 +210,5 @@ var (
 	_ repository.LessonRepository   = (*LessonRepository)(nil)
 	_ repository.ExerciseRepository = (*ExerciseRepository)(nil)
 	_ repository.ProgressRepository = (*ProgressRepository)(nil)
+	_ repository.UserRepository     = (*UserRepository)(nil)
 )

@@ -1,4 +1,5 @@
 // API client for GO-PRO backend
+import { auth } from './firebase';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -13,6 +14,29 @@ interface APIResponse<T> {
   message?: string;
   request_id?: string;
   timestamp: string;
+}
+
+// Backend user types
+interface BackendUser {
+  id: string;
+  firebase_uid: string;
+  email: string;
+  display_name: string;
+  photo_url: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface AuthVerifyResponse {
+  user: BackendUser;
+  token: string;
+}
+
+interface ProfileUpdatePayload {
+  display_name?: string;
+  photo_url?: string;
+  preferences?: Record<string, any>;
 }
 
 interface Curriculum {
@@ -154,21 +178,49 @@ class APIError extends Error {
   }
 }
 
+// Token management
+let tokenRefreshCallback: (() => Promise<void>) | null = null;
+
+export function setTokenRefreshCallback(callback: () => Promise<void>) {
+  tokenRefreshCallback = callback;
+}
+
+async function getIdToken(): Promise<string | null> {
+  const user = auth.currentUser;
+  if (!user) return null;
+
+  try {
+    return await user.getIdToken(false);
+  } catch (error) {
+    console.error('Error getting ID token:', error);
+    return null;
+  }
+}
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await getIdToken();
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
 async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  requiresAuth = false
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   const defaultHeaders = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
 
+  const authHeaders = requiresAuth ? await getAuthHeaders() : {};
+
   const config: RequestInit = {
     ...options,
     headers: {
       ...defaultHeaders,
+      ...authHeaders,
       ...options.headers,
     },
   };
@@ -176,6 +228,57 @@ async function apiRequest<T>(
   try {
     const response = await fetch(url, config);
     const data: APIResponse<T> = await response.json();
+
+    // Handle 401 - token expired or invalid
+    if (response.status === 401) {
+      if (tokenRefreshCallback) {
+        try {
+          await tokenRefreshCallback();
+          // Retry request with fresh token
+          const newAuthHeaders = requiresAuth ? await getAuthHeaders() : {};
+          const retryConfig: RequestInit = {
+            ...options,
+            headers: {
+              ...defaultHeaders,
+              ...newAuthHeaders,
+              ...options.headers,
+            },
+          };
+          const retryResponse = await fetch(url, retryConfig);
+          const retryData: APIResponse<T> = await retryResponse.json();
+
+          if (!retryResponse.ok || !retryData.success) {
+            throw new APIError(
+              retryData.error?.message || 'Authentication failed',
+              retryResponse.status,
+              retryData.error?.type,
+              retryData.error?.details
+            );
+          }
+
+          return retryData.data as T;
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          throw new APIError('Session expired. Please sign in again.', 401);
+        }
+      }
+
+      throw new APIError(
+        data.error?.message || 'Unauthorized. Please sign in.',
+        401,
+        data.error?.type,
+        data.error?.details
+      );
+    }
+
+    // Handle 403 - insufficient permissions
+    if (response.status === 403) {
+      throw new APIError(
+        'Insufficient permissions to perform this action',
+        403,
+        'permission_denied'
+      );
+    }
 
     if (!response.ok) {
       throw new APIError(
@@ -200,7 +303,7 @@ async function apiRequest<T>(
     if (error instanceof APIError) {
       throw error;
     }
-    
+
     // Network or parsing error
     throw new APIError(
       error instanceof Error ? error.message : 'Network error',
@@ -214,6 +317,25 @@ export const api = {
   // Health check
   async health(): Promise<{ status: string; timestamp: string; version: string; uptime: string }> {
     return apiRequest('/api/v1/health');
+  },
+
+  // Auth endpoints
+  async verifyToken(idToken: string): Promise<AuthVerifyResponse> {
+    return apiRequest<AuthVerifyResponse>('/api/v1/auth/verify', {
+      method: 'POST',
+      body: JSON.stringify({ id_token: idToken }),
+    });
+  },
+
+  async getCurrentUser(): Promise<BackendUser> {
+    return apiRequest<BackendUser>('/api/v1/auth/me', {}, true);
+  },
+
+  async updateBackendProfile(data: ProfileUpdatePayload): Promise<BackendUser> {
+    return apiRequest<BackendUser>('/api/v1/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, true);
   },
 
   // Curriculum
@@ -244,7 +366,7 @@ export const api = {
     return apiRequest(`/api/v1/courses/${courseId}`);
   },
 
-  // Progress
+  // Progress (backend-synced)
   async getProgress(userId: string, page = 1, pageSize = 10): Promise<{
     items: any[];
     pagination: {
@@ -256,7 +378,7 @@ export const api = {
       has_prev: boolean;
     };
   }> {
-    return apiRequest(`/api/v1/progress/${userId}?page=${page}&page_size=${pageSize}`);
+    return apiRequest(`/api/v1/progress/${userId}?page=${page}&page_size=${pageSize}`, {}, true);
   },
 
   async updateProgress(
@@ -267,93 +389,57 @@ export const api = {
     return apiRequest(`/api/v1/progress/${userId}/lesson/${lessonId}`, {
       method: 'POST',
       body: JSON.stringify(data),
-    });
+    }, true);
   },
 
-  // Exercise submission
+  // Exercise submission (authenticated)
   async submitExercise(
     exerciseId: string,
-    code: string,
-    authToken?: string
+    code: string
   ): Promise<ExerciseResult> {
-    const headers: Record<string, string> = {};
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
-    }
-
     return apiRequest<ExerciseResult>(`/api/v1/exercises/${exerciseId}/submit`, {
       method: 'POST',
-      headers,
       body: JSON.stringify({
         code,
         language: 'go',
       } as ExerciseSubmission),
-    });
+    }, true);
   },
 
-  // Lesson completion
-  async completeLesson(
-    lessonId: string,
-    authToken?: string
-  ): Promise<void> {
-    const headers: Record<string, string> = {};
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
-    }
-
+  // Lesson completion (authenticated)
+  async completeLesson(lessonId: string): Promise<void> {
     return apiRequest<void>(`/api/v1/lessons/${lessonId}/complete`, {
       method: 'POST',
-      headers,
-    });
+    }, true);
   },
 
-  // User progress
+  // User progress (authenticated)
   async getUserProgress(
     userId: string,
     page = 1,
-    pageSize = 20,
-    authToken?: string
+    pageSize = 20
   ): Promise<ProgressListResponse> {
-    const headers: Record<string, string> = {};
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
-    }
-
     return apiRequest<ProgressListResponse>(
       `/api/v1/users/${userId}/progress?page=${page}&pageSize=${pageSize}`,
-      { headers }
+      {}, true
     );
   },
 
-  // Progress statistics
-  async getProgressStats(
-    userId: string,
-    authToken?: string
-  ): Promise<ProgressStats> {
-    const headers: Record<string, string> = {};
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
-    }
-
+  // Progress statistics (authenticated)
+  async getProgressStats(userId: string): Promise<ProgressStats> {
     return apiRequest<ProgressStats>(
       `/api/v1/users/${userId}/progress/stats`,
-      { headers }
+      {}, true
     );
   },
 
-  // Update lesson progress
+  // Update lesson progress (authenticated)
   async updateLessonProgress(
     userId: string,
     lessonId: string,
     status: 'not_started' | 'in_progress' | 'completed',
-    score?: number,
-    authToken?: string
+    score?: number
   ): Promise<Progress> {
-    const headers: Record<string, string> = {};
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
-    }
-
     const payload: UpdateProgressPayload = { status };
     if (score !== undefined) {
       payload.score = score;
@@ -363,9 +449,9 @@ export const api = {
       `/api/v1/users/${userId}/lessons/${lessonId}/progress`,
       {
         method: 'POST',
-        headers,
         body: JSON.stringify(payload),
-      }
+      },
+      true
     );
   },
 };
@@ -385,6 +471,9 @@ export type {
   ProgressStats,
   ProgressListResponse,
   UpdateProgressPayload,
+  BackendUser,
+  AuthVerifyResponse,
+  ProfileUpdatePayload,
 };
 
 export { APIError };

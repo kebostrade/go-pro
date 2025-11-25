@@ -117,11 +117,13 @@ resource "google_pubsub_subscription" "app_subscription" {
 
 # Firestore Database
 resource "google_firestore_database" "app_database" {
-  project     = var.project_id
-  name        = "(default)"
-  location_id = var.region
-  type        = "FIRESTORE_NATIVE"
-  
+  project                     = var.project_id
+  name                        = "(default)"
+  location_id                 = var.region
+  type                        = "FIRESTORE_NATIVE"
+  deletion_policy             = "DELETE"
+  delete_protection_state     = "DELETE_PROTECTION_DISABLED"
+
   depends_on = [google_project_service.required_apis]
 }
 
@@ -218,16 +220,19 @@ resource "google_cloud_run_service_iam_member" "public_access" {
 resource "google_container_cluster" "primary" {
   name     = "${var.app_name}-gke-${var.environment}"
   location = var.region
-  
+
   # We can't create a cluster with no node pool defined, but we want to only use
   # separately managed node pools. So we create the smallest possible default
   # node pool and immediately delete it.
   remove_default_node_pool = true
   initial_node_count       = 1
-  
+
   network    = "default"
   subnetwork = "default"
-  
+
+  # Required for GKE - set to false for dev environments
+  deletion_protection = false
+
   depends_on = [google_project_service.required_apis]
 }
 

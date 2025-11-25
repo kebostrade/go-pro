@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 
@@ -45,7 +44,7 @@ func (h *Handler) HandleRequest(ctx context.Context, event events.APIGatewayProx
 	log.Printf("Received request: %s %s", event.HTTPMethod, event.Path)
 	log.Printf("Headers: %v", event.Headers)
 	log.Printf("Query params: %v", event.QueryStringParameters)
-	
+
 	// Route based on HTTP method and path
 	switch event.HTTPMethod {
 	case "GET":
@@ -71,7 +70,7 @@ func (h *Handler) handleGet(ctx context.Context, event events.APIGatewayProxyReq
 			"service":   "lambda-demo",
 		}), nil
 	}
-	
+
 	if event.Path == "/users" {
 		// Return sample users
 		users := []map[string]interface{}{
@@ -83,7 +82,7 @@ func (h *Handler) handleGet(ctx context.Context, event events.APIGatewayProxyReq
 			"count": len(users),
 		}), nil
 	}
-	
+
 	// Get user by ID from path parameter
 	if id, ok := event.PathParameters["id"]; ok {
 		user := map[string]interface{}{
@@ -93,7 +92,7 @@ func (h *Handler) handleGet(ctx context.Context, event events.APIGatewayProxyReq
 		}
 		return h.successResponse(200, "User retrieved", user), nil
 	}
-	
+
 	return h.errorResponse(404, "Not found"), nil
 }
 
@@ -103,12 +102,12 @@ func (h *Handler) handlePost(ctx context.Context, event events.APIGatewayProxyRe
 	if err := json.Unmarshal([]byte(event.Body), &req); err != nil {
 		return h.errorResponse(400, "Invalid request body"), nil
 	}
-	
+
 	// Validate request
 	if req.Name == "" || req.Email == "" {
 		return h.errorResponse(400, "Name and email are required"), nil
 	}
-	
+
 	// Process request
 	result := map[string]interface{}{
 		"id":         "123",
@@ -117,7 +116,7 @@ func (h *Handler) handlePost(ctx context.Context, event events.APIGatewayProxyRe
 		"created_at": time.Now(),
 		"action":     req.Action,
 	}
-	
+
 	return h.successResponse(201, "Resource created successfully", result), nil
 }
 
@@ -127,19 +126,19 @@ func (h *Handler) handlePut(ctx context.Context, event events.APIGatewayProxyReq
 	if !ok {
 		return h.errorResponse(400, "ID parameter is required"), nil
 	}
-	
+
 	var req Request
 	if err := json.Unmarshal([]byte(event.Body), &req); err != nil {
 		return h.errorResponse(400, "Invalid request body"), nil
 	}
-	
+
 	result := map[string]interface{}{
 		"id":         id,
 		"name":       req.Name,
 		"email":      req.Email,
 		"updated_at": time.Now(),
 	}
-	
+
 	return h.successResponse(200, "Resource updated successfully", result), nil
 }
 
@@ -149,12 +148,12 @@ func (h *Handler) handleDelete(ctx context.Context, event events.APIGatewayProxy
 	if !ok {
 		return h.errorResponse(400, "ID parameter is required"), nil
 	}
-	
+
 	result := map[string]interface{}{
 		"id":         id,
 		"deleted_at": time.Now(),
 	}
-	
+
 	return h.successResponse(200, "Resource deleted successfully", result), nil
 }
 
@@ -166,9 +165,9 @@ func (h *Handler) successResponse(statusCode int, message string, data map[strin
 		Message:    message,
 		Data:       data,
 	}
-	
+
 	body, _ := json.Marshal(response)
-	
+
 	return events.APIGatewayProxyResponse{
 		StatusCode: statusCode,
 		Headers: map[string]string{
@@ -186,9 +185,9 @@ func (h *Handler) errorResponse(statusCode int, message string) events.APIGatewa
 		Success:    false,
 		Message:    message,
 	}
-	
+
 	body, _ := json.Marshal(response)
-	
+
 	return events.APIGatewayProxyResponse{
 		StatusCode: statusCode,
 		Headers: map[string]string{
@@ -207,11 +206,11 @@ func HandleS3Event(ctx context.Context, s3Event events.S3Event) error {
 		log.Printf("  Key: %s", record.S3.Object.Key)
 		log.Printf("  Size: %d bytes", record.S3.Object.Size)
 		log.Printf("  Event: %s", record.EventName)
-		
+
 		// Process the file here
 		// For example: download, transform, upload to another bucket
 	}
-	
+
 	return nil
 }
 
@@ -221,17 +220,17 @@ func HandleSQSEvent(ctx context.Context, sqsEvent events.SQSEvent) error {
 		log.Printf("Processing SQS message:")
 		log.Printf("  MessageId: %s", record.MessageId)
 		log.Printf("  Body: %s", record.Body)
-		
+
 		// Process the message here
 		var message map[string]interface{}
 		if err := json.Unmarshal([]byte(record.Body), &message); err != nil {
 			log.Printf("Error parsing message: %v", err)
 			continue
 		}
-		
+
 		log.Printf("  Parsed message: %v", message)
 	}
-	
+
 	return nil
 }
 
@@ -241,26 +240,26 @@ func HandleScheduledEvent(ctx context.Context, event events.CloudWatchEvent) err
 	log.Printf("  Source: %s", event.Source)
 	log.Printf("  Detail Type: %s", event.DetailType)
 	log.Printf("  Time: %s", event.Time)
-	
+
 	// Perform scheduled task here
 	// For example: cleanup, data aggregation, report generation
-	
+
 	return nil
 }
 
 func main() {
 	handler := NewHandler()
-	
+
 	// Start Lambda handler
 	// For API Gateway events
 	lambda.Start(handler.HandleRequest)
-	
+
 	// For S3 events, use:
 	// lambda.Start(HandleS3Event)
-	
+
 	// For SQS events, use:
 	// lambda.Start(HandleSQSEvent)
-	
+
 	// For scheduled events, use:
 	// lambda.Start(HandleScheduledEvent)
 }
@@ -287,4 +286,3 @@ func main() {
 //   aws lambda update-function-code \
 //     --function-name my-function \
 //     --zip-file fileb://function.zip
-

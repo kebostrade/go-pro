@@ -72,7 +72,7 @@ func Load() *Config {
 			Host:            getEnv("DB_HOST", "localhost"),
 			Port:            getIntEnv("DB_PORT", 5432),
 			User:            getEnv("DB_USER", "gopro_user"),
-			Password:        getEnv("DB_PASSWORD", "gopro_password"),
+			Password:        getEnv("DB_PASSWORD", ""),
 			Database:        getEnv("DB_NAME", "gopro_dev"),
 			SSLMode:         getEnv("DB_SSLMODE", "disable"),
 			MaxOpenConns:    getIntEnv("DB_MAX_OPEN_CONNS", 25),

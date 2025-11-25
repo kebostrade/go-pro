@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import { AuthProvider } from "@/contexts/auth-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,22 +56,24 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-background`}
         suppressHydrationWarning
       >
-        {/* Skip link for accessibility */}
-        <a
-          href="#main-content"
-          className="absolute left-[-10000px] top-auto w-1 h-1 overflow-hidden focus:left-6 focus:top-7 focus:w-auto focus:h-auto focus:overflow-visible focus:z-50 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded transition-all"
-          tabIndex={0}
-        >
-          Skip to main content
-        </a>
+        <AuthProvider>
+          {/* Skip link for accessibility */}
+          <a
+            href="#main-content"
+            className="absolute left-[-10000px] top-auto w-1 h-1 overflow-hidden focus:left-6 focus:top-7 focus:w-auto focus:h-auto focus:overflow-visible focus:z-50 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded transition-all"
+            tabIndex={0}
+          >
+            Skip to main content
+          </a>
 
-        <Header />
-        <main id="main-content" className="flex-1 relative" tabIndex={-1}>
-          <div className="min-h-full">
-            {children}
-          </div>
-        </main>
-        <Footer />
+          <Header />
+          <main id="main-content" className="flex-1 relative" tabIndex={-1}>
+            <div className="min-h-full">
+              {children}
+            </div>
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

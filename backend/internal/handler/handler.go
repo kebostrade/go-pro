@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"go-pro-backend/internal/domain"
+	"go-pro-backend/internal/middleware"
 	"go-pro-backend/internal/service"
 	"go-pro-backend/pkg/logger"
 	"go-pro-backend/pkg/validator"
@@ -48,7 +49,7 @@ func New(services *service.Services, logger logger.Logger, validator validator.V
 }
 
 // RegisterRoutes registers all API routes.
-func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
+func (h *Handler) RegisterRoutes(mux *http.ServeMux, authMiddleware *middleware.AuthMiddleware) {
 	// Health check.
 	mux.HandleFunc("GET /api/v1/health", h.handleHealth)
 
@@ -72,15 +73,15 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/exercises/{id}", h.handleGetExercise)
 	mux.HandleFunc("POST /api/v1/exercises/{id}/submit", h.handleSubmitExercise)
 
-	// Progress tracking.
-	mux.HandleFunc("GET /api/v1/progress/{userId}", h.handleGetProgress)
-	mux.HandleFunc("POST /api/v1/progress/{userId}/lesson/{lessonId}", h.handleUpdateProgress)
-
-	// New progress endpoints (REST-compliant).
+	// Progress tracking (REST-compliant).
 	mux.HandleFunc("GET /api/v1/users/{userId}/progress", h.handleGetUserProgress)
 	mux.HandleFunc("GET /api/v1/users/{userId}/progress/stats", h.handleGetProgressStats)
 	mux.HandleFunc("POST /api/v1/users/{userId}/lessons/{lessonId}/progress", h.handleUpdateUserLessonProgress)
-	mux.HandleFunc("GET /api/v1/progress/{id}", h.handleGetProgressByID)
+
+	// Legacy progress endpoints (kept for backward compatibility).
+	// Note: Deprecated - use /api/v1/users/{userId}/progress instead
+	mux.HandleFunc("GET /api/v1/progress/{userId}", h.handleGetProgress)
+	mux.HandleFunc("POST /api/v1/progress/{userId}/lesson/{lessonId}", h.handleUpdateProgress)
 
 	// Curriculum.
 	mux.HandleFunc("GET /api/v1/curriculum", h.handleGetCurriculum)

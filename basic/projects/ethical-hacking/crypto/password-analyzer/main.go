@@ -6,18 +6,28 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"unicode"
 )
 
+const (
+	strengthVeryWeak   = "Very Weak"
+	strengthWeak       = "Weak"
+	strengthFair       = "Fair"
+	strengthGood       = "Good"
+	strengthStrong     = "Strong"
+	strengthVeryStrong = "Very Strong"
+)
+
 type PasswordStrength struct {
-	Password   string
-	Score      int
-	Strength   string
-	Entropy    float64
+	Password    string
+	Score       int
+	Strength    string
+	Entropy     float64
 	TimeToCrack string
-	Issues     []string
+	Issues      []string
 	Suggestions []string
 }
 
@@ -52,7 +62,31 @@ func analyzePassword(password string) PasswordStrength {
 		Score:    0,
 	}
 
-	// Length check
+	// Check length
+	scoreLength(&result, password)
+
+	// Character variety
+	scoreCharacterVariety(&result, password)
+
+	// Common patterns
+	scoreCommonPatterns(&result, password)
+
+	// Calculate entropy
+	result.Entropy = calculateEntropy(password)
+
+	// Determine strength
+	determineStrength(&result)
+
+	// Estimate time to crack
+	result.TimeToCrack = estimateTimeToCrack(result.Entropy)
+
+	// Add suggestions
+	addSuggestions(&result)
+
+	return result
+}
+
+func scoreLength(result *PasswordStrength, password string) {
 	length := len(password)
 	if length < 8 {
 		result.Issues = append(result.Issues, "Password is too short (minimum 8 characters)")
@@ -64,8 +98,9 @@ func analyzePassword(password string) PasswordStrength {
 	} else {
 		result.Score += 30
 	}
+}
 
-	// Character variety
+func scoreCharacterVariety(result *PasswordStrength, password string) {
 	hasLower := false
 	hasUpper := false
 	hasDigit := false
@@ -106,8 +141,9 @@ func analyzePassword(password string) PasswordStrength {
 	} else {
 		result.Issues = append(result.Issues, "No special characters")
 	}
+}
 
-	// Common patterns
+func scoreCommonPatterns(result *PasswordStrength, password string) {
 	if isCommonPassword(password) {
 		result.Score -= 50
 		result.Issues = append(result.Issues, "Password is in common password list")
@@ -122,30 +158,33 @@ func analyzePassword(password string) PasswordStrength {
 		result.Score -= 10
 		result.Issues = append(result.Issues, "Contains repeating characters (e.g., aaa, 111)")
 	}
+}
 
-	// Calculate entropy
-	result.Entropy = calculateEntropy(password)
-
-	// Determine strength
+func determineStrength(result *PasswordStrength) {
 	if result.Score >= 80 {
-		result.Strength = "Very Strong"
+		result.Strength = strengthVeryStrong
 	} else if result.Score >= 60 {
-		result.Strength = "Strong"
+		result.Strength = strengthStrong
 	} else if result.Score >= 40 {
-		result.Strength = "Medium"
+		result.Strength = strengthFair
 	} else if result.Score >= 20 {
-		result.Strength = "Weak"
+		result.Strength = strengthWeak
 	} else {
-		result.Strength = "Very Weak"
+		result.Strength = strengthVeryWeak
 	}
+}
 
-	// Estimate time to crack
-	result.TimeToCrack = estimateTimeToCrack(result.Entropy)
-
-	// Add suggestions
+func addSuggestions(result *PasswordStrength) {
 	if len(result.Issues) == 0 {
 		result.Suggestions = append(result.Suggestions, "Password looks good!")
 	} else {
+		// Check for missing character types
+		hasLower := regexp.MustCompile(`[a-z]`).MatchString(result.Password)
+		hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(result.Password)
+		hasDigit := regexp.MustCompile(`[0-9]`).MatchString(result.Password)
+		hasSpecial := regexp.MustCompile(`[^a-zA-Z0-9]`).MatchString(result.Password)
+		length := len(result.Password)
+
 		if !hasLower || !hasUpper {
 			result.Suggestions = append(result.Suggestions, "Use both uppercase and lowercase letters")
 		}
@@ -159,8 +198,6 @@ func analyzePassword(password string) PasswordStrength {
 			result.Suggestions = append(result.Suggestions, "Increase password length to 12+ characters")
 		}
 	}
-
-	return result
 }
 
 func calculateEntropy(password string) float64 {
@@ -264,15 +301,15 @@ func displayResult(result PasswordStrength) {
 	// Strength indicator
 	fmt.Printf("\n🔒 Strength: ")
 	switch result.Strength {
-	case "Very Strong":
+	case strengthVeryStrong:
 		fmt.Printf("✅ %s\n", result.Strength)
-	case "Strong":
+	case strengthStrong:
 		fmt.Printf("✅ %s\n", result.Strength)
-	case "Medium":
+	case strengthFair:
 		fmt.Printf("⚠️  %s\n", result.Strength)
-	case "Weak":
+	case strengthWeak:
 		fmt.Printf("❌ %s\n", result.Strength)
-	case "Very Weak":
+	case strengthVeryWeak:
 		fmt.Printf("❌ %s\n", result.Strength)
 	}
 
@@ -300,7 +337,28 @@ func displayResult(result PasswordStrength) {
 }
 
 func analyzePasswordFile(filename string) {
-	file, err := os.Open(filename)
+	// Prevent path traversal attacks
+	if strings.Contains(filename, "..") || filepath.IsAbs(filename) {
+		fmt.Printf("❌ Error: invalid path - path traversal detected\n")
+		return
+	}
+
+	// Only allow files in current directory
+	baseDir, _ := os.Getwd()
+	fullPath := filepath.Join(baseDir, filename)
+	realPath, err := filepath.EvalSymlinks(fullPath)
+	if err != nil {
+		fmt.Printf("❌ Error: invalid path: %v\n", err)
+		return
+	}
+
+	// Ensure the resolved path is within the current directory
+	if !strings.HasPrefix(realPath, baseDir) {
+		fmt.Printf("❌ Error: invalid path - path traversal detected\n")
+		return
+	}
+
+	file, err := os.Open(realPath)
 	if err != nil {
 		fmt.Printf("❌ Error opening file: %v\n", err)
 		return
@@ -325,11 +383,11 @@ func analyzePasswordFile(filename string) {
 		result := analyzePassword(password)
 
 		switch result.Strength {
-		case "Very Weak", "Weak":
+		case strengthVeryWeak, strengthWeak:
 			weak++
-		case "Medium":
+		case strengthFair:
 			medium++
-		case "Strong", "Very Strong":
+		case strengthStrong, strengthVeryStrong:
 			strong++
 		}
 	}
@@ -356,4 +414,3 @@ func printBanner() {
 `
 	fmt.Println(banner)
 }
-

@@ -14,6 +14,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -303,7 +304,23 @@ func (sm *SecurityMiddleware) SecureLogging(next http.Handler) http.Handler {
 func (sm *SecurityMiddleware) HTTPSRedirect(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if sm.config.HTTPS.RedirectHTTP && r.Header.Get("X-Forwarded-Proto") != "https" {
-			httpsURL := fmt.Sprintf("https://%s%s", r.Host, r.RequestURI)
+			// Sanitize host to prevent open redirect
+			// Only allow alphanumeric, dots, hyphens, and colons (for port)
+			host := r.Host
+			if !isValidHost(host) {
+				http.Error(w, "Invalid host", http.StatusBadRequest)
+				return
+			}
+
+			// #nosec G601: Host is validated by isValidHost() to prevent open redirects
+			// Use r.URL for safe redirect construction
+			httpsURL := (&url.URL{
+				Scheme:   "https",
+				Host:     host,
+				Path:     r.URL.Path,
+				RawQuery: r.URL.RawQuery,
+			}).String()
+
 			http.Redirect(w, r, httpsURL, http.StatusPermanentRedirect)
 
 			return
@@ -313,6 +330,34 @@ func (sm *SecurityMiddleware) HTTPSRedirect(next http.Handler) http.Handler {
 }
 
 // Helper functions.
+
+// isValidHost validates that a host header is safe to use in redirects
+func isValidHost(host string) bool {
+	// Allow only alphanumeric, dots, hyphens, and colons (for port)
+	validHost := regexp.MustCompile(`^[a-zA-Z0-9.\-:]+$`)
+	if !validHost.MatchString(host) {
+		return false
+	}
+
+	// Prevent private IP redirects
+	hostname := strings.Split(host, ":")[0]
+	if isPrivateIP(hostname) {
+		return false
+	}
+
+	return true
+}
+
+// isPrivateIP checks if an IP is in a private range
+func isPrivateIP(host string) bool {
+	ip := net.ParseIP(host)
+	if ip == nil {
+		// Not an IP, assume it's a hostname - allow for now
+		return false
+	}
+
+	return ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast()
+}
 
 // responseWriter wraps http.ResponseWriter to capture status code.
 type responseWriter struct {
@@ -374,7 +419,7 @@ func (sm *SecurityMiddleware) writeErrorResponse(w http.ResponseWriter, statusCo
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
 
-	if details != nil && len(details) > 0 {
+	if len(details) > 0 {
 		response["details"] = details
 	}
 

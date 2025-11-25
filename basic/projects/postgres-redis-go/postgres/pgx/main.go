@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -82,7 +81,7 @@ func main() {
 // Example 1: Simple connection (not recommended for production)
 func simpleConnection(ctx context.Context) {
 	connString := "postgres://postgres:postgres@localhost:5432/go_tutorial?sslmode=disable"
-	
+
 	conn, err := pgx.Connect(ctx, connString)
 	if err != nil {
 		log.Printf("❌ Unable to connect: %v\n", err)
@@ -126,7 +125,7 @@ func createConnectionPool(ctx context.Context) *pgxpool.Pool {
 		log.Fatalf("❌ Unable to ping database: %v\n", err)
 	}
 
-	fmt.Printf("✅ Connection pool created (Max: %d, Min: %d)\n", 
+	fmt.Printf("✅ Connection pool created (Max: %d, Min: %d)\n",
 		config.MaxConns, config.MinConns)
 
 	return pool
@@ -166,7 +165,7 @@ func crudOperations(ctx context.Context, pool *pgxpool.Pool) {
 	err = pool.QueryRow(ctx,
 		"SELECT id, username, email, created_at, updated_at FROM users WHERE id = $1",
 		userID,
-	).Scan(&user.ID, &user.Username, &user.Email, &user.Created At, &user.UpdatedAt)
+	).Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		log.Printf("❌ Select failed: %v\n", err)
 		return
@@ -308,4 +307,3 @@ func queryRows(ctx context.Context, pool *pgxpool.Pool) {
 		fmt.Printf("   - %s (%s)\n", u.Username, u.Email)
 	}
 }
-

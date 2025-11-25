@@ -92,13 +92,21 @@ func CORS(origins []string) Middleware {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
 
-			// Set default CORS headers.
+			// Set CORS origin header.
 			if len(origins) == 0 || contains(origins, "*") {
+				// Allow all origins.
 				w.Header().Set("Access-Control-Allow-Origin", "*")
-			} else if contains(origins, origin) {
+			} else if origin != "" && contains(origins, origin) {
+				// Allow specific origin.
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 				w.Header().Set("Vary", "Origin")
 				w.Header().Set("Access-Control-Allow-Credentials", "true")
+			} else if origin != "" {
+				// For development: allow localhost origins even if not explicitly listed.
+				if strings.Contains(origin, "localhost") || strings.Contains(origin, "127.0.0.1") {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Vary", "Origin")
+				}
 			}
 
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")

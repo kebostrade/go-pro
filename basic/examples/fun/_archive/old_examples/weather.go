@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"regexp"
 )
 
-const apiKey = "a3b952be51caa80eb0f6c20331b9f332" // Replace with your OpenWeatherMap API key
 const baseURL = "https://api.openweathermap.org/data/2.5/weather"
 
 type WeatherResponse struct {
@@ -30,8 +31,25 @@ type Weather struct {
 }
 
 func getWeather(city string) (*WeatherResponse, error) {
-	url := fmt.Sprintf("%s?q=%s&appid=%s&units=metric", baseURL, city, apiKey)
-	resp, err := http.Get(url)
+	apiKey := os.Getenv("OPENWEATHER_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("OPENWEATHER_API_KEY environment variable not set")
+	}
+
+	// Validate city name: only allow alphanumeric, spaces, and hyphens
+	validCity := regexp.MustCompile(`^[a-zA-Z0-9\s\-]+$`)
+	if !validCity.MatchString(city) {
+		return nil, fmt.Errorf("invalid city name: contains invalid characters")
+	}
+
+	// Use net/url to properly encode the query parameter
+	params := url.Values{}
+	params.Add("q", city)
+	params.Add("appid", apiKey)
+	params.Add("units", "metric")
+
+	fullURL := baseURL + "?" + params.Encode()
+	resp, err := http.Get(fullURL)
 	if err != nil {
 		return nil, err
 	}

@@ -42,7 +42,7 @@ func DefaultConfig() *Config {
 		Host:            "localhost",
 		Port:            5432,
 		User:            "gopro_user",
-		Password:        "gopro_password",
+		Password:        "",
 		Database:        "gopro_dev",
 		SSLMode:         "disable",
 		MaxOpenConns:    25,

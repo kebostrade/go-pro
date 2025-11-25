@@ -3,13 +3,58 @@ package handlers
 import (
 	"encoding/json"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/DimaJoyti/go-pro/basic/projects/url-shortener/internal/domain"
 	"github.com/DimaJoyti/go-pro/basic/projects/url-shortener/internal/service"
 )
+
+const (
+	errMethodNotAllowed = "Method not allowed"
+	errInternalServer   = "Internal server error"
+)
+
+// isValidRedirectURL validates that a URL is safe for redirect
+func isValidRedirectURL(urlStr string) bool {
+	// Parse the URL
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return false
+	}
+
+	// Only allow http and https schemes
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return false
+	}
+
+	// Ensure URL has a host
+	if parsedURL.Host == "" {
+		return false
+	}
+
+	// Prevent redirects to private IP addresses
+	hostname := strings.Split(parsedURL.Host, ":")[0]
+	if isPrivateIP(hostname) {
+		return false
+	}
+
+	return true
+}
+
+// isPrivateIP checks if an IP is in a private range
+func isPrivateIP(host string) bool {
+	ip := net.ParseIP(host)
+	if ip == nil {
+		// Not an IP, assume it's a hostname - allow for now
+		return false
+	}
+
+	return ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast()
+}
 
 // URLHandler handles HTTP requests for URL operations
 type URLHandler struct {
@@ -26,7 +71,7 @@ func NewURLHandler(service *service.URLService) *URLHandler {
 // ShortenURL handles POST /api/shorten
 func (h *URLHandler) ShortenURL(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		h.respondError(w, "Method not allowed", http.StatusMethodNotAllowed)
+		h.respondError(w, errMethodNotAllowed, http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -44,7 +89,7 @@ func (h *URLHandler) ShortenURL(w http.ResponseWriter, r *http.Request) {
 		case domain.ErrCodeExists:
 			h.respondError(w, "Short code already exists", http.StatusConflict)
 		default:
-			h.respondError(w, "Internal server error", http.StatusInternalServerError)
+			h.respondError(w, errInternalServer, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -72,19 +117,26 @@ func (h *URLHandler) Redirect(w http.ResponseWriter, r *http.Request) {
 		if err == domain.ErrURLNotFound {
 			h.respondError(w, "Short URL not found", http.StatusNotFound)
 		} else {
-			h.respondError(w, "Internal server error", http.StatusInternalServerError)
+			h.respondError(w, errInternalServer, http.StatusInternalServerError)
 		}
 		return
 	}
 
+	// Validate redirect URL to prevent open redirect
+	if !isValidRedirectURL(originalURL) {
+		h.respondError(w, "Invalid redirect URL", http.StatusBadRequest)
+		return
+	}
+
 	// Redirect to original URL
+	// #nosec G601: URL is validated by isValidRedirectURL() to prevent open redirects
 	http.Redirect(w, r, originalURL, http.StatusMovedPermanently)
 }
 
 // GetStats handles GET /api/stats/:code
 func (h *URLHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		h.respondError(w, "Method not allowed", http.StatusMethodNotAllowed)
+		h.respondError(w, errMethodNotAllowed, http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -101,7 +153,7 @@ func (h *URLHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 		if err == domain.ErrURLNotFound {
 			h.respondError(w, "Short URL not found", http.StatusNotFound)
 		} else {
-			h.respondError(w, "Internal server error", http.StatusInternalServerError)
+			h.respondError(w, errInternalServer, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -112,13 +164,13 @@ func (h *URLHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 // GetAllURLs handles GET /api/urls (admin endpoint)
 func (h *URLHandler) GetAllURLs(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		h.respondError(w, "Method not allowed", http.StatusMethodNotAllowed)
+		h.respondError(w, errMethodNotAllowed, http.StatusMethodNotAllowed)
 		return
 	}
 
 	urls, err := h.service.GetAllURLs(r.Context())
 	if err != nil {
-		h.respondError(w, "Internal server error", http.StatusInternalServerError)
+		h.respondError(w, errInternalServer, http.StatusInternalServerError)
 		return
 	}
 

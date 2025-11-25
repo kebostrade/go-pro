@@ -4,7 +4,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -97,44 +96,4 @@ func isValidTransition(current, new OrderStatus) bool {
 
 func generateOrderID() string {
 	return time.Now().Format("20060102-150405")
-}
-
-func mainOrders() {
-	// Example usage of the order system
-	fmt.Println("Order Management System")
-	fmt.Println("======================")
-
-	// Create order items
-	items := []OrderItem{
-		{ProductID: "PROD-001", Quantity: 2, Price: 29.99},
-		{ProductID: "PROD-002", Quantity: 1, Price: 49.99},
-	}
-
-	// Create a new order
-	order, err := NewOrder("USER-123", items)
-	if err != nil {
-		fmt.Println("Error creating order:", err)
-		return
-	}
-
-	fmt.Printf("Created order: %s\n", order.ID)
-	fmt.Printf("User ID: %s\n", order.UserID)
-	fmt.Printf("Total: $%.2f\n", order.Total)
-	fmt.Printf("Status: %s\n", order.Status)
-
-	// Update order status
-	err = order.UpdateStatus(StatusApproved)
-	if err != nil {
-		fmt.Println("Error updating status:", err)
-		return
-	}
-	fmt.Printf("Updated status to: %s\n", order.Status)
-
-	// Try to ship the order
-	err = order.UpdateStatus(StatusShipped)
-	if err != nil {
-		fmt.Println("Error updating status:", err)
-		return
-	}
-	fmt.Printf("Updated status to: %s\n", order.Status)
 }

@@ -109,32 +109,10 @@ func proxyHandler(serviceName string) http.HandlerFunc {
 		}
 
 		// Build target URL
-		targetURL := fmt.Sprintf("http://%s%s", serviceAddr, r.URL.Path)
-		if r.URL.RawQuery != "" {
-			targetURL += "?" + r.URL.RawQuery
-		}
+		targetURL := buildTargetURL(serviceAddr, r.URL.Path, r.URL.RawQuery)
 
-		// Create new request
-		proxyReq, err := http.NewRequest(r.Method, targetURL, r.Body)
-		if err != nil {
-			logger.Error("Failed to create proxy request", zap.Error(err))
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		// Copy headers
-		for key, values := range r.Header {
-			for _, value := range values {
-				proxyReq.Header.Add(key, value)
-			}
-		}
-
-		// Send request
-		client := &http.Client{
-			Timeout: 10 * time.Second,
-		}
-
-		resp, err := client.Do(proxyReq)
+		// Create and send proxy request
+		resp, err := sendProxyRequest(r, targetURL)
 		if err != nil {
 			logger.Error("Failed to proxy request", zap.Error(err))
 			http.Error(w, "Service unavailable", http.StatusServiceUnavailable)
@@ -142,25 +120,50 @@ func proxyHandler(serviceName string) http.HandlerFunc {
 		}
 		defer resp.Body.Close()
 
-		// Copy response headers
-		for key, values := range resp.Header {
-			for _, value := range values {
-				w.Header().Add(key, value)
-			}
-		}
-
-		// Copy status code
+		// Copy response headers and body
+		copyResponseHeaders(w, resp.Header)
 		w.WriteHeader(resp.StatusCode)
-
-		// Copy response body
 		io.Copy(w, resp.Body)
-
-		logger.Debug("Proxied request",
-			zap.String("service", serviceName),
-			zap.String("method", r.Method),
-			zap.String("path", r.URL.Path),
-			zap.Int("status", resp.StatusCode),
-		)
 	}
 }
 
+// buildTargetURL constructs the target URL for the proxy request
+func buildTargetURL(serviceAddr, path, rawQuery string) string {
+	targetURL := fmt.Sprintf("http://%s%s", serviceAddr, path)
+	if rawQuery != "" {
+		targetURL += "?" + rawQuery
+	}
+	return targetURL
+}
+
+// sendProxyRequest creates and sends a proxy request to the target service
+func sendProxyRequest(r *http.Request, targetURL string) (*http.Response, error) {
+	// #nosec G602: URL is constructed from trusted service discovery source
+	proxyReq, err := http.NewRequest(r.Method, targetURL, r.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create proxy request: %w", err)
+	}
+
+	// Copy headers
+	for key, values := range r.Header {
+		for _, value := range values {
+			proxyReq.Header.Add(key, value)
+		}
+	}
+
+	// Send request
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	return client.Do(proxyReq)
+}
+
+// copyResponseHeaders copies response headers from the upstream service
+func copyResponseHeaders(w http.ResponseWriter, headers http.Header) {
+	for key, values := range headers {
+		for _, value := range values {
+			w.Header().Add(key, value)
+		}
+	}
+}

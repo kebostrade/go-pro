@@ -201,16 +201,73 @@ type TestResult struct {
 // User represents a user in the system.
 type User struct {
 	ID           string     `json:"id"`
+	FirebaseUID  string     `json:"firebase_uid" validate:"required"` // Firebase User ID
 	Username     string     `json:"username" validate:"required,min=3,max=50"`
 	Email        string     `json:"email" validate:"required,email"`
-	PasswordHash string     `json:"-"` // Never expose password hash in JSON
+	DisplayName  string     `json:"display_name,omitempty"` // Full name from Firebase
+	PhotoURL     string     `json:"photo_url,omitempty"`    // Profile picture from Firebase
+	PasswordHash string     `json:"-"`                      // Never expose password hash in JSON
 	FirstName    string     `json:"first_name,omitempty"`
 	LastName     string     `json:"last_name,omitempty"`
-	Roles        []string   `json:"roles"`
+	Role         UserRole   `json:"role"`                        // Single role: student or admin
+	Roles        []string   `json:"roles,omitempty"`             // Legacy: multiple roles support
 	IsActive     bool       `json:"is_active"`
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`
 	LastLoginAt  *time.Time `json:"last_login_at,omitempty"`
+}
+
+// UserRole represents user roles in the system.
+type UserRole string
+
+const (
+	RoleStudent UserRole = "student"
+	RoleAdmin   UserRole = "admin"
+)
+
+// IsValid checks if the role is valid.
+func (r UserRole) IsValid() bool {
+	switch r {
+	case RoleStudent, RoleAdmin:
+		return true
+	default:
+		return false
+	}
+}
+
+// String returns the string representation of the role.
+func (r UserRole) String() string {
+	return string(r)
+}
+
+// ToProfileResponse converts a User to UserProfileResponse.
+func (u *User) ToProfileResponse() *UserProfileResponse {
+	lastLogin := time.Time{}
+	if u.LastLoginAt != nil {
+		lastLogin = *u.LastLoginAt
+	}
+	return &UserProfileResponse{
+		ID:          u.ID,
+		Email:       u.Email,
+		DisplayName: u.DisplayName,
+		PhotoURL:    u.PhotoURL,
+		Role:        u.Role,
+		IsActive:    u.IsActive,
+		LastLoginAt: lastLogin,
+		CreatedAt:   u.CreatedAt,
+	}
+}
+
+// UserProfileResponse represents a user profile response.
+type UserProfileResponse struct {
+	ID          string    `json:"id"`
+	Email       string    `json:"email"`
+	DisplayName string    `json:"display_name"`
+	PhotoURL    string    `json:"photo_url,omitempty"`
+	Role        UserRole  `json:"role"`
+	IsActive    bool      `json:"is_active"`
+	LastLoginAt time.Time `json:"last_login_at"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 // RegisterRequest represents a user registration request.
@@ -244,6 +301,39 @@ type UpdateProfileRequest struct {
 	FirstName *string `json:"first_name,omitempty" validate:"omitempty,max=50"`
 	LastName  *string `json:"last_name,omitempty" validate:"omitempty,max=50"`
 	Username  *string `json:"username,omitempty" validate:"omitempty,min=3,max=50"`
+}
+
+// VerifyTokenRequest represents a request to verify a Firebase ID token.
+type VerifyTokenRequest struct {
+	IDToken string `json:"id_token" validate:"required"`
+}
+
+// VerifyTokenResponse represents the response after token verification.
+type VerifyTokenResponse struct {
+	User          *UserProfileResponse `json:"user"`
+	IsNewUser     bool                 `json:"is_new_user"`
+	TokenVerified bool                 `json:"token_verified"`
+}
+
+// FirebaseClaims represents custom claims from Firebase token.
+type FirebaseClaims struct {
+	UserID      string    `json:"user_id"`
+	Email       string    `json:"email"`
+	DisplayName string    `json:"name,omitempty"`
+	Picture     string    `json:"picture,omitempty"`
+	IssuedAt    time.Time `json:"iat"`
+	ExpiresAt   time.Time `json:"exp"`
+}
+
+// UpdateUserRequest represents a request to update user profile.
+type UpdateUserRequest struct {
+	DisplayName *string `json:"display_name,omitempty" validate:"omitempty,min=1,max=100"`
+	PhotoURL    *string `json:"photo_url,omitempty" validate:"omitempty,url"`
+}
+
+// UpdateUserRoleRequest represents a request to update user role (admin only).
+type UpdateUserRoleRequest struct {
+	Role UserRole `json:"role" validate:"required"`
 }
 
 // HealthResponse represents a health check response.

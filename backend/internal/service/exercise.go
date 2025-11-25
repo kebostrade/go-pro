@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"go-pro-backend/internal/auth"
 	"go-pro-backend/internal/cache"
 	"go-pro-backend/internal/domain"
 	"go-pro-backend/internal/errors"
@@ -19,6 +20,21 @@ import (
 	"go-pro-backend/internal/repository"
 	"go-pro-backend/pkg/logger"
 	"go-pro-backend/pkg/validator"
+)
+
+const (
+	exerciseCacheKeyFmt           = "exercise:%s"
+	exerciseIDRequiredMsg         = "exercise ID is required"
+	failedToGetExerciseFmt        = "failed to get exercise: %w"
+	failedToUpdateExerciseFmt     = "failed to update exercise: %w"
+	failedToDeleteExerciseFmt     = "failed to delete exercise: %w"
+	failedToCreateExerciseFmt     = "failed to create exercise: %w"
+	invalidDifficultyMsg          = "invalid difficulty level"
+	codeTooLongMsg                = "code exceeds maximum length of 50KB"
+	failedToExecuteCodeMsg        = "code execution failed"
+	failedToGetExerciseForUpdateMsg = "failed to get exercise for update"
+	failedToGetExerciseForDeleteMsg = "failed to get exercise for deletion"
+	failedToGetExerciseForSubmissionMsg = "failed to get exercise for submission"
 )
 
 // exerciseService implements the ExerciseService interface.
@@ -56,7 +72,7 @@ func (s *exerciseService) CreateExercise(ctx context.Context, req *domain.Create
 
 	// Validate difficulty.
 	if !req.Difficulty.IsValid() {
-		return nil, errors.NewBadRequestError("invalid difficulty level")
+		return nil, errors.NewBadRequestError(invalidDifficultyMsg)
 	}
 
 	// Create exercise entity.
@@ -74,7 +90,7 @@ func (s *exerciseService) CreateExercise(ctx context.Context, req *domain.Create
 	// Save to repository.
 	if err := s.repo.Create(ctx, exercise); err != nil {
 		s.logger.Error(ctx, "Failed to create exercise", "error", err, "exercise_id", exercise.ID)
-		return nil, fmt.Errorf("failed to create exercise: %w", err)
+		return nil, fmt.Errorf(failedToCreateExerciseFmt, err)
 	}
 
 	// Publish exercise created event.
@@ -91,12 +107,7 @@ func (s *exerciseService) CreateExercise(ctx context.Context, req *domain.Create
 	}
 
 	// Cache the exercise.
-	if s.cache != nil {
-		cacheKey := fmt.Sprintf("exercise:%s", exercise.ID)
-		if err := s.cache.Set(ctx, cacheKey, exercise, 15*time.Minute); err != nil {
-			s.logger.Warn(ctx, "Failed to cache exercise", "error", err, "exercise_id", exercise.ID)
-		}
-	}
+	s.cacheExercise(ctx, exercise)
 
 	s.logger.Info(ctx, "Exercise created successfully", "exercise_id", exercise.ID, "lesson_id", exercise.LessonID)
 
@@ -106,32 +117,23 @@ func (s *exerciseService) CreateExercise(ctx context.Context, req *domain.Create
 // GetExerciseByID retrieves an exercise by ID.
 func (s *exerciseService) GetExerciseByID(ctx context.Context, id string) (*domain.Exercise, error) {
 	if id == "" {
-		return nil, errors.NewBadRequestError("exercise ID is required")
+		return nil, errors.NewBadRequestError(exerciseIDRequiredMsg)
 	}
 
 	// Try cache first.
-	if s.cache != nil {
-		cacheKey := fmt.Sprintf("exercise:%s", id)
-		var cachedExercise domain.Exercise
-		if err := s.cache.Get(ctx, cacheKey, &cachedExercise); err == nil {
-			s.logger.Debug(ctx, "Exercise retrieved from cache", "exercise_id", id)
-			return &cachedExercise, nil
-		}
+	if exercise := s.getExerciseFromCache(ctx, id); exercise != nil {
+		s.logger.Debug(ctx, "Exercise retrieved from cache", "exercise_id", id)
+		return exercise, nil
 	}
 
 	exercise, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		s.logger.Error(ctx, "Failed to get exercise", "error", err, "exercise_id", id)
-		return nil, fmt.Errorf("failed to get exercise: %w", err)
+		return nil, fmt.Errorf(failedToGetExerciseFmt, err)
 	}
 
 	// Cache the exercise.
-	if s.cache != nil {
-		cacheKey := fmt.Sprintf("exercise:%s", id)
-		if err := s.cache.Set(ctx, cacheKey, exercise, 15*time.Minute); err != nil {
-			s.logger.Warn(ctx, "Failed to cache exercise", "error", err, "exercise_id", id)
-		}
-	}
+	s.cacheExercise(ctx, exercise)
 
 	return exercise, nil
 }
@@ -225,7 +227,7 @@ func (s *exerciseService) GetAllExercises(ctx context.Context, pagination *domai
 // UpdateExercise updates an existing exercise.
 func (s *exerciseService) UpdateExercise(ctx context.Context, id string, req *domain.UpdateExerciseRequest) (*domain.Exercise, error) {
 	if id == "" {
-		return nil, errors.NewBadRequestError("exercise ID is required")
+		return nil, errors.NewBadRequestError(exerciseIDRequiredMsg)
 	}
 
 	// Validate request.
@@ -238,53 +240,22 @@ func (s *exerciseService) UpdateExercise(ctx context.Context, id string, req *do
 	exercise, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		s.logger.Error(ctx, "Failed to get exercise for update", "error", err, "exercise_id", id)
-		return nil, fmt.Errorf("failed to get exercise: %w", err)
+		return nil, fmt.Errorf(failedToGetExerciseFmt, err)
 	}
 
-	// Update fields.
-	if req.Title != nil {
-		exercise.Title = strings.TrimSpace(*req.Title)
-	}
-	if req.Description != nil {
-		exercise.Description = strings.TrimSpace(*req.Description)
-	}
-	if req.TestCases != nil {
-		exercise.TestCases = *req.TestCases
-	}
-	if req.Difficulty != nil {
-		if !req.Difficulty.IsValid() {
-			return nil, errors.NewBadRequestError("invalid difficulty level")
-		}
-		exercise.Difficulty = *req.Difficulty
-	}
+	// Apply updates.
+	s.applyExerciseUpdates(exercise, req)
 	exercise.UpdatedAt = time.Now()
 
 	// Save to repository.
 	if err := s.repo.Update(ctx, exercise); err != nil {
 		s.logger.Error(ctx, "Failed to update exercise", "error", err, "exercise_id", id)
-		return nil, fmt.Errorf("failed to update exercise: %w", err)
+		return nil, fmt.Errorf(failedToUpdateExerciseFmt, err)
 	}
 
-	// Invalidate cache.
-	if s.cache != nil {
-		cacheKey := fmt.Sprintf("exercise:%s", id)
-		if err := s.cache.Delete(ctx, cacheKey); err != nil {
-			s.logger.Warn(ctx, "Failed to invalidate exercise cache", "error", err, "exercise_id", id)
-		}
-	}
-
-	// Publish exercise updated event.
-	if s.messaging != nil && s.messaging.IsEnabled() {
-		exerciseData := map[string]interface{}{
-			"title":       exercise.Title,
-			"description": exercise.Description,
-			"test_cases":  exercise.TestCases,
-			"difficulty":  exercise.Difficulty,
-		}
-		if err := s.messaging.PublishExerciseUpdated(ctx, exercise.ID, exercise.LessonID, exerciseData); err != nil {
-			s.logger.Warn(ctx, "Failed to publish exercise updated event", "error", err, "exercise_id", exercise.ID)
-		}
-	}
+	// Invalidate cache and publish event.
+	s.invalidateExerciseCache(ctx, id)
+	s.publishExerciseUpdatedEvent(ctx, exercise)
 
 	s.logger.Info(ctx, "Exercise updated successfully", "exercise_id", id)
 
@@ -294,36 +265,25 @@ func (s *exerciseService) UpdateExercise(ctx context.Context, id string, req *do
 // DeleteExercise deletes an exercise.
 func (s *exerciseService) DeleteExercise(ctx context.Context, id string) error {
 	if id == "" {
-		return errors.NewBadRequestError("exercise ID is required")
+		return errors.NewBadRequestError(exerciseIDRequiredMsg)
 	}
 
 	// Get exercise for event publishing.
 	exercise, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		s.logger.Error(ctx, "Failed to get exercise for deletion", "error", err, "exercise_id", id)
-		return fmt.Errorf("failed to get exercise: %w", err)
+		return fmt.Errorf(failedToGetExerciseFmt, err)
 	}
 
 	// Delete from repository.
 	if err := s.repo.Delete(ctx, id); err != nil {
 		s.logger.Error(ctx, "Failed to delete exercise", "error", err, "exercise_id", id)
-		return fmt.Errorf("failed to delete exercise: %w", err)
+		return fmt.Errorf(failedToDeleteExerciseFmt, err)
 	}
 
-	// Invalidate cache.
-	if s.cache != nil {
-		cacheKey := fmt.Sprintf("exercise:%s", id)
-		if err := s.cache.Delete(ctx, cacheKey); err != nil {
-			s.logger.Warn(ctx, "Failed to invalidate exercise cache", "error", err, "exercise_id", id)
-		}
-	}
-
-	// Publish exercise deleted event.
-	if s.messaging != nil && s.messaging.IsEnabled() {
-		if err := s.messaging.PublishExerciseDeleted(ctx, exercise.ID, exercise.LessonID); err != nil {
-			s.logger.Warn(ctx, "Failed to publish exercise deleted event", "error", err, "exercise_id", exercise.ID)
-		}
-	}
+	// Cleanup cache and publish event.
+	s.invalidateExerciseCache(ctx, id)
+	s.publishExerciseDeletedEvent(ctx, exercise)
 
 	s.logger.Info(ctx, "Exercise deleted successfully", "exercise_id", id)
 
@@ -337,7 +297,7 @@ func (s *exerciseService) SubmitExercise(
 	req *domain.SubmitExerciseRequest,
 ) (*domain.ExerciseSubmissionResult, error) {
 	if exerciseID == "" {
-		return nil, errors.NewBadRequestError("exercise ID is required")
+		return nil, errors.NewBadRequestError(exerciseIDRequiredMsg)
 	}
 
 	// Validate request.
@@ -346,18 +306,116 @@ func (s *exerciseService) SubmitExercise(
 		return nil, errors.NewValidationError("invalid submission data", err)
 	}
 
-	// Validate code length (prevent abuse).
+	// Validate code length.
 	if len(req.Code) > 50000 { // 50KB limit
-		return nil, errors.NewBadRequestError("code exceeds maximum length of 50KB")
+		return nil, errors.NewBadRequestError(codeTooLongMsg)
 	}
 
-	// Get the exercise to validate it exists.
+	// Get the exercise.
 	exercise, err := s.repo.GetByID(ctx, exerciseID)
 	if err != nil {
 		s.logger.Error(ctx, "Failed to get exercise for submission", "error", err, "exercise_id", exerciseID)
-		return nil, fmt.Errorf("failed to get exercise: %w", err)
+		return nil, fmt.Errorf(failedToGetExerciseFmt, err)
 	}
 
+	// Execute code and build result.
+	result := s.executeAndEvaluateCode(ctx, exerciseID, req)
+
+	// Publish event.
+	s.publishExerciseSubmittedEvent(ctx, exercise, req, result)
+
+	s.logger.Info(ctx, "Exercise submitted successfully",
+		"exercise_id", exerciseID,
+		"score", result.Score,
+		"passed", result.Passed,
+		"lesson_id", exercise.LessonID)
+
+	return result, nil
+}
+
+// Helper methods to reduce cognitive complexity
+
+func (s *exerciseService) getExerciseFromCache(ctx context.Context, id string) *domain.Exercise {
+	if s.cache == nil {
+		return nil
+	}
+
+	cacheKey := fmt.Sprintf(exerciseCacheKeyFmt, id)
+	var cachedExercise domain.Exercise
+	if err := s.cache.Get(ctx, cacheKey, &cachedExercise); err == nil {
+		return &cachedExercise
+	}
+	return nil
+}
+
+func (s *exerciseService) cacheExercise(ctx context.Context, exercise *domain.Exercise) {
+	if s.cache == nil || exercise == nil {
+		return
+	}
+
+	cacheKey := fmt.Sprintf(exerciseCacheKeyFmt, exercise.ID)
+	if err := s.cache.Set(ctx, cacheKey, exercise, 15*time.Minute); err != nil {
+		s.logger.Warn(ctx, "Failed to cache exercise", "error", err, "exercise_id", exercise.ID)
+	}
+}
+
+func (s *exerciseService) invalidateExerciseCache(ctx context.Context, id string) {
+	if s.cache == nil {
+		return
+	}
+
+	cacheKey := fmt.Sprintf(exerciseCacheKeyFmt, id)
+	if err := s.cache.Delete(ctx, cacheKey); err != nil {
+		s.logger.Warn(ctx, "Failed to invalidate exercise cache", "error", err, "exercise_id", id)
+	}
+}
+
+func (s *exerciseService) applyExerciseUpdates(exercise *domain.Exercise, req *domain.UpdateExerciseRequest) {
+	if req.Title != nil {
+		exercise.Title = strings.TrimSpace(*req.Title)
+	}
+	if req.Description != nil {
+		exercise.Description = strings.TrimSpace(*req.Description)
+	}
+	if req.TestCases != nil {
+		exercise.TestCases = *req.TestCases
+	}
+	if req.Difficulty != nil && req.Difficulty.IsValid() {
+		exercise.Difficulty = *req.Difficulty
+	}
+}
+
+func (s *exerciseService) publishExerciseUpdatedEvent(ctx context.Context, exercise *domain.Exercise) {
+	if s.messaging == nil || !s.messaging.IsEnabled() {
+		return
+	}
+
+	exerciseData := map[string]interface{}{
+		"title":       exercise.Title,
+		"description": exercise.Description,
+		"test_cases":  exercise.TestCases,
+		"difficulty":  exercise.Difficulty,
+	}
+	if err := s.messaging.PublishExerciseUpdated(ctx, exercise.ID, exercise.LessonID, exerciseData); err != nil {
+		s.logger.Warn(ctx, "Failed to publish exercise updated event", "error", err, "exercise_id", exercise.ID)
+	}
+}
+
+func (s *exerciseService) publishExerciseDeletedEvent(ctx context.Context, exercise *domain.Exercise) {
+	if s.messaging == nil || !s.messaging.IsEnabled() {
+		return
+	}
+
+	if err := s.messaging.PublishExerciseDeleted(ctx, exercise.ID, exercise.LessonID); err != nil {
+		s.logger.Warn(ctx, "Failed to publish exercise deleted event", "error", err, "exercise_id", exercise.ID)
+	}
+}
+
+func (s *exerciseService) executeAndEvaluateCode(
+	ctx context.Context,
+	exerciseID string,
+	req *domain.SubmitExerciseRequest,
+) *domain.ExerciseSubmissionResult {
 	// Phase 1: Mock test cases (Phase 2 will load from database).
 	testCases := []TestCase{
 		{
@@ -383,7 +441,12 @@ func (s *exerciseService) SubmitExercise(
 	execResult, err := s.executor.ExecuteCode(ctx, execReq)
 	if err != nil {
 		s.logger.Error(ctx, "Failed to execute code", "error", err, "exercise_id", exerciseID)
-		return nil, errors.NewInternalError("code execution failed", err)
+		return &domain.ExerciseSubmissionResult{
+			Success:     false,
+			ExerciseID:  exerciseID,
+			Message:     failedToExecuteCodeMsg,
+			SubmittedAt: time.Now(),
+		}
 	}
 
 	// Convert executor results to domain results.
@@ -404,7 +467,7 @@ func (s *exerciseService) SubmitExercise(
 		message = fmt.Sprintf("Tests passed: %d/%d", countPassedTests(domainResults), len(domainResults))
 	}
 
-	result := &domain.ExerciseSubmissionResult{
+	return &domain.ExerciseSubmissionResult{
 		Success:         true,
 		ExerciseID:      exerciseID,
 		Score:           execResult.Score,
@@ -414,28 +477,33 @@ func (s *exerciseService) SubmitExercise(
 		ExecutionTimeMs: execResult.ExecutionTime.Milliseconds(),
 		SubmittedAt:     time.Now(),
 	}
+}
 
-	// Publish exercise submitted event.
-	if s.messaging != nil && s.messaging.IsEnabled() {
-		// Phase 1: Use demo user. Phase 2: Get from auth context.
-		userID := "demo-user"
-		submissionData := map[string]interface{}{
-			"code":     req.Code,
-			"language": req.Language,
-			"passed":   result.Passed,
-		}
-		if err := s.messaging.PublishExerciseSubmitted(ctx, userID, exerciseID, exercise.LessonID, result.Score, submissionData); err != nil {
-			s.logger.Warn(ctx, "Failed to publish exercise submitted event", "error", err, "exercise_id", exerciseID)
-		}
+func (s *exerciseService) publishExerciseSubmittedEvent(
+	ctx context.Context,
+	exercise *domain.Exercise,
+	req *domain.SubmitExerciseRequest,
+	result *domain.ExerciseSubmissionResult,
+) {
+	if s.messaging == nil || !s.messaging.IsEnabled() {
+		return
 	}
 
-	s.logger.Info(ctx, "Exercise submitted successfully",
-		"exercise_id", exerciseID,
-		"score", result.Score,
-		"passed", result.Passed,
-		"lesson_id", exercise.LessonID)
+	userInfo := auth.GetUserInfo(ctx)
+	userID := "anonymous"
+	if userInfo != nil {
+		userID = userInfo.ID
+	}
 
-	return result, nil
+	submissionData := map[string]interface{}{
+		"code":     req.Code,
+		"language": req.Language,
+		"passed":   result.Passed,
+	}
+
+	if err := s.messaging.PublishExerciseSubmitted(ctx, userID, exercise.ID, exercise.LessonID, result.Score, submissionData); err != nil {
+		s.logger.Warn(ctx, "Failed to publish exercise submitted event", "error", err, "exercise_id", exercise.ID)
+	}
 }
 
 // countPassedTests counts the number of passed tests.

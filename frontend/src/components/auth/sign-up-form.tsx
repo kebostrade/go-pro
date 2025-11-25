@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
+import { validatePassword } from '@/lib/password-validation';
 
 export function SignUpForm() {
   const [displayName, setDisplayName] = useState('');
@@ -15,22 +16,6 @@ export function SignUpForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const { signUp, signInWithGoogle, signInWithGithub } = useAuth();
   const router = useRouter();
-
-  const validatePassword = (password: string): string | null => {
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters long.';
-    }
-    if (!/[A-Z]/.test(password)) {
-      return 'Password must contain at least one uppercase letter.';
-    }
-    if (!/[a-z]/.test(password)) {
-      return 'Password must contain at least one lowercase letter.';
-    }
-    if (!/[0-9]/.test(password)) {
-      return 'Password must contain at least one number.';
-    }
-    return null;
-  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

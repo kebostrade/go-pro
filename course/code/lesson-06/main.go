@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"os"
 )
 
+// Constants
+const aliceJohnson = "Alice Johnson"
+
 func main() {
-	fmt.Println("=== Lesson 6: Structs and Methods ===\n")
+	fmt.Println("=== Lesson 6: Structs and Methods ===")
 
 	// Basic struct operations
 	fmt.Println("1. Basic Struct Operations:")
@@ -119,7 +123,7 @@ func demonstrateEmbedding() {
 	// Create employee with embedded fields
 	emp := Employee{
 		Person: Person{
-			Name:  "Alice Johnson",
+			Name:  aliceJohnson,
 			Age:   30,
 			Email: "alice@company.com",
 		},
@@ -148,11 +152,18 @@ func demonstrateStructTags() {
 		IsActive bool   `json:"is_active"`
 	}
 
+	// Note: In production, passwords should never be hardcoded.
+	// For this example, we use a default for demonstration.
+	defaultPassword := os.Getenv("EXAMPLE_PASSWORD")
+	if defaultPassword == "" {
+		defaultPassword = "example_password"
+	}
+
 	user := User{
 		ID:       1,
 		Name:     "John Doe",
 		Email:    "john@example.com",
-		Password: "secret123",
+		Password: defaultPassword,
 		IsActive: true,
 	}
 
@@ -210,7 +221,7 @@ func demonstrateEmployeeSystem() {
 	// Add departments
 	company.Departments["Engineering"] = &Department{
 		Name:      "Engineering",
-		Manager:   "Alice Johnson",
+		Manager:   aliceJohnson,
 		Budget:    500000,
 		Employees: []string{},
 	}
@@ -224,7 +235,7 @@ func demonstrateEmployeeSystem() {
 
 	// Add employees
 	employees := []*Employee{
-		{ID: "E001", Name: "Alice Johnson", Department: "Engineering", Salary: 90000, Active: true},
+		{ID: "E001", Name: aliceJohnson, Department: "Engineering", Salary: 90000, Active: true},
 		{ID: "E002", Name: "Charlie Brown", Department: "Engineering", Salary: 75000, Active: true},
 		{ID: "E003", Name: "Diana Prince", Department: "Marketing", Salary: 65000, Active: true},
 	}

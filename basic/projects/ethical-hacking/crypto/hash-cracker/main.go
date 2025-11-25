@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -135,7 +136,25 @@ func compareBcrypt(hash, password string) bool {
 }
 
 func loadWordlist(filename string) ([]string, error) {
-	file, err := os.Open(filename)
+	// Prevent path traversal attacks
+	if strings.Contains(filename, "..") || filepath.IsAbs(filename) {
+		return nil, fmt.Errorf("invalid path: path traversal detected")
+	}
+
+	// Only allow files in current directory
+	baseDir, _ := os.Getwd()
+	fullPath := filepath.Join(baseDir, filename)
+	realPath, err := filepath.EvalSymlinks(fullPath)
+	if err != nil {
+		return nil, fmt.Errorf("invalid path: %w", err)
+	}
+
+	// Ensure the resolved path is within the current directory
+	if !strings.HasPrefix(realPath, baseDir) {
+		return nil, fmt.Errorf("invalid path: path traversal detected")
+	}
+
+	file, err := os.Open(realPath)
 	if err != nil {
 		return nil, err
 	}
@@ -187,4 +206,3 @@ func printBanner() {
 `
 	fmt.Println(banner)
 }
-

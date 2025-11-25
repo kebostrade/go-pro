@@ -23,6 +23,7 @@ func GetAllMigrations() []postgres.MigrationV2 {
 		extendLessonsTable(),       // Version 7: Add detailed content fields
 		seedLessonsData(),          // Version 8: Populate with 20 lessons
 		addPerformanceIndexes(),    // Version 9: Add performance optimization indexes
+		updateUsersTableForFirebase(), // Version 10: Add Firebase authentication fields
 	}
 }
 
@@ -316,6 +317,131 @@ func addPerformanceIndexes() postgres.MigrationV2 {
 			}
 
 			return nil
+		},
+	}
+}
+
+// updateUsersTableForFirebase updates users table to support Firebase authentication.
+// Version 10: Adds Firebase-specific fields and updates schema to match domain model.
+func updateUsersTableForFirebase() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     10,
+		Description: "Update users table for Firebase authentication",
+		Up: func(tx *sql.Tx) error {
+			// 1. Add new Firebase-specific columns
+			alterQueries := []string{
+				// Add Firebase UID column (unique identifier from Firebase)
+				"ALTER TABLE users ADD COLUMN IF NOT EXISTS firebase_uid VARCHAR(128)",
+
+				// Add display_name from Firebase profile
+				"ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name VARCHAR(255)",
+
+				// Add photo_url from Firebase profile
+				"ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT",
+
+				// Add single role column (replaces roles array)
+				"ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'student'",
+			}
+
+			for _, query := range alterQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			// 2. Migrate existing roles array to single role (if data exists)
+			// Use the first role in the array, default to 'student' if empty
+			migrationQuery := `
+				UPDATE users
+				SET role = CASE
+					WHEN array_length(roles, 1) > 0 THEN roles[1]
+					ELSE 'student'
+				END
+				WHERE role IS NULL OR role = ''
+			`
+			if _, err := tx.Exec(migrationQuery); err != nil {
+				return err
+			}
+
+			// 3. Generate temporary firebase_uid for existing users (UUID format)
+			// In production, these should be replaced with real Firebase UIDs during user migration
+			tempUidQuery := `
+				UPDATE users
+				SET firebase_uid = 'temp_' || id
+				WHERE firebase_uid IS NULL OR firebase_uid = ''
+			`
+			if _, err := tx.Exec(tempUidQuery); err != nil {
+				return err
+			}
+
+			// 4. Add constraints after data migration
+			constraintQueries := []string{
+				// Make firebase_uid unique and not null
+				"ALTER TABLE users ALTER COLUMN firebase_uid SET NOT NULL",
+				"ALTER TABLE users ADD CONSTRAINT IF NOT EXISTS uq_users_firebase_uid UNIQUE (firebase_uid)",
+
+				// Add role validation constraint
+				"ALTER TABLE users ADD CONSTRAINT IF NOT EXISTS chk_users_role CHECK (role IN ('student', 'admin'))",
+
+				// Make role not null
+				"ALTER TABLE users ALTER COLUMN role SET NOT NULL",
+			}
+
+			for _, query := range constraintQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			// 5. Create indexes for Firebase fields
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid)",
+				"CREATE INDEX IF NOT EXISTS idx_users_role ON users(role) WHERE is_active = TRUE",
+			}
+
+			for _, query := range indexQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			// Drop indexes
+			dropIndexQueries := []string{
+				"DROP INDEX IF EXISTS idx_users_firebase_uid",
+				"DROP INDEX IF EXISTS idx_users_role",
+			}
+
+			for _, query := range dropIndexQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			// Drop constraints
+			dropConstraintQueries := []string{
+				"ALTER TABLE users DROP CONSTRAINT IF EXISTS uq_users_firebase_uid",
+				"ALTER TABLE users DROP CONSTRAINT IF EXISTS chk_users_role",
+			}
+
+			for _, query := range dropConstraintQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			// Drop columns
+			dropColumnQuery := `
+				ALTER TABLE users
+				DROP COLUMN IF EXISTS firebase_uid,
+				DROP COLUMN IF EXISTS display_name,
+				DROP COLUMN IF EXISTS photo_url,
+				DROP COLUMN IF EXISTS role
+			`
+			_, err := tx.Exec(dropColumnQuery)
+			return err
 		},
 	}
 }

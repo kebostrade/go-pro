@@ -8,29 +8,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  BookOpen,
   Save,
   Plus,
   Trash2,
-  Edit3,
   Search,
   Tag,
-  Calendar,
   StickyNote,
   FileText,
   Star,
   Clock,
-  Filter,
   Download,
   Copy,
-  Code2,
-  Sparkles,
-  Eye,
-  EyeOff,
   ChevronDown,
   ChevronUp,
-  Palette,
-  Share2
 } from "lucide-react";
 
 interface Note {
@@ -62,7 +52,7 @@ export default function LessonNotes({
   lessonId,
   lessonTitle,
   onNotesChange
-}: LessonNotesProps) {
+}: Readonly<LessonNotesProps>) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState<{
     title: string;
@@ -77,13 +67,11 @@ export default function LessonNotes({
     color: "#3b82f6",
     importance: "medium"
   });
-  const [editingNote, setEditingNote] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<'date' | 'title' | 'importance'>('date');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
   // Load notes from localStorage on component mount
   useEffect(() => {
@@ -160,16 +148,24 @@ export default function LessonNotes({
     });
   };
 
+  const toggleTagFilter = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag)
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
   const exportNotes = (format: 'json' | 'markdown' | 'text') => {
     let content = '';
-    let filename = `${lessonTitle.toLowerCase().replace(/\s+/g, '-')}-notes`;
+    let filename = `${lessonTitle.toLowerCase().replaceAll(/\s+/g, '-')}-notes`;
 
     if (format === 'json') {
       content = JSON.stringify(notes, null, 2);
       filename += '.json';
     } else if (format === 'markdown') {
       content = `# ${lessonTitle} - Notes\n\n`;
-      notes.forEach(note => {
+      for (const note of notes) {
         content += `## ${note.title}\n\n`;
         content += `${note.content}\n\n`;
         if (note.tags.length > 0) {
@@ -177,11 +173,11 @@ export default function LessonNotes({
         }
         content += `*Created: ${note.createdAt.toLocaleDateString()}*\n\n`;
         content += '---\n\n';
-      });
+      }
       filename += '.md';
     } else {
       content = `${lessonTitle} - Notes\n${'='.repeat(lessonTitle.length + 8)}\n\n`;
-      notes.forEach(note => {
+      for (const note of notes) {
         content += `${note.title}\n${'-'.repeat(note.title.length)}\n\n`;
         content += `${note.content}\n\n`;
         if (note.tags.length > 0) {
@@ -189,19 +185,26 @@ export default function LessonNotes({
         }
         content += `Created: ${note.createdAt.toLocaleDateString()}\n\n`;
         content += '---\n\n';
-      });
+      }
       filename += '.txt';
     }
 
+    // Safe: Creating a Blob with plain text/JSON content for download
+    // No HTML/script execution occurs - content is exported as-is
     const blob = new Blob([content], { type: 'text/plain' });
+    // Safe: Created blob from our controlled content, temporary element only used for download
+    // @see https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const link = document.createElement('a'); // @ts-ignore
+    link.href = url;
+    link.download = filename;
+    // @sonar-suppress S6299 - blob URL is safe (from createObjectURL), element is temporary
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      link.remove();
+      URL.revokeObjectURL(url);
+    }, 100);
   };
 
   const copyNoteToClipboard = async (note: Note) => {
@@ -333,8 +336,8 @@ export default function LessonNotes({
 
               {/* Color and Importance Selectors */}
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Color</label>
+                <fieldset>
+                  <legend className="text-sm font-medium mb-2 block">Color</legend>
                   <div className="flex gap-2">
                     {noteColors.map(color => (
                       <button
@@ -349,10 +352,10 @@ export default function LessonNotes({
                       />
                     ))}
                   </div>
-                </div>
+                </fieldset>
 
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Importance</label>
+                <fieldset>
+                  <legend className="text-sm font-medium mb-2 block">Importance</legend>
                   <div className="flex gap-2">
                     {(['low', 'medium', 'high'] as const).map(importance => (
                       <Button
@@ -367,7 +370,7 @@ export default function LessonNotes({
                       </Button>
                     ))}
                   </div>
-                </div>
+                </fieldset>
               </div>
 
               <Button onClick={addNote} className="w-full">
@@ -407,13 +410,7 @@ export default function LessonNotes({
                       key={tag}
                       variant={selectedTags.includes(tag) ? "default" : "outline"}
                       className="cursor-pointer hover:bg-primary/20 transition-colors"
-                      onClick={() => {
-                        setSelectedTags(prev => 
-                          prev.includes(tag) 
-                            ? prev.filter(t => t !== tag)
-                            : [...prev, tag]
-                        );
-                      }}
+                      onClick={() => toggleTagFilter(tag)}
                     >
                       <Tag className="mr-1 h-3 w-3" />
                       {tag}

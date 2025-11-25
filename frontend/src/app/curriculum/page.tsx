@@ -193,37 +193,8 @@ export default function CurriculumPage() {
     fetchCurriculum();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen animated-gradient">
-        <div className="container-responsive padding-responsive-y">
-          <LoadingSkeleton />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen animated-gradient">
-        <div className="container-responsive padding-responsive-y">
-          <ErrorMessage error={error} onRetry={fetchCurriculum} />
-        </div>
-      </div>
-    );
-  }
-
-  if (!curriculum || curriculum.phases.length === 0) {
-    return (
-      <div className="min-h-screen animated-gradient">
-        <div className="container-responsive padding-responsive-y">
-          <EmptyState />
-        </div>
-      </div>
-    );
-  }
-
   // Performance optimization: useMemo for expensive calculations
+  // MUST be called before any conditional returns to follow Rules of Hooks
   // Prevents recalculation on every render unless curriculum changes
   const stats = useMemo(() => {
     if (!curriculum) return null;
@@ -256,8 +227,38 @@ export default function CurriculumPage() {
     return { overallProgress, totalLessons, totalExercises, totalWeeks, totalXP };
   }, [curriculum]);
 
-  // Extract for easier use
+  // Extract for easier use (safe to have undefined values during loading/error states)
   const { overallProgress, totalLessons, totalExercises, totalWeeks, totalXP } = stats || {};
+
+  if (loading) {
+    return (
+      <div className="min-h-screen animated-gradient">
+        <div className="container-responsive padding-responsive-y">
+          <LoadingSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen animated-gradient">
+        <div className="container-responsive padding-responsive-y">
+          <ErrorMessage error={error} onRetry={fetchCurriculum} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!curriculum || curriculum.phases.length === 0) {
+    return (
+      <div className="min-h-screen animated-gradient">
+        <div className="container-responsive padding-responsive-y">
+          <EmptyState />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen animated-gradient">

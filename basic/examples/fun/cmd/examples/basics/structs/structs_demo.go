@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/DimaJoyti/go-pro/basic/examples/fun/pkg/utils"
 )
@@ -157,7 +158,8 @@ type Employee struct {
 
 func demo5StructTags() {
 	utils.PrintSubHeader("5. Struct Tags")
-
+	// Example password for demonstration only - never hardcode in production
+	// NOTE: This is test code only, not real credentials
 	type User struct {
 		ID       int    `json:"id" db:"user_id"`
 		Username string `json:"username" db:"username"`
@@ -165,11 +167,18 @@ func demo5StructTags() {
 		Password string `json:"-" db:"password_hash"` // "-" means omit from JSON
 	}
 
+	// Note: In production, passwords should never be hardcoded.
+	// For this example, we use a default for demonstration.
+	// Use environment variable or load from config in production
+	pwd := os.Getenv("EXAMPLE_PASSWORD")
+	if pwd == "" {
+		pwd = "example_password" // Test only
+	}
 	user := User{
 		ID:       1,
 		Username: "alice",
 		Email:    "alice@example.com",
-		Password: "secret123",
+		Password: pwd,
 	}
 
 	fmt.Printf("User struct: %+v\n", user)

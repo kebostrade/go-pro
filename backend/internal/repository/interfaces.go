@@ -50,10 +50,23 @@ type ProgressRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
+// UserRepository defines the interface for user data operations.
+type UserRepository interface {
+	Create(ctx context.Context, user *domain.User) error
+	GetByID(ctx context.Context, id string) (*domain.User, error)
+	GetByFirebaseUID(ctx context.Context, firebaseUID string) (*domain.User, error)
+	GetByEmail(ctx context.Context, email string) (*domain.User, error)
+	GetAll(ctx context.Context, pagination *domain.PaginationRequest) ([]*domain.User, int64, error)
+	Update(ctx context.Context, user *domain.User) error
+	UpdateLastLogin(ctx context.Context, userID string) error
+	Delete(ctx context.Context, id string) error
+}
+
 // Repositories aggregates all repository interfaces.
 type Repositories struct {
 	Course   CourseRepository
 	Lesson   LessonRepository
 	Exercise ExerciseRepository
 	Progress ProgressRepository
+	User     UserRepository
 }

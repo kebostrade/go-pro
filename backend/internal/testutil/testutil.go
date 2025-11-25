@@ -21,6 +21,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const descriptionFormat = "Description for %s"
+
 // TestDB represents a test database connection.
 type TestDB struct {
 	*postgres.DB
@@ -31,9 +33,10 @@ type TestDB struct {
 func NewTestDB(t *testing.T) *TestDB {
 	t.Helper()
 	config := &postgres.Config{
-		Host:            GetEnv("TEST_DB_HOST", "localhost"),
-		Port:            GetEnvAsInt("TEST_DB_PORT", 5432),
-		User:            GetEnv("TEST_DB_USER", "gopro_test"),
+		Host: GetEnv("TEST_DB_HOST", "localhost"),
+		Port: GetEnvAsInt("TEST_DB_PORT", 5432),
+		User: GetEnv("TEST_DB_USER", "gopro_test"),
+		// #nosec G101: Test environment password - uses env var with safe default
 		Password:        GetEnv("TEST_DB_PASSWORD", "gopro_test"),
 		Database:        GetEnv("TEST_DB_NAME", "gopro_test"),
 		SSLMode:         "disable",
@@ -153,7 +156,7 @@ func CreateTestCourse(id, title string) *domain.Course {
 	return &domain.Course{
 		ID:          id,
 		Title:       title,
-		Description: fmt.Sprintf("Description for %s", title),
+		Description: fmt.Sprintf(descriptionFormat, title),
 		Lessons:     []string{},
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -166,7 +169,7 @@ func CreateTestLesson(id, courseID, title string, order int) *domain.Lesson {
 		ID:          id,
 		CourseID:    courseID,
 		Title:       title,
-		Description: fmt.Sprintf("Description for %s", title),
+		Description: fmt.Sprintf(descriptionFormat, title),
 		Content:     fmt.Sprintf("Content for %s", title),
 		Order:       order,
 		Exercises:   []string{},
@@ -181,7 +184,7 @@ func CreateTestExercise(id, lessonID, title string) *domain.Exercise {
 		ID:          id,
 		LessonID:    lessonID,
 		Title:       title,
-		Description: fmt.Sprintf("Description for %s", title),
+		Description: fmt.Sprintf(descriptionFormat, title),
 		TestCases:   5,
 		Difficulty:  domain.DifficultyIntermediate,
 		CreatedAt:   time.Now(),
@@ -209,11 +212,14 @@ func CreateTestProgress(id, userID, lessonID string, status domain.Status) *doma
 }
 
 // CreateTestUser creates a test user.
+// Security Note: This is a test fixture with a dummy bcrypt hash for unit testing only.
+// Real passwords are never stored in plain text; this hash is not used in production.
 func CreateTestUser(id, username, email string) *domain.User {
 	return &domain.User{
-		ID:           id,
-		Username:     username,
-		Email:        email,
+		ID:       id,
+		Username: username,
+		Email:    email,
+		// #nosec G101: Test fixture only - not real credentials, for test environment only
 		PasswordHash: "$2a$10$test.hash.value",
 		FirstName:    "Test",
 		LastName:     "User",
@@ -266,11 +272,9 @@ func WaitForCondition(t *testing.T, timeout time.Duration, condition func() bool
 			return
 		}
 
-		select {
-		case <-ticker.C:
-			if time.Now().After(deadline) {
-				t.Fatal("Timeout waiting for condition")
-			}
+		<-ticker.C
+		if time.Now().After(deadline) {
+			t.Fatal("Timeout waiting for condition")
 		}
 	}
 }
