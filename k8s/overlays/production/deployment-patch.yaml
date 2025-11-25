@@ -7,6 +7,13 @@ spec:
     spec:
       containers:
       - name: backend
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
         resources:
           requests:
             memory: "512Mi"
@@ -24,6 +31,13 @@ spec:
     spec:
       containers:
       - name: frontend
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
         resources:
           requests:
             memory: "512Mi"

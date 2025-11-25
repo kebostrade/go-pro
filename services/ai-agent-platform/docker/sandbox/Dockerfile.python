@@ -1,0 +1,26 @@
+# Dockerfile for Python code execution sandbox
+FROM python:3.11-alpine
+
+# Install security tools
+RUN apk add --no-cache \
+    ca-certificates
+
+# Create non-root user
+RUN addgroup -g 1000 sandbox && \
+    adduser -D -u 1000 -G sandbox sandbox
+
+# Install common Python packages (safe ones only)
+RUN pip install --no-cache-dir \
+    numpy \
+    pandas \
+    matplotlib
+
+# Set working directory
+WORKDIR /workspace
+
+# Switch to non-root user
+USER sandbox
+
+# Default command
+CMD ["python3", "--version"]
+

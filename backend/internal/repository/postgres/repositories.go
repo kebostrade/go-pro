@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package postgres provides functionality for the GO-PRO Learning Platform.
 package postgres
 
 import (
@@ -11,16 +16,17 @@ import (
 	"go-pro-backend/internal/repository"
 )
 
-// Repositories implements the repository.Repositories interface for PostgreSQL
+// Repositories implements the repository.Repositories interface for PostgreSQL.
 type Repositories struct {
 	db       *DB
 	Course   *CourseRepository
 	Lesson   *LessonRepository
 	Exercise *ExerciseRepository
 	Progress *ProgressRepository
+	User     *UserRepository
 }
 
-// NewRepositories creates a new PostgreSQL repositories instance
+// NewRepositories creates a new PostgreSQL repositories instance.
 func NewRepositories(db *DB) *Repositories {
 	return &Repositories{
 		db:       db,
@@ -28,16 +34,17 @@ func NewRepositories(db *DB) *Repositories {
 		Lesson:   NewLessonRepository(db),
 		Exercise: NewExerciseRepository(db),
 		Progress: NewProgressRepository(db),
+		User:     NewUserRepository(db),
 	}
 }
 
-// NewRepositoriesFromEnv creates repositories from environment variables
+// NewRepositoriesFromEnv creates repositories from environment variables.
 func NewRepositoriesFromEnv() (*Repositories, error) {
 	config := &Config{
 		Host:            getEnv("DB_HOST", "localhost"),
 		Port:            getEnvAsInt("DB_PORT", 5432),
 		User:            getEnv("DB_USER", "gopro_user"),
-		Password:        getEnv("DB_PASSWORD", "gopro_password"),
+		Password:        getEnv("DB_PASSWORD", ""),
 		Database:        getEnv("DB_NAME", "gopro_dev"),
 		SSLMode:         getEnv("DB_SSLMODE", "disable"),
 		MaxOpenConns:    getEnvAsInt("DB_MAX_OPEN_CONNS", 25),
@@ -54,17 +61,17 @@ func NewRepositoriesFromEnv() (*Repositories, error) {
 	return NewRepositories(db), nil
 }
 
-// Close closes the database connection
+// Close closes the database connection.
 func (r *Repositories) Close() error {
 	return r.db.Close()
 }
 
-// Health checks the health of all repositories
+// Health checks the health of all repositories.
 func (r *Repositories) Health(ctx context.Context) error {
 	return r.db.Health(ctx)
 }
 
-// BeginTransaction starts a new database transaction
+// BeginTransaction starts a new database transaction.
 func (r *Repositories) BeginTransaction(ctx context.Context) (*TransactionalRepositories, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -80,7 +87,7 @@ func (r *Repositories) BeginTransaction(ctx context.Context) (*TransactionalRepo
 	}, nil
 }
 
-// TransactionalRepositories provides transactional repository operations
+// TransactionalRepositories provides transactional repository operations.
 type TransactionalRepositories struct {
 	tx       *sql.Tx
 	Course   *TransactionalCourseRepository
@@ -89,17 +96,17 @@ type TransactionalRepositories struct {
 	Progress *TransactionalProgressRepository
 }
 
-// Commit commits the transaction
+// Commit commits the transaction.
 func (tr *TransactionalRepositories) Commit() error {
 	return tr.tx.Commit()
 }
 
-// Rollback rolls back the transaction
+// Rollback rolls back the transaction.
 func (tr *TransactionalRepositories) Rollback() error {
 	return tr.tx.Rollback()
 }
 
-// WithTransaction executes a function within a database transaction
+// WithTransaction executes a function within a database transaction.
 func (r *Repositories) WithTransaction(ctx context.Context, fn func(*TransactionalRepositories) error) error {
 	return r.db.WithTransaction(ctx, func(tx *sql.Tx) error {
 		txRepos := &TransactionalRepositories{
@@ -109,11 +116,12 @@ func (r *Repositories) WithTransaction(ctx context.Context, fn func(*Transaction
 			Exercise: NewTransactionalExerciseRepository(tx),
 			Progress: NewTransactionalProgressRepository(tx),
 		}
+
 		return fn(txRepos)
 	})
 }
 
-// Transactional repository implementations (simplified versions that use sql.Tx)
+// Transactional repository implementations (simplified versions that use sql.Tx).
 type TransactionalCourseRepository struct {
 	tx *sql.Tx
 }
@@ -146,7 +154,7 @@ func NewTransactionalProgressRepository(tx *sql.Tx) *TransactionalProgressReposi
 	return &TransactionalProgressRepository{tx: tx}
 }
 
-// RunMigrations runs database migrations
+// RunMigrations runs database migrations.
 func (r *Repositories) RunMigrations(ctx context.Context) error {
 	migrations := []Migration{
 		{
@@ -167,11 +175,12 @@ func (r *Repositories) RunMigrations(ctx context.Context) error {
 	return r.db.RunMigrations(ctx, migrations)
 }
 
-// Helper functions for environment variable parsing
+// Helper functions for environment variable parsing.
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
+
 	return defaultValue
 }
 
@@ -181,6 +190,7 @@ func getEnvAsInt(key string, defaultValue int) int {
 			return intValue
 		}
 	}
+
 	return defaultValue
 }
 
@@ -190,11 +200,15 @@ func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
 			return duration
 		}
 	}
+
 	return defaultValue
 }
 
-// Ensure our repositories implement the interfaces
-var _ repository.CourseRepository = (*CourseRepository)(nil)
-var _ repository.LessonRepository = (*LessonRepository)(nil)
-var _ repository.ExerciseRepository = (*ExerciseRepository)(nil)
-var _ repository.ProgressRepository = (*ProgressRepository)(nil)
+// Ensure our repositories implement the interfaces.
+var (
+	_ repository.CourseRepository   = (*CourseRepository)(nil)
+	_ repository.LessonRepository   = (*LessonRepository)(nil)
+	_ repository.ExerciseRepository = (*ExerciseRepository)(nil)
+	_ repository.ProgressRepository = (*ProgressRepository)(nil)
+	_ repository.UserRepository     = (*UserRepository)(nil)
+)

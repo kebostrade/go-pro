@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package migrations provides database migration definitions for the GO-PRO Learning Platform.
 package migrations
 
 import (
@@ -6,7 +11,7 @@ import (
 	"go-pro-backend/internal/repository/postgres"
 )
 
-// GetAllMigrations returns all database migrations
+// GetAllMigrations returns all database migrations.
 func GetAllMigrations() []postgres.MigrationV2 {
 	return []postgres.MigrationV2{
 		createUsersTable(),
@@ -15,10 +20,14 @@ func GetAllMigrations() []postgres.MigrationV2 {
 		createExercisesTable(),
 		createProgressTable(),
 		addIndexes(),
+		extendLessonsTable(),       // Version 7: Add detailed content fields
+		seedLessonsData(),          // Version 8: Populate with 20 lessons
+		addPerformanceIndexes(),    // Version 9: Add performance optimization indexes
+		updateUsersTableForFirebase(), // Version 10: Add Firebase authentication fields
 	}
 }
 
-// createUsersTable creates the users table
+// createUsersTable creates the users table.
 func createUsersTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     1,
@@ -40,6 +49,7 @@ func createUsersTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -49,7 +59,7 @@ func createUsersTable() postgres.MigrationV2 {
 	}
 }
 
-// createCoursesTable creates the courses table
+// createCoursesTable creates the courses table.
 func createCoursesTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     2,
@@ -71,6 +81,7 @@ func createCoursesTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -80,7 +91,7 @@ func createCoursesTable() postgres.MigrationV2 {
 	}
 }
 
-// createLessonsTable creates the lessons table
+// createLessonsTable creates the lessons table.
 func createLessonsTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     3,
@@ -103,6 +114,7 @@ func createLessonsTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -112,7 +124,7 @@ func createLessonsTable() postgres.MigrationV2 {
 	}
 }
 
-// createExercisesTable creates the exercises table
+// createExercisesTable creates the exercises table.
 func createExercisesTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     4,
@@ -132,6 +144,7 @@ func createExercisesTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -141,7 +154,7 @@ func createExercisesTable() postgres.MigrationV2 {
 	}
 }
 
-// createProgressTable creates the progress table
+// createProgressTable creates the progress table.
 func createProgressTable() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     5,
@@ -163,6 +176,7 @@ func createProgressTable() postgres.MigrationV2 {
 				)
 			`
 			_, err := tx.Exec(query)
+
 			return err
 		},
 		Down: func(tx *sql.Tx) error {
@@ -172,7 +186,7 @@ func createProgressTable() postgres.MigrationV2 {
 	}
 }
 
-// addIndexes adds performance indexes
+// addIndexes adds performance indexes.
 func addIndexes() postgres.MigrationV2 {
 	return postgres.MigrationV2{
 		Version:     6,
@@ -241,6 +255,290 @@ func addIndexes() postgres.MigrationV2 {
 			}
 
 			return nil
+		},
+	}
+}
+
+// addPerformanceIndexes adds performance optimization indexes.
+// Version 9: Optimizes dashboard queries and curriculum ordering.
+func addPerformanceIndexes() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     9,
+		Description: "Add performance optimization indexes",
+		Up: func(tx *sql.Tx) error {
+			queries := []string{
+				// Progress table composite index for dashboard queries
+				// Optimizes: SELECT * FROM progress WHERE user_id = ? AND status = ? ORDER BY updated_at DESC
+				"CREATE INDEX IF NOT EXISTS idx_progress_user_status_updated ON progress(user_id, status, updated_at DESC)",
+
+				// Progress table covering index for efficient user progress lookups
+				// Optimizes: SELECT user_id, lesson_id, status FROM progress WHERE user_id = ?
+				"CREATE INDEX IF NOT EXISTS idx_progress_user_covering ON progress(user_id) INCLUDE (lesson_id, status, completed_at)",
+
+				// Lessons table composite index for curriculum ordering
+				// Optimizes: SELECT * FROM lessons WHERE course_id = ? ORDER BY order_index ASC
+				"CREATE INDEX IF NOT EXISTS idx_lessons_course_order ON lessons(course_id, order_index ASC)",
+
+				// Lessons table covering index for curriculum list views
+				// Optimizes: SELECT id, title, slug, difficulty FROM lessons WHERE is_published = true
+				"CREATE INDEX IF NOT EXISTS idx_lessons_published_covering ON lessons(is_published) INCLUDE (id, title, slug, difficulty, duration_minutes) WHERE is_published = true",
+
+				// Progress table partial index for active lessons (performance optimization)
+				// Optimizes: SELECT * FROM progress WHERE status = 'in_progress'
+				"CREATE INDEX IF NOT EXISTS idx_progress_in_progress ON progress(user_id, updated_at) WHERE status = 'in_progress'",
+
+				// Courses table covering index for published course listings
+				// Optimizes: SELECT id, title, slug, difficulty FROM courses WHERE is_published = true
+				"CREATE INDEX IF NOT EXISTS idx_courses_published_covering ON courses(is_published) INCLUDE (id, title, slug, difficulty) WHERE is_published = true",
+			}
+
+			for _, query := range queries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			queries := []string{
+				"DROP INDEX IF EXISTS idx_progress_user_status_updated",
+				"DROP INDEX IF EXISTS idx_progress_user_covering",
+				"DROP INDEX IF EXISTS idx_lessons_course_order",
+				"DROP INDEX IF EXISTS idx_lessons_published_covering",
+				"DROP INDEX IF EXISTS idx_progress_in_progress",
+				"DROP INDEX IF EXISTS idx_courses_published_covering",
+			}
+
+			for _, query := range queries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+	}
+}
+
+// updateUsersTableForFirebase updates users table to support Firebase authentication.
+// Version 10: Adds Firebase-specific fields and updates schema to match domain model.
+func updateUsersTableForFirebase() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     10,
+		Description: "Update users table for Firebase authentication",
+		Up: func(tx *sql.Tx) error {
+			// 1. Add new Firebase-specific columns
+			alterQueries := []string{
+				// Add Firebase UID column (unique identifier from Firebase)
+				"ALTER TABLE users ADD COLUMN IF NOT EXISTS firebase_uid VARCHAR(128)",
+
+				// Add display_name from Firebase profile
+				"ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name VARCHAR(255)",
+
+				// Add photo_url from Firebase profile
+				"ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT",
+
+				// Add single role column (replaces roles array)
+				"ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'student'",
+			}
+
+			for _, query := range alterQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			// 2. Migrate existing roles array to single role (if data exists)
+			// Use the first role in the array, default to 'student' if empty
+			migrationQuery := `
+				UPDATE users
+				SET role = CASE
+					WHEN array_length(roles, 1) > 0 THEN roles[1]
+					ELSE 'student'
+				END
+				WHERE role IS NULL OR role = ''
+			`
+			if _, err := tx.Exec(migrationQuery); err != nil {
+				return err
+			}
+
+			// 3. Generate temporary firebase_uid for existing users (UUID format)
+			// In production, these should be replaced with real Firebase UIDs during user migration
+			tempUidQuery := `
+				UPDATE users
+				SET firebase_uid = 'temp_' || id
+				WHERE firebase_uid IS NULL OR firebase_uid = ''
+			`
+			if _, err := tx.Exec(tempUidQuery); err != nil {
+				return err
+			}
+
+			// 4. Add constraints after data migration
+			constraintQueries := []string{
+				// Make firebase_uid unique and not null
+				"ALTER TABLE users ALTER COLUMN firebase_uid SET NOT NULL",
+				"ALTER TABLE users ADD CONSTRAINT IF NOT EXISTS uq_users_firebase_uid UNIQUE (firebase_uid)",
+
+				// Add role validation constraint
+				"ALTER TABLE users ADD CONSTRAINT IF NOT EXISTS chk_users_role CHECK (role IN ('student', 'admin'))",
+
+				// Make role not null
+				"ALTER TABLE users ALTER COLUMN role SET NOT NULL",
+			}
+
+			for _, query := range constraintQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			// 5. Create indexes for Firebase fields
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid)",
+				"CREATE INDEX IF NOT EXISTS idx_users_role ON users(role) WHERE is_active = TRUE",
+			}
+
+			for _, query := range indexQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			// Drop indexes
+			dropIndexQueries := []string{
+				"DROP INDEX IF EXISTS idx_users_firebase_uid",
+				"DROP INDEX IF EXISTS idx_users_role",
+			}
+
+			for _, query := range dropIndexQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			// Drop constraints
+			dropConstraintQueries := []string{
+				"ALTER TABLE users DROP CONSTRAINT IF EXISTS uq_users_firebase_uid",
+				"ALTER TABLE users DROP CONSTRAINT IF EXISTS chk_users_role",
+			}
+
+			for _, query := range dropConstraintQueries {
+				if _, err := tx.Exec(query); err != nil {
+					return err
+				}
+			}
+
+			// Drop columns
+			dropColumnQuery := `
+				ALTER TABLE users
+				DROP COLUMN IF EXISTS firebase_uid,
+				DROP COLUMN IF EXISTS display_name,
+				DROP COLUMN IF EXISTS photo_url,
+				DROP COLUMN IF EXISTS role
+			`
+			_, err := tx.Exec(dropColumnQuery)
+			return err
+		},
+	}
+}
+
+// extendLessonsTable adds detailed content fields to lessons table.
+func extendLessonsTable() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     7,
+		Description: "Extend lessons table with detailed content fields",
+		Up: func(tx *sql.Tx) error {
+			query := `
+				ALTER TABLE lessons
+				ADD COLUMN IF NOT EXISTS description TEXT DEFAULT '',
+				ADD COLUMN IF NOT EXISTS difficulty VARCHAR(50) DEFAULT 'beginner',
+				ADD COLUMN IF NOT EXISTS phase VARCHAR(50) DEFAULT 'Foundations',
+				ADD COLUMN IF NOT EXISTS objectives JSONB DEFAULT '[]'::jsonb,
+				ADD COLUMN IF NOT EXISTS theory TEXT DEFAULT '',
+				ADD COLUMN IF NOT EXISTS code_example TEXT DEFAULT '',
+				ADD COLUMN IF NOT EXISTS solution TEXT DEFAULT '',
+				ADD COLUMN IF NOT EXISTS exercises JSONB DEFAULT '[]'::jsonb,
+				ADD COLUMN IF NOT EXISTS next_lesson_id VARCHAR(255),
+				ADD COLUMN IF NOT EXISTS prev_lesson_id VARCHAR(255)
+			`
+			if _, err := tx.Exec(query); err != nil {
+				return err
+			}
+
+			fkQueries := []string{
+				`ALTER TABLE lessons ADD CONSTRAINT IF NOT EXISTS fk_lessons_next_lesson FOREIGN KEY (next_lesson_id) REFERENCES lessons(id) ON DELETE SET NULL`,
+				`ALTER TABLE lessons ADD CONSTRAINT IF NOT EXISTS fk_lessons_prev_lesson FOREIGN KEY (prev_lesson_id) REFERENCES lessons(id) ON DELETE SET NULL`,
+			}
+
+			for _, fkQuery := range fkQueries {
+				if _, err := tx.Exec(fkQuery); err != nil {
+					return err
+				}
+			}
+
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_lessons_difficulty ON lessons(difficulty)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_phase ON lessons(phase)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_next_lesson ON lessons(next_lesson_id)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_prev_lesson ON lessons(prev_lesson_id)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_objectives ON lessons USING GIN (objectives)",
+				"CREATE INDEX IF NOT EXISTS idx_lessons_exercises ON lessons USING GIN (exercises)",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			indexQueries := []string{
+				"DROP INDEX IF EXISTS idx_lessons_difficulty",
+				"DROP INDEX IF EXISTS idx_lessons_phase",
+				"DROP INDEX IF EXISTS idx_lessons_next_lesson",
+				"DROP INDEX IF EXISTS idx_lessons_prev_lesson",
+				"DROP INDEX IF EXISTS idx_lessons_objectives",
+				"DROP INDEX IF EXISTS idx_lessons_exercises",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			fkQueries := []string{
+				"ALTER TABLE lessons DROP CONSTRAINT IF EXISTS fk_lessons_next_lesson",
+				"ALTER TABLE lessons DROP CONSTRAINT IF EXISTS fk_lessons_prev_lesson",
+			}
+
+			for _, fkQuery := range fkQueries {
+				if _, err := tx.Exec(fkQuery); err != nil {
+					return err
+				}
+			}
+
+			query := `
+				ALTER TABLE lessons
+				DROP COLUMN IF EXISTS description,
+				DROP COLUMN IF EXISTS difficulty,
+				DROP COLUMN IF EXISTS phase,
+				DROP COLUMN IF EXISTS objectives,
+				DROP COLUMN IF EXISTS theory,
+				DROP COLUMN IF EXISTS code_example,
+				DROP COLUMN IF EXISTS solution,
+				DROP COLUMN IF EXISTS exercises,
+				DROP COLUMN IF EXISTS next_lesson_id,
+				DROP COLUMN IF EXISTS prev_lesson_id
+			`
+			_, err := tx.Exec(query)
+			return err
 		},
 	}
 }

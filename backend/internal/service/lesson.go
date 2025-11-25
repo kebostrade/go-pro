@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package service provides functionality for the GO-PRO Learning Platform.
 package service
 
 import (
@@ -16,7 +21,7 @@ import (
 	"go-pro-backend/pkg/validator"
 )
 
-// lessonService implements the LessonService interface
+// lessonService implements the LessonService interface.
 type lessonService struct {
 	repo      repository.LessonRepository
 	logger    logger.Logger
@@ -25,7 +30,7 @@ type lessonService struct {
 	messaging *messaging.Service
 }
 
-// NewLessonService creates a new lesson service
+// NewLessonService creates a new lesson service.
 func NewLessonService(
 	repo repository.LessonRepository,
 	config *Config,
@@ -39,15 +44,15 @@ func NewLessonService(
 	}
 }
 
-// CreateLesson creates a new lesson
+// CreateLesson creates a new lesson.
 func (s *lessonService) CreateLesson(ctx context.Context, req *domain.CreateLessonRequest) (*domain.Lesson, error) {
-	// Validate request
+	// Validate request.
 	if err := s.validator.Validate(req); err != nil {
 		s.logger.Error(ctx, "Invalid lesson creation request", "error", err)
 		return nil, errors.NewValidationError("invalid lesson data", err)
 	}
 
-	// Create lesson entity
+	// Create lesson entity.
 	lesson := &domain.Lesson{
 		ID:          generateID("lesson"),
 		CourseID:    req.CourseID,
@@ -60,13 +65,13 @@ func (s *lessonService) CreateLesson(ctx context.Context, req *domain.CreateLess
 		UpdatedAt:   time.Now(),
 	}
 
-	// Save to repository
+	// Save to repository.
 	if err := s.repo.Create(ctx, lesson); err != nil {
 		s.logger.Error(ctx, "Failed to create lesson", "error", err, "lesson_id", lesson.ID)
 		return nil, fmt.Errorf("failed to create lesson: %w", err)
 	}
 
-	// Publish lesson created event
+	// Publish lesson created event.
 	if s.messaging != nil && s.messaging.IsEnabled() {
 		lessonData := map[string]interface{}{
 			"title":       lesson.Title,
@@ -79,7 +84,7 @@ func (s *lessonService) CreateLesson(ctx context.Context, req *domain.CreateLess
 		}
 	}
 
-	// Cache the lesson
+	// Cache the lesson.
 	if s.cache != nil {
 		cacheKey := fmt.Sprintf("lesson:%s", lesson.ID)
 		if err := s.cache.Set(ctx, cacheKey, lesson, 15*time.Minute); err != nil {
@@ -88,16 +93,17 @@ func (s *lessonService) CreateLesson(ctx context.Context, req *domain.CreateLess
 	}
 
 	s.logger.Info(ctx, "Lesson created successfully", "lesson_id", lesson.ID, "course_id", lesson.CourseID)
+
 	return lesson, nil
 }
 
-// GetLessonByID retrieves a lesson by ID
+// GetLessonByID retrieves a lesson by ID.
 func (s *lessonService) GetLessonByID(ctx context.Context, id string) (*domain.Lesson, error) {
 	if id == "" {
 		return nil, errors.NewBadRequestError("lesson ID is required")
 	}
 
-	// Try cache first
+	// Try cache first.
 	if s.cache != nil {
 		cacheKey := fmt.Sprintf("lesson:%s", id)
 		var cachedLesson domain.Lesson
@@ -113,7 +119,7 @@ func (s *lessonService) GetLessonByID(ctx context.Context, id string) (*domain.L
 		return nil, fmt.Errorf("failed to get lesson: %w", err)
 	}
 
-	// Cache the lesson
+	// Cache the lesson.
 	if s.cache != nil {
 		cacheKey := fmt.Sprintf("lesson:%s", id)
 		if err := s.cache.Set(ctx, cacheKey, lesson, 15*time.Minute); err != nil {
@@ -124,13 +130,17 @@ func (s *lessonService) GetLessonByID(ctx context.Context, id string) (*domain.L
 	return lesson, nil
 }
 
-// GetLessonsByCourseID retrieves lessons for a specific course
-func (s *lessonService) GetLessonsByCourseID(ctx context.Context, courseID string, pagination *domain.PaginationRequest) (*domain.ListResponse, error) {
+// GetLessonsByCourseID retrieves lessons for a specific course.
+func (s *lessonService) GetLessonsByCourseID(
+	ctx context.Context,
+	courseID string,
+	pagination *domain.PaginationRequest,
+) (*domain.ListResponse, error) {
 	if courseID == "" {
 		return nil, errors.NewBadRequestError("course ID is required")
 	}
 
-	// Set default pagination
+	// Set default pagination.
 	if pagination == nil {
 		pagination = &domain.PaginationRequest{
 			Page:     1,
@@ -144,7 +154,7 @@ func (s *lessonService) GetLessonsByCourseID(ctx context.Context, courseID strin
 		return nil, fmt.Errorf("failed to get lessons: %w", err)
 	}
 
-	// Convert to interface slice
+	// Convert to interface slice.
 	items := make([]interface{}, len(lessons))
 	for i, lesson := range lessons {
 		items[i] = lesson
@@ -167,9 +177,9 @@ func (s *lessonService) GetLessonsByCourseID(ctx context.Context, courseID strin
 	return response, nil
 }
 
-// GetAllLessons retrieves all lessons with pagination
+// GetAllLessons retrieves all lessons with pagination.
 func (s *lessonService) GetAllLessons(ctx context.Context, pagination *domain.PaginationRequest) (*domain.ListResponse, error) {
-	// Set default pagination
+	// Set default pagination.
 	if pagination == nil {
 		pagination = &domain.PaginationRequest{
 			Page:     1,
@@ -183,7 +193,7 @@ func (s *lessonService) GetAllLessons(ctx context.Context, pagination *domain.Pa
 		return nil, fmt.Errorf("failed to get lessons: %w", err)
 	}
 
-	// Convert to interface slice
+	// Convert to interface slice.
 	items := make([]interface{}, len(lessons))
 	for i, lesson := range lessons {
 		items[i] = lesson
@@ -206,26 +216,26 @@ func (s *lessonService) GetAllLessons(ctx context.Context, pagination *domain.Pa
 	return response, nil
 }
 
-// UpdateLesson updates an existing lesson
+// UpdateLesson updates an existing lesson.
 func (s *lessonService) UpdateLesson(ctx context.Context, id string, req *domain.UpdateLessonRequest) (*domain.Lesson, error) {
 	if id == "" {
 		return nil, errors.NewBadRequestError("lesson ID is required")
 	}
 
-	// Validate request
+	// Validate request.
 	if err := s.validator.Validate(req); err != nil {
 		s.logger.Error(ctx, "Invalid lesson update request", "error", err, "lesson_id", id)
 		return nil, errors.NewValidationError("invalid lesson data", err)
 	}
 
-	// Get existing lesson
+	// Get existing lesson.
 	lesson, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		s.logger.Error(ctx, "Failed to get lesson for update", "error", err, "lesson_id", id)
 		return nil, fmt.Errorf("failed to get lesson: %w", err)
 	}
 
-	// Update fields
+	// Update fields.
 	if req.Title != nil {
 		lesson.Title = strings.TrimSpace(*req.Title)
 	}
@@ -240,13 +250,13 @@ func (s *lessonService) UpdateLesson(ctx context.Context, id string, req *domain
 	}
 	lesson.UpdatedAt = time.Now()
 
-	// Save to repository
+	// Save to repository.
 	if err := s.repo.Update(ctx, lesson); err != nil {
 		s.logger.Error(ctx, "Failed to update lesson", "error", err, "lesson_id", id)
 		return nil, fmt.Errorf("failed to update lesson: %w", err)
 	}
 
-	// Invalidate cache
+	// Invalidate cache.
 	if s.cache != nil {
 		cacheKey := fmt.Sprintf("lesson:%s", id)
 		if err := s.cache.Delete(ctx, cacheKey); err != nil {
@@ -254,7 +264,7 @@ func (s *lessonService) UpdateLesson(ctx context.Context, id string, req *domain
 		}
 	}
 
-	// Publish lesson updated event
+	// Publish lesson updated event.
 	if s.messaging != nil && s.messaging.IsEnabled() {
 		lessonData := map[string]interface{}{
 			"title":       lesson.Title,
@@ -268,29 +278,30 @@ func (s *lessonService) UpdateLesson(ctx context.Context, id string, req *domain
 	}
 
 	s.logger.Info(ctx, "Lesson updated successfully", "lesson_id", id)
+
 	return lesson, nil
 }
 
-// DeleteLesson deletes a lesson
+// DeleteLesson deletes a lesson.
 func (s *lessonService) DeleteLesson(ctx context.Context, id string) error {
 	if id == "" {
 		return errors.NewBadRequestError("lesson ID is required")
 	}
 
-	// Get lesson for event publishing
+	// Get lesson for event publishing.
 	lesson, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		s.logger.Error(ctx, "Failed to get lesson for deletion", "error", err, "lesson_id", id)
 		return fmt.Errorf("failed to get lesson: %w", err)
 	}
 
-	// Delete from repository
+	// Delete from repository.
 	if err := s.repo.Delete(ctx, id); err != nil {
 		s.logger.Error(ctx, "Failed to delete lesson", "error", err, "lesson_id", id)
 		return fmt.Errorf("failed to delete lesson: %w", err)
 	}
 
-	// Invalidate cache
+	// Invalidate cache.
 	if s.cache != nil {
 		cacheKey := fmt.Sprintf("lesson:%s", id)
 		if err := s.cache.Delete(ctx, cacheKey); err != nil {
@@ -298,7 +309,7 @@ func (s *lessonService) DeleteLesson(ctx context.Context, id string) error {
 		}
 	}
 
-	// Publish lesson deleted event
+	// Publish lesson deleted event.
 	if s.messaging != nil && s.messaging.IsEnabled() {
 		if err := s.messaging.PublishLessonDeleted(ctx, lesson.ID, lesson.CourseID); err != nil {
 			s.logger.Warn(ctx, "Failed to publish lesson deleted event", "error", err, "lesson_id", lesson.ID)
@@ -306,10 +317,11 @@ func (s *lessonService) DeleteLesson(ctx context.Context, id string) error {
 	}
 
 	s.logger.Info(ctx, "Lesson deleted successfully", "lesson_id", id)
+
 	return nil
 }
 
-// Helper function to generate IDs (should be moved to a utility package)
+// Helper function to generate IDs (should be moved to a utility package).
 func generateID(prefix string) string {
 	return fmt.Sprintf("%s_%d", prefix, time.Now().UnixNano())
 }

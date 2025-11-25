@@ -1,0 +1,165 @@
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloud-cicd
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-cicd-app
+  namespace: cloud-cicd
+  labels:
+    app: cloud-cicd-app
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cloud-cicd-app
+  template:
+    metadata:
+      labels:
+        app: cloud-cicd-app
+        version: v1
+    spec:
+      containers:
+      - name: app
+        image: gcr.io/PROJECT_ID/cloud-cicd-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
+        env:
+        - name: PORT
+          value: "8080"
+        - name: ENV
+          value: "production"
+        - name: GCP_PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: gcp_project_id
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      restartPolicy: Always
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-cicd-app
+  namespace: cloud-cicd
+  labels:
+    app: cloud-cicd-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: cloud-cicd-app
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+
+---
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: cloud-cicd
+data:
+  gcp_project_id: "your-project-id"
+  aws_region: "us-east-1"
+
+---
+# HorizontalPodAutoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cloud-cicd-app-hpa
+  namespace: cloud-cicd
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cloud-cicd-app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Ingress (optional)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cloud-cicd-app-ingress
+  namespace: cloud-cicd
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - app.example.com
+    secretName: cloud-cicd-app-tls
+  rules:
+  - host: app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: cloud-cicd-app
+            port:
+              number: 80
+

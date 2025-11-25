@@ -1,4 +1,3 @@
-# EKS Module - Placeholder
 # Full implementation will be added in next iteration
 
 resource "aws_eks_cluster" "main" {

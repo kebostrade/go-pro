@@ -1,4 +1,8 @@
-// Package cache provides rate limiting functionality using Redis
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package cache provides functionality for the GO-PRO Learning Platform.
 package cache
 
 import (
@@ -9,13 +13,13 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// RedisRateLimiter implements rate limiting using Redis
+// RedisRateLimiter implements rate limiting using Redis.
 type RedisRateLimiter struct {
 	client *redis.Client
 	prefix string
 }
 
-// RateLimitInfo represents rate limit information
+// RateLimitInfo represents rate limit information.
 type RateLimitInfo struct {
 	Key       string        `json:"key"`
 	Limit     int64         `json:"limit"`
@@ -24,34 +28,35 @@ type RateLimitInfo struct {
 	Window    time.Duration `json:"window"`
 }
 
-// NewRedisRateLimiter creates a new Redis rate limiter
+// NewRedisRateLimiter creates a new Redis rate limiter.
 func NewRedisRateLimiter(client *redis.Client, prefix string) *RedisRateLimiter {
 	if prefix == "" {
 		prefix = "ratelimit:"
 	}
+
 	return &RedisRateLimiter{
 		client: client,
 		prefix: prefix,
 	}
 }
 
-// rateLimitKey generates a rate limit key with prefix
+// rateLimitKey generates a rate limit key with prefix.
 func (r *RedisRateLimiter) rateLimitKey(key string) string {
 	return r.prefix + key
 }
 
-// Allow checks if a request is allowed under the rate limit
+// Allow checks if a request is allowed under the rate limit.
 func (r *RedisRateLimiter) Allow(ctx context.Context, key string, limit int64, window time.Duration) (bool, error) {
 	return r.AllowN(ctx, key, 1, limit, window)
 }
 
-// AllowN checks if N requests are allowed under the rate limit
-func (r *RedisRateLimiter) AllowN(ctx context.Context, key string, n int64, limit int64, window time.Duration) (bool, error) {
+// AllowN checks if N requests are allowed under the rate limit.
+func (r *RedisRateLimiter) AllowN(ctx context.Context, key string, n, limit int64, window time.Duration) (bool, error) {
 	rateLimitKey := r.rateLimitKey(key)
 	now := time.Now()
 	windowStart := now.Truncate(window)
 
-	// Lua script for atomic rate limiting using sliding window
+	// Lua script for atomic rate limiting using sliding window.
 	rateLimitScript := `
 		local key = KEYS[1]
 		local window_start = tonumber(ARGV[1])
@@ -93,7 +98,6 @@ func (r *RedisRateLimiter) AllowN(ctx context.Context, key string, n int64, limi
 		n,
 		now.UnixNano(),
 	).Result()
-
 	if err != nil {
 		return false, fmt.Errorf("failed to check rate limit: %w", err)
 	}
@@ -104,18 +108,18 @@ func (r *RedisRateLimiter) AllowN(ctx context.Context, key string, n int64, limi
 	return allowed, nil
 }
 
-// AllowWithInfo checks rate limit and returns detailed information
+// AllowWithInfo checks rate limit and returns detailed information.
 func (r *RedisRateLimiter) AllowWithInfo(ctx context.Context, key string, limit int64, window time.Duration) (bool, *RateLimitInfo, error) {
 	return r.AllowNWithInfo(ctx, key, 1, limit, window)
 }
 
-// AllowNWithInfo checks rate limit for N requests and returns detailed information
-func (r *RedisRateLimiter) AllowNWithInfo(ctx context.Context, key string, n int64, limit int64, window time.Duration) (bool, *RateLimitInfo, error) {
+// AllowNWithInfo checks rate limit for N requests and returns detailed information.
+func (r *RedisRateLimiter) AllowNWithInfo(ctx context.Context, key string, n, limit int64, window time.Duration) (bool, *RateLimitInfo, error) {
 	rateLimitKey := r.rateLimitKey(key)
 	now := time.Now()
 	windowStart := now.Truncate(window)
 
-	// Enhanced Lua script that returns more information
+	// Enhanced Lua script that returns more information.
 	rateLimitScript := `
 		local key = KEYS[1]
 		local window_start = tonumber(ARGV[1])
@@ -157,7 +161,6 @@ func (r *RedisRateLimiter) AllowNWithInfo(ctx context.Context, key string, n int
 		n,
 		now.UnixNano(),
 	).Result()
-
 	if err != nil {
 		return false, nil, fmt.Errorf("failed to check rate limit with info: %w", err)
 	}
@@ -179,13 +182,13 @@ func (r *RedisRateLimiter) AllowNWithInfo(ctx context.Context, key string, n int
 	return allowed, info, nil
 }
 
-// Remaining returns the number of remaining requests in the current window
+// Remaining returns the number of remaining requests in the current window.
 func (r *RedisRateLimiter) Remaining(ctx context.Context, key string, limit int64, window time.Duration) (int64, error) {
 	rateLimitKey := r.rateLimitKey(key)
 	now := time.Now()
 	windowStart := now.Truncate(window)
 
-	// Lua script to get remaining requests
+	// Lua script to get remaining requests.
 	remainingScript := `
 		local key = KEYS[1]
 		local window_start = tonumber(ARGV[1])
@@ -207,7 +210,6 @@ func (r *RedisRateLimiter) Remaining(ctx context.Context, key string, limit int6
 		int64(window.Seconds()),
 		limit,
 	).Result()
-
 	if err != nil {
 		return 0, fmt.Errorf("failed to get remaining requests: %w", err)
 	}
@@ -220,7 +222,7 @@ func (r *RedisRateLimiter) Remaining(ctx context.Context, key string, limit int6
 	return remaining, nil
 }
 
-// Reset clears the rate limit for a key
+// Reset clears the rate limit for a key.
 func (r *RedisRateLimiter) Reset(ctx context.Context, key string) error {
 	rateLimitKey := r.rateLimitKey(key)
 
@@ -232,13 +234,13 @@ func (r *RedisRateLimiter) Reset(ctx context.Context, key string) error {
 	return nil
 }
 
-// GetInfo returns detailed rate limit information without consuming quota
+// GetInfo returns detailed rate limit information without consuming quota.
 func (r *RedisRateLimiter) GetInfo(ctx context.Context, key string, limit int64, window time.Duration) (*RateLimitInfo, error) {
 	rateLimitKey := r.rateLimitKey(key)
 	now := time.Now()
 	windowStart := now.Truncate(window)
 
-	// Lua script to get info without consuming quota
+	// Lua script to get info without consuming quota.
 	infoScript := `
 		local key = KEYS[1]
 		local window_start = tonumber(ARGV[1])
@@ -262,7 +264,6 @@ func (r *RedisRateLimiter) GetInfo(ctx context.Context, key string, limit int64,
 		int64(window.Seconds()),
 		limit,
 	).Result()
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get rate limit info: %w", err)
 	}
@@ -287,12 +288,12 @@ func (r *RedisRateLimiter) GetInfo(ctx context.Context, key string, limit int64,
 	return info, nil
 }
 
-// TokenBucketAllow implements token bucket rate limiting
-func (r *RedisRateLimiter) TokenBucketAllow(ctx context.Context, key string, capacity int64, refillRate int64, tokens int64) (bool, error) {
+// TokenBucketAllow implements token bucket rate limiting.
+func (r *RedisRateLimiter) TokenBucketAllow(ctx context.Context, key string, capacity, refillRate, tokens int64) (bool, error) {
 	rateLimitKey := r.rateLimitKey(key)
 	now := time.Now().Unix()
 
-	// Lua script for token bucket algorithm
+	// Lua script for token bucket algorithm.
 	tokenBucketScript := `
 		local key = KEYS[1]
 		local capacity = tonumber(ARGV[1])
@@ -334,7 +335,6 @@ func (r *RedisRateLimiter) TokenBucketAllow(ctx context.Context, key string, cap
 		tokens,
 		now,
 	).Result()
-
 	if err != nil {
 		return false, fmt.Errorf("failed to check token bucket rate limit: %w", err)
 	}
@@ -345,9 +345,9 @@ func (r *RedisRateLimiter) TokenBucketAllow(ctx context.Context, key string, cap
 	return allowed, nil
 }
 
-// CleanupExpiredRateLimits removes expired rate limit entries
+// CleanupExpiredRateLimits removes expired rate limit entries.
 func (r *RedisRateLimiter) CleanupExpiredRateLimits(ctx context.Context) error {
-	// Use SCAN to iterate through all rate limit keys
+	// Use SCAN to iterate through all rate limit keys.
 	var cursor uint64
 	var keys []string
 
@@ -358,19 +358,19 @@ func (r *RedisRateLimiter) CleanupExpiredRateLimits(ctx context.Context) error {
 			return fmt.Errorf("failed to scan rate limit keys: %w", err)
 		}
 
-		// Check each key's TTL
+		// Check each key's TTL.
 		for _, key := range keys {
 			ttl, err := r.client.TTL(ctx, key).Result()
 			if err != nil {
 				continue
 			}
 
-			// If TTL is -2 (key doesn't exist), it's already cleaned up
-			// If TTL is -1 (no expiration), set a reasonable expiration
+			// If TTL is -2 (key doesn't exist), it's already cleaned up.
+			// If TTL is -1 (no expiration), set a reasonable expiration.
 			if ttl == -1 {
 				r.client.Expire(ctx, key, time.Hour)
 			} else if ttl == -2 {
-				// Key doesn't exist, nothing to do
+				// Key doesn't exist, nothing to do.
 				continue
 			}
 		}
@@ -383,7 +383,7 @@ func (r *RedisRateLimiter) CleanupExpiredRateLimits(ctx context.Context) error {
 	return nil
 }
 
-// ListRateLimits returns all active rate limits matching a pattern
+// ListRateLimits returns all active rate limits matching a pattern.
 func (r *RedisRateLimiter) ListRateLimits(ctx context.Context, pattern string) ([]string, error) {
 	rateLimitPattern := r.rateLimitKey(pattern)
 	keys, err := r.client.Keys(ctx, rateLimitPattern).Result()
@@ -391,7 +391,7 @@ func (r *RedisRateLimiter) ListRateLimits(ctx context.Context, pattern string) (
 		return nil, fmt.Errorf("failed to list rate limits: %w", err)
 	}
 
-	// Remove prefix from keys
+	// Remove prefix from keys.
 	result := make([]string, len(keys))
 	for i, key := range keys {
 		result[i] = key[len(r.prefix):]

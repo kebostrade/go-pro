@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package service provides functionality for the GO-PRO Learning Platform.
 package service
 
 import (
@@ -8,13 +13,13 @@ import (
 	"go-pro-backend/internal/domain"
 )
 
-// healthService implements the HealthService interface
+// healthService implements the HealthService interface.
 type healthService struct {
 	startTime time.Time
 	version   string
 }
 
-// NewHealthService creates a new health service
+// NewHealthService creates a new health service.
 func NewHealthService(version string) HealthService {
 	return &healthService{
 		startTime: time.Now(),
@@ -22,7 +27,7 @@ func NewHealthService(version string) HealthService {
 	}
 }
 
-// GetHealthStatus returns the health status of the application
+// GetHealthStatus returns the health status of the application.
 func (s *healthService) GetHealthStatus(ctx context.Context) (*domain.HealthResponse, error) {
 	uptime := time.Since(s.startTime)
 
@@ -36,7 +41,7 @@ func (s *healthService) GetHealthStatus(ctx context.Context) (*domain.HealthResp
 	return response, nil
 }
 
-// formatUptime formats duration into a human-readable string
+// formatUptime formats duration into a human-readable string.
 func formatUptime(d time.Duration) string {
 	hours := int(d.Hours())
 	minutes := int(d.Minutes()) % 60
@@ -48,5 +53,6 @@ func formatUptime(d time.Duration) string {
 	if minutes > 0 {
 		return fmt.Sprintf("%dm %ds", minutes, seconds)
 	}
+
 	return fmt.Sprintf("%ds", seconds)
 }

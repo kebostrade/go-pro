@@ -1,7 +1,13 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package validator provides request validation utilities.
 package validator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -9,21 +15,21 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"go-pro-backend/internal/errors"
+	apierrors "go-pro-backend/internal/errors"
 )
 
-// Validator interface defines validation methods
+// Validator interface defines validation methods.
 type Validator interface {
 	Validate(data interface{}) error
 	ValidateJSON(r *http.Request, data interface{}) error
 }
 
-// validator implements the Validator interface
+// validator implements the Validator interface.
 type validator struct {
 	rules map[reflect.Type][]ValidationRule
 }
 
-// ValidationRule defines a validation rule
+// ValidationRule defines a validation rule.
 type ValidationRule struct {
 	Field    string
 	Required bool
@@ -33,14 +39,14 @@ type ValidationRule struct {
 	Custom   func(interface{}) error
 }
 
-// ValidationError represents a validation error
+// ValidationError represents a validation error.
 type ValidationError struct {
 	Field   string      `json:"field"`
 	Message string      `json:"message"`
 	Value   interface{} `json:"value,omitempty"`
 }
 
-// ValidationErrors represents multiple validation errors
+// ValidationErrors represents multiple validation errors.
 type ValidationErrors struct {
 	Errors []ValidationError `json:"errors"`
 }
@@ -54,34 +60,35 @@ func (ve ValidationErrors) Error() string {
 	for _, err := range ve.Errors {
 		messages = append(messages, fmt.Sprintf("%s: %s", err.Field, err.Message))
 	}
+
 	return strings.Join(messages, "; ")
 }
 
-// New creates a new validator
+// New creates a new validator.
 func New() Validator {
 	return &validator{
 		rules: make(map[reflect.Type][]ValidationRule),
 	}
 }
 
-// AddRule adds a validation rule for a specific type
+// AddRule adds a validation rule for a specific type.
 func (v *validator) AddRule(dataType reflect.Type, rule ValidationRule) {
 	v.rules[dataType] = append(v.rules[dataType], rule)
 }
 
-// Validate validates the given data according to defined rules
+// Validate validates the given data according to defined rules.
 func (v *validator) Validate(data interface{}) error {
 	if data == nil {
-		return errors.NewValidationError("data cannot be nil", nil)
+		return apierrors.NewValidationError("data cannot be nil", nil)
 	}
 
 	dataType := reflect.TypeOf(data)
 	dataValue := reflect.ValueOf(data)
 
-	// Handle pointers
+	// Handle pointers.
 	if dataType.Kind() == reflect.Ptr {
 		if dataValue.IsNil() {
-			return errors.NewValidationError("data cannot be nil", nil)
+			return apierrors.NewValidationError("data cannot be nil", nil)
 		}
 		dataType = dataType.Elem()
 		dataValue = dataValue.Elem()
@@ -89,7 +96,7 @@ func (v *validator) Validate(data interface{}) error {
 
 	rules, exists := v.rules[dataType]
 	if !exists {
-		// If no specific rules, perform basic validation
+		// If no specific rules, perform basic validation.
 		return v.validateBasic(dataValue)
 	}
 
@@ -97,7 +104,8 @@ func (v *validator) Validate(data interface{}) error {
 
 	for _, rule := range rules {
 		if err := v.validateField(dataValue, rule); err != nil {
-			if ve, ok := err.(ValidationErrors); ok {
+			var ve ValidationErrors
+			if errors.As(err, &ve) {
 				validationErrors = append(validationErrors, ve.Errors...)
 			} else {
 				validationErrors = append(validationErrors, ValidationError{
@@ -109,16 +117,16 @@ func (v *validator) Validate(data interface{}) error {
 	}
 
 	if len(validationErrors) > 0 {
-		return errors.NewValidationError("validation failed", ValidationErrors{Errors: validationErrors})
+		return apierrors.NewValidationError("validation failed", ValidationErrors{Errors: validationErrors})
 	}
 
 	return nil
 }
 
-// ValidateJSON validates JSON request body
+// ValidateJSON validates JSON request body.
 func (v *validator) ValidateJSON(r *http.Request, data interface{}) error {
 	if r.Body == nil {
-		return errors.NewBadRequestError("request body is required")
+		return apierrors.NewBadRequestError("request body is required")
 	}
 	defer r.Body.Close()
 
@@ -126,20 +134,20 @@ func (v *validator) ValidateJSON(r *http.Request, data interface{}) error {
 	decoder.DisallowUnknownFields() // Strict JSON parsing
 
 	if err := decoder.Decode(data); err != nil {
-		return errors.NewValidationError("invalid JSON format", err)
+		return apierrors.NewValidationError("invalid JSON format", err)
 	}
 
 	return v.Validate(data)
 }
 
-// validateField validates a specific field according to a rule
+// validateField validates a specific field according to a rule.
 func (v *validator) validateField(dataValue reflect.Value, rule ValidationRule) error {
 	fieldValue := dataValue.FieldByName(rule.Field)
 	if !fieldValue.IsValid() {
 		return fmt.Errorf("field %s not found", rule.Field)
 	}
 
-	// Check if required
+	// Check if required.
 	if rule.Required && v.isEmpty(fieldValue) {
 		return ValidationErrors{Errors: []ValidationError{{
 			Field:   rule.Field,
@@ -148,16 +156,16 @@ func (v *validator) validateField(dataValue reflect.Value, rule ValidationRule) 
 		}}}
 	}
 
-	// Skip further validation if field is empty and not required
+	// Skip further validation if field is empty and not required.
 	if v.isEmpty(fieldValue) {
 		return nil
 	}
 
-	// String validations
+	// String validations.
 	if fieldValue.Kind() == reflect.String {
 		str := fieldValue.String()
 
-		// Length validation
+		// Length validation.
 		if rule.MinLen > 0 && utf8.RuneCountInString(str) < rule.MinLen {
 			return ValidationErrors{Errors: []ValidationError{{
 				Field:   rule.Field,
@@ -174,7 +182,7 @@ func (v *validator) validateField(dataValue reflect.Value, rule ValidationRule) 
 			}}}
 		}
 
-		// Pattern validation
+		// Pattern validation.
 		if rule.Pattern != nil && !rule.Pattern.MatchString(str) {
 			return ValidationErrors{Errors: []ValidationError{{
 				Field:   rule.Field,
@@ -184,7 +192,7 @@ func (v *validator) validateField(dataValue reflect.Value, rule ValidationRule) 
 		}
 	}
 
-	// Custom validation
+	// Custom validation.
 	if rule.Custom != nil {
 		if err := rule.Custom(fieldValue.Interface()); err != nil {
 			return ValidationErrors{Errors: []ValidationError{{
@@ -198,7 +206,7 @@ func (v *validator) validateField(dataValue reflect.Value, rule ValidationRule) 
 	return nil
 }
 
-// validateBasic performs basic validation
+// validateBasic performs basic validation.
 func (v *validator) validateBasic(dataValue reflect.Value) error {
 	if dataValue.Kind() != reflect.Struct {
 		return nil // Only validate structs by default
@@ -211,19 +219,20 @@ func (v *validator) validateBasic(dataValue reflect.Value) error {
 		field := dataValue.Field(i)
 		fieldType := dataType.Field(i)
 
-		// Skip unexported fields
+		// Skip unexported fields.
 		if !field.CanInterface() {
 			continue
 		}
 
-		// Check for basic validation tags
+		// Check for basic validation tags.
 		tag := fieldType.Tag.Get("validate")
 		if tag == "" {
 			continue
 		}
 
 		if err := v.validateTag(field, fieldType.Name, tag); err != nil {
-			if ve, ok := err.(ValidationErrors); ok {
+			var ve ValidationErrors
+			if errors.As(err, &ve) {
 				validationErrors = append(validationErrors, ve.Errors...)
 			} else {
 				validationErrors = append(validationErrors, ValidationError{
@@ -241,7 +250,7 @@ func (v *validator) validateBasic(dataValue reflect.Value) error {
 	return nil
 }
 
-// validateTag validates a field based on validation tags
+// validateTag validates a field based on validation tags.
 func (v *validator) validateTag(fieldValue reflect.Value, fieldName, tag string) error {
 	rules := strings.Split(tag, ",")
 
@@ -257,15 +266,15 @@ func (v *validator) validateTag(fieldValue reflect.Value, fieldName, tag string)
 				}}}
 			}
 		case strings.HasPrefix(rule, "min="):
-			// Handle min length validation
-			// This is a simplified version - you'd expand this for full tag support
+			// Handle min length validation.
+			// This is a simplified version - you'd expand this for full tag support.
 		}
 	}
 
 	return nil
 }
 
-// isEmpty checks if a value is considered empty
+// isEmpty checks if a value is considered empty.
 func (v *validator) isEmpty(value reflect.Value) bool {
 	switch value.Kind() {
 	case reflect.String:
@@ -279,18 +288,19 @@ func (v *validator) isEmpty(value reflect.Value) bool {
 	}
 }
 
-// Common validation patterns
+// Common validation patterns.
 var (
 	EmailPattern = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	UUIDPattern  = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 	SlugPattern  = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 )
 
-// Common validation functions
+// Common validation functions.
 func ValidateEmail(email string) error {
 	if !EmailPattern.MatchString(email) {
 		return fmt.Errorf("invalid email format")
 	}
+
 	return nil
 }
 
@@ -298,6 +308,7 @@ func ValidateUUID(uuid string) error {
 	if !UUIDPattern.MatchString(uuid) {
 		return fmt.Errorf("invalid UUID format")
 	}
+
 	return nil
 }
 
@@ -305,5 +316,6 @@ func ValidateSlug(slug string) error {
 	if !SlugPattern.MatchString(slug) {
 		return fmt.Errorf("invalid slug format")
 	}
+
 	return nil
 }

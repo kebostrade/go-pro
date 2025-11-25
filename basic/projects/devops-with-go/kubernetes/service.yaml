@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-go-service
+  namespace: devops-demo
+  labels:
+    app: devops-go-app
+spec:
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0
+  selector:
+    app: devops-go-app
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  sessionAffinity: None
+

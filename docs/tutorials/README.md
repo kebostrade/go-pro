@@ -8,7 +8,29 @@ Welcome to the GO-PRO tutorials documentation hub! This directory contains compr
 - **[Quick Start Guide](QUICK_START_GUIDE.md)** - Get up and running in 5 minutes
 - **[Tutorial System Overview](../../TUTORIALS.md)** - Complete tutorial navigation and structure
 
-### 🔄 Deep Dive Tutorials
+### 🔄 Concurrency Tutorials
+
+#### ⚡ [Concurrency Crash Course](CONCURRENCY_CRASH_COURSE.md) **← START HERE!**
+**Duration:** 60-90 minutes | **Level:** Intermediate | **Hands-On:** 100%
+
+Fast-paced, practical guide to mastering Go concurrency. Learn by doing!
+
+**What You'll Learn:**
+- ✅ Goroutines and channels
+- ✅ WaitGroups and select
+- ✅ Common patterns (Worker Pool, Pipeline, Fan-Out/Fan-In)
+- ✅ Context for cancellation
+- ✅ Mutex for shared state
+- ✅ Real-world examples (Web Scraper, Rate Limiter)
+- ✅ Common pitfalls and how to avoid them
+
+**Perfect for:** Developers who want to get productive with concurrency quickly
+
+**Prerequisites:** Basic Go knowledge (variables, functions, loops)
+
+**Runnable Examples:** `basic/examples/concurrency-crash-course/`
+
+---
 
 #### [Concurrency Deep Dive](concurrency-deep-dive.md)
 **Duration:** 4-5 hours | **Level:** Advanced
@@ -23,7 +45,7 @@ Master Go's concurrency primitives with this comprehensive guide covering:
 
 **Perfect for:** Developers who want to deeply understand Go's concurrency model
 
-**Prerequisites:** Completed Tutorial 9 (Goroutines and Channels)
+**Prerequisites:** Completed Concurrency Crash Course or Tutorial 9
 
 **Key Examples:**
 - Real-world deadlock prevention (based on `basic/deadlock.go`)
@@ -250,16 +272,17 @@ Summary of important concepts
 
 ### For Bootcamp/Intensive Learning
 
-1. **Week 1**: Tutorials 1-10 + Quick Start
+1. **Week 1**: Tutorials 1-10 + Quick Start + Concurrency Crash Course
 2. **Week 2**: Tutorials 11-17 + Concurrency Deep Dive
 3. **Week 3**: Tutorials 18-20 + Projects + Cloud Tutorials
 
 ### For Specific Skills
 
 **Want to learn concurrency?**
+- ⚡ **Concurrency Crash Course** (60-90 min) - Start here!
 - Tutorial 9: Goroutines and Channels
 - Tutorial 11: Advanced Concurrency
-- Concurrency Deep Dive
+- Concurrency Deep Dive (4-5 hours)
 
 **Want to build APIs?**
 - Tutorial 13: HTTP Servers
@@ -306,10 +329,11 @@ Follow the main tutorial sequence 1-20, completing all exercises and at least 2 
 - Week 6: Tutorials 19-20 + Projects
 
 ### Path 3: Concurrency Specialist (2 weeks)
-- Tutorial 9: Goroutines and Channels
-- Tutorial 11: Advanced Concurrency
-- Concurrency Deep Dive
-- Related exercises and projects
+- **Day 1**: Concurrency Crash Course (hands-on)
+- **Week 1**: Tutorial 9: Goroutines and Channels
+- **Week 1**: Tutorial 11: Advanced Concurrency
+- **Week 2**: Concurrency Deep Dive
+- **Week 2**: Related exercises and projects
 
 ### Path 4: Backend Developer (4 weeks)
 - Tutorials 1-8 (Fundamentals)

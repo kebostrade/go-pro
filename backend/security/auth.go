@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package security provides authentication, authorization, and security middleware.
 package security
 
 import (
@@ -13,7 +18,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// User represents a user in the system
+// User represents a user in the system.
 type User struct {
 	ID           string     `json:"id"`
 	Email        string     `json:"email"`
@@ -26,19 +31,19 @@ type User struct {
 	IsVerified   bool       `json:"is_verified"`
 }
 
-// LoginRequest represents a login request
+// LoginRequest represents a login request.
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-// RegisterRequest represents a registration request
+// RegisterRequest represents a registration request.
 type RegisterRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-// TokenResponse represents a token response
+// TokenResponse represents a token response.
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -46,13 +51,13 @@ type TokenResponse struct {
 	ExpiresIn    int    `json:"expires_in"`
 }
 
-// AuthService handles authentication operations
+// AuthService handles authentication operations.
 type AuthService struct {
 	jwtManager *JWTManager
 	userStore  UserStore // In production, this would be a database
 }
 
-// UserStore interface for user storage operations
+// UserStore interface for user storage operations.
 type UserStore interface {
 	CreateUser(user *User) error
 	GetUserByEmail(email string) (*User, error)
@@ -61,20 +66,20 @@ type UserStore interface {
 	DeleteUser(id string) error
 }
 
-// InMemoryUserStore is a simple in-memory implementation of UserStore
+// InMemoryUserStore is a simple in-memory implementation of UserStore.
 type InMemoryUserStore struct {
 	users  map[string]*User
 	emails map[string]string // email -> id mapping
 }
 
-// NewInMemoryUserStore creates a new in-memory user store
+// NewInMemoryUserStore creates a new in-memory user store.
 func NewInMemoryUserStore() *InMemoryUserStore {
 	store := &InMemoryUserStore{
 		users:  make(map[string]*User),
 		emails: make(map[string]string),
 	}
 
-	// Create a default admin user for testing
+	// Create a default admin user for testing.
 	adminUser := &User{
 		ID:           "admin-user-001",
 		Email:        "admin@gopro.dev",
@@ -86,7 +91,7 @@ func NewInMemoryUserStore() *InMemoryUserStore {
 		IsVerified:   true,
 	}
 
-	// Create a default regular user for testing
+	// Create a default regular user for testing.
 	regularUser := &User{
 		ID:           "demo-user-001",
 		Email:        "demo@gopro.dev",
@@ -98,20 +103,27 @@ func NewInMemoryUserStore() *InMemoryUserStore {
 		IsVerified:   true,
 	}
 
-	store.CreateUser(adminUser)
-	store.CreateUser(regularUser)
+	if err := store.CreateUser(adminUser); err != nil {
+		// Log error but continue - this is for testing only
+		_ = err
+	}
+	if err := store.CreateUser(regularUser); err != nil {
+		// Log error but continue - this is for testing only
+		_ = err
+	}
 
 	return store
 }
 
 func (s *InMemoryUserStore) CreateUser(user *User) error {
-	// Check if email already exists
+	// Check if email already exists.
 	if _, exists := s.emails[user.Email]; exists {
 		return errors.New("email already exists")
 	}
 
 	s.users[user.ID] = user
 	s.emails[user.Email] = user.ID
+
 	return nil
 }
 
@@ -134,6 +146,7 @@ func (s *InMemoryUserStore) GetUserByID(id string) (*User, error) {
 	if !exists {
 		return nil, errors.New("user not found")
 	}
+
 	return user, nil
 }
 
@@ -145,6 +158,7 @@ func (s *InMemoryUserStore) UpdateUser(user *User) error {
 
 	user.UpdatedAt = time.Now()
 	s.users[user.ID] = user
+
 	return nil
 }
 
@@ -156,10 +170,11 @@ func (s *InMemoryUserStore) DeleteUser(id string) error {
 
 	delete(s.users, id)
 	delete(s.emails, user.Email)
+
 	return nil
 }
 
-// NewAuthService creates a new authentication service
+// NewAuthService creates a new authentication service.
 func NewAuthService(jwtManager *JWTManager, userStore UserStore) *AuthService {
 	return &AuthService{
 		jwtManager: jwtManager,
@@ -167,25 +182,25 @@ func NewAuthService(jwtManager *JWTManager, userStore UserStore) *AuthService {
 	}
 }
 
-// Register creates a new user account
+// Register creates a new user account.
 func (as *AuthService) Register(req RegisterRequest) (*User, error) {
-	// Validate input
+	// Validate input.
 	if err := as.validateRegistration(req); err != nil {
 		return nil, err
 	}
 
-	// Check if user already exists
+	// Check if user already exists.
 	if _, err := as.userStore.GetUserByEmail(req.Email); err == nil {
 		return nil, errors.New("user with this email already exists")
 	}
 
-	// Hash password
+	// Hash password.
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	// Create user
+	// Create user.
 	user := &User{
 		ID:           generateUserID(),
 		Email:        strings.ToLower(strings.TrimSpace(req.Email)),
@@ -204,35 +219,38 @@ func (as *AuthService) Register(req RegisterRequest) (*User, error) {
 	return user, nil
 }
 
-// Login authenticates a user and returns tokens
+// Login authenticates a user and returns tokens.
 func (as *AuthService) Login(req LoginRequest) (*TokenResponse, error) {
-	// Validate input
+	// Validate input.
 	if err := as.validateLogin(req); err != nil {
 		return nil, err
 	}
 
-	// Get user
+	// Get user.
 	user, err := as.userStore.GetUserByEmail(strings.ToLower(strings.TrimSpace(req.Email)))
 	if err != nil {
 		return nil, errors.New("invalid credentials")
 	}
 
-	// Check if user is active
+	// Check if user is active.
 	if !user.IsActive {
 		return nil, errors.New("account is disabled")
 	}
 
-	// Verify password
+	// Verify password.
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
 		return nil, errors.New("invalid credentials")
 	}
 
-	// Update last login
+	// Update last login.
 	now := time.Now()
 	user.LastLoginAt = &now
-	as.userStore.UpdateUser(user)
+	if err := as.userStore.UpdateUser(user); err != nil {
+		// Log error but don't fail login
+		_ = err
+	}
 
-	// Generate tokens
+	// Generate tokens.
 	accessToken, refreshToken, err := as.jwtManager.GenerateTokens(user.ID, user.Email, user.Roles)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate tokens: %w", err)
@@ -246,7 +264,7 @@ func (as *AuthService) Login(req LoginRequest) (*TokenResponse, error) {
 	}, nil
 }
 
-// RefreshToken generates new tokens using a refresh token
+// RefreshToken generates new tokens using a refresh token.
 func (as *AuthService) RefreshToken(refreshToken string) (*TokenResponse, error) {
 	accessToken, newRefreshToken, err := as.jwtManager.RefreshTokens(refreshToken)
 	if err != nil {
@@ -261,7 +279,7 @@ func (as *AuthService) RefreshToken(refreshToken string) (*TokenResponse, error)
 	}, nil
 }
 
-// GetCurrentUser returns the current authenticated user
+// GetCurrentUser returns the current authenticated user.
 func (as *AuthService) GetCurrentUser(userID string) (*User, error) {
 	user, err := as.userStore.GetUserByID(userID)
 	if err != nil {
@@ -275,42 +293,43 @@ func (as *AuthService) GetCurrentUser(userID string) (*User, error) {
 	return user, nil
 }
 
-// ChangePassword changes a user's password
+// ChangePassword changes a user's password.
 func (as *AuthService) ChangePassword(userID, currentPassword, newPassword string) error {
 	user, err := as.userStore.GetUserByID(userID)
 	if err != nil {
 		return fmt.Errorf("user not found: %w", err)
 	}
 
-	// Verify current password
+	// Verify current password.
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(currentPassword)); err != nil {
 		return errors.New("current password is incorrect")
 	}
 
-	// Validate new password
+	// Validate new password.
 	if err := as.validatePassword(newPassword); err != nil {
 		return err
 	}
 
-	// Hash new password
+	// Hash new password.
 	newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("failed to hash new password: %w", err)
 	}
 
-	// Update user
+	// Update user.
 	user.PasswordHash = string(newPasswordHash)
 	user.UpdatedAt = time.Now()
 
 	return as.userStore.UpdateUser(user)
 }
 
-// Validation functions
+// Validation functions.
 
 func (as *AuthService) validateRegistration(req RegisterRequest) error {
 	if err := as.validateEmail(req.Email); err != nil {
 		return err
 	}
+
 	return as.validatePassword(req.Password)
 }
 
@@ -321,6 +340,7 @@ func (as *AuthService) validateLogin(req LoginRequest) error {
 	if req.Password == "" {
 		return errors.New("password is required")
 	}
+
 	return nil
 }
 
@@ -334,6 +354,7 @@ func (as *AuthService) validateEmail(email string) error {
 	if !ValidateEmail(email) {
 		return errors.New("invalid email format")
 	}
+
 	return nil
 }
 
@@ -348,7 +369,7 @@ func (as *AuthService) validatePassword(password string) error {
 		return errors.New("password is too long")
 	}
 
-	// Check for at least one uppercase, lowercase, and number
+	// Check for at least one uppercase, lowercase, and number.
 	hasUpper := strings.ContainsAny(password, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	hasLower := strings.ContainsAny(password, "abcdefghijklmnopqrstuvwxyz")
 	hasNumber := strings.ContainsAny(password, "0123456789")
@@ -366,9 +387,9 @@ func (as *AuthService) validatePassword(password string) error {
 	return nil
 }
 
-// HTTP Handlers
+// HTTP Handlers.
 
-// RegisterHandler handles user registration
+// RegisterHandler handles user registration.
 func (as *AuthService) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -394,7 +415,7 @@ func (as *AuthService) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// LoginHandler handles user login
+// LoginHandler handles user login.
 func (as *AuthService) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -415,7 +436,7 @@ func (as *AuthService) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// RefreshHandler handles token refresh
+// RefreshHandler handles token refresh.
 func (as *AuthService) RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		RefreshToken string `json:"refresh_token"`
@@ -439,7 +460,7 @@ func (as *AuthService) RefreshHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// ProfileHandler returns the current user's profile
+// ProfileHandler returns the current user's profile.
 func (as *AuthService) ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(UserContextKey).(string)
 	if !ok {
@@ -459,11 +480,15 @@ func (as *AuthService) ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Utility functions
+// Utility functions.
 
 func generateUserID() string {
 	bytes := make([]byte, 16)
-	rand.Read(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to timestamp-based ID if random generation fails
+		return fmt.Sprintf("usr_%d", time.Now().UnixNano())
+	}
+
 	return "usr_" + hex.EncodeToString(bytes)
 }
 

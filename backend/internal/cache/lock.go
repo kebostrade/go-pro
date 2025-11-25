@@ -1,23 +1,28 @@
-// Package cache provides distributed locking functionality using Redis
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package cache provides functionality for the GO-PRO Learning Platform.
 package cache
 
 import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 )
 
-// RedisDistributedLock implements distributed locking using Redis
+// RedisDistributedLock implements distributed locking using Redis.
 type RedisDistributedLock struct {
 	client *redis.Client
 	prefix string
 }
 
-// LockInfo represents information about a lock
+// LockInfo represents information about a lock.
 type LockInfo struct {
 	Key       string        `json:"key"`
 	Value     string        `json:"value"`
@@ -27,30 +32,35 @@ type LockInfo struct {
 	TTL       time.Duration `json:"ttl"`
 }
 
-// NewRedisDistributedLock creates a new Redis distributed lock
+// NewRedisDistributedLock creates a new Redis distributed lock.
 func NewRedisDistributedLock(client *redis.Client, prefix string) *RedisDistributedLock {
 	if prefix == "" {
 		prefix = "lock:"
 	}
+
 	return &RedisDistributedLock{
 		client: client,
 		prefix: prefix,
 	}
 }
 
-// lockKey generates a lock key with prefix
+// lockKey generates a lock key with prefix.
 func (r *RedisDistributedLock) lockKey(key string) string {
 	return r.prefix + key
 }
 
-// generateLockValue generates a unique lock value
+// generateLockValue generates a unique lock value.
 func (r *RedisDistributedLock) generateLockValue() string {
 	bytes := make([]byte, 16)
-	rand.Read(bytes)
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to timestamp-based value if random generation fails
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+
 	return hex.EncodeToString(bytes)
 }
 
-// Lock acquires a distributed lock
+// Lock acquires a distributed lock.
 func (r *RedisDistributedLock) Lock(ctx context.Context, key string, expiration time.Duration) (bool, error) {
 	lockKey := r.lockKey(key)
 	lockValue := r.generateLockValue()
@@ -64,8 +74,14 @@ func (r *RedisDistributedLock) Lock(ctx context.Context, key string, expiration 
 	return result, nil
 }
 
-// LockWithRetry acquires a lock with retry mechanism
-func (r *RedisDistributedLock) LockWithRetry(ctx context.Context, key string, expiration time.Duration, maxRetries int, retryDelay time.Duration) (bool, error) {
+// LockWithRetry acquires a lock with retry mechanism.
+func (r *RedisDistributedLock) LockWithRetry(
+	ctx context.Context,
+	key string,
+	expiration time.Duration,
+	maxRetries int,
+	retryDelay time.Duration,
+) (bool, error) {
 	for i := 0; i < maxRetries; i++ {
 		acquired, err := r.Lock(ctx, key, expiration)
 		if err != nil {
@@ -75,7 +91,7 @@ func (r *RedisDistributedLock) LockWithRetry(ctx context.Context, key string, ex
 			return true, nil
 		}
 
-		// Wait before retrying
+		// Wait before retrying.
 		select {
 		case <-ctx.Done():
 			return false, ctx.Err()
@@ -87,7 +103,7 @@ func (r *RedisDistributedLock) LockWithRetry(ctx context.Context, key string, ex
 	return false, fmt.Errorf("failed to acquire lock after %d retries", maxRetries)
 }
 
-// Unlock releases a distributed lock
+// Unlock releases a distributed lock.
 func (r *RedisDistributedLock) Unlock(ctx context.Context, key string) error {
 	lockKey := r.lockKey(key)
 
@@ -112,11 +128,11 @@ func (r *RedisDistributedLock) Unlock(ctx context.Context, key string) error {
 	return nil
 }
 
-// UnlockWithValue releases a lock only if the value matches (safer unlock)
-func (r *RedisDistributedLock) UnlockWithValue(ctx context.Context, key string, value string) error {
+// UnlockWithValue releases a lock only if the value matches (safer unlock).
+func (r *RedisDistributedLock) UnlockWithValue(ctx context.Context, key, value string) error {
 	lockKey := r.lockKey(key)
 
-	// Lua script to ensure atomic unlock with value check
+	// Lua script to ensure atomic unlock with value check.
 	unlockScript := `
 		if redis.call("get", KEYS[1]) == ARGV[1] then
 			return redis.call("del", KEYS[1])
@@ -137,11 +153,11 @@ func (r *RedisDistributedLock) UnlockWithValue(ctx context.Context, key string, 
 	return nil
 }
 
-// Extend extends the expiration of a lock
+// Extend extends the expiration of a lock.
 func (r *RedisDistributedLock) Extend(ctx context.Context, key string, expiration time.Duration) error {
 	lockKey := r.lockKey(key)
 
-	// Check if lock exists
+	// Check if lock exists.
 	exists, err := r.client.Exists(ctx, lockKey).Result()
 	if err != nil {
 		return fmt.Errorf("failed to check lock existence: %w", err)
@@ -150,7 +166,7 @@ func (r *RedisDistributedLock) Extend(ctx context.Context, key string, expiratio
 		return fmt.Errorf("lock not found")
 	}
 
-	// Extend expiration
+	// Extend expiration.
 	err = r.client.Expire(ctx, lockKey, expiration).Err()
 	if err != nil {
 		return fmt.Errorf("failed to extend lock: %w", err)
@@ -159,11 +175,11 @@ func (r *RedisDistributedLock) Extend(ctx context.Context, key string, expiratio
 	return nil
 }
 
-// ExtendWithValue extends a lock only if the value matches
-func (r *RedisDistributedLock) ExtendWithValue(ctx context.Context, key string, value string, expiration time.Duration) error {
+// ExtendWithValue extends a lock only if the value matches.
+func (r *RedisDistributedLock) ExtendWithValue(ctx context.Context, key, value string, expiration time.Duration) error {
 	lockKey := r.lockKey(key)
 
-	// Lua script to extend lock only if value matches
+	// Lua script to extend lock only if value matches.
 	extendScript := `
 		if redis.call("get", KEYS[1]) == ARGV[1] then
 			return redis.call("expire", KEYS[1], ARGV[2])
@@ -184,7 +200,7 @@ func (r *RedisDistributedLock) ExtendWithValue(ctx context.Context, key string, 
 	return nil
 }
 
-// IsLocked checks if a key is locked
+// IsLocked checks if a key is locked.
 func (r *RedisDistributedLock) IsLocked(ctx context.Context, key string) (bool, error) {
 	lockKey := r.lockKey(key)
 
@@ -196,7 +212,7 @@ func (r *RedisDistributedLock) IsLocked(ctx context.Context, key string) (bool, 
 	return exists > 0, nil
 }
 
-// GetLockTTL returns the time to live for a lock
+// GetLockTTL returns the time to live for a lock.
 func (r *RedisDistributedLock) GetLockTTL(ctx context.Context, key string) (time.Duration, error) {
 	lockKey := r.lockKey(key)
 
@@ -208,20 +224,21 @@ func (r *RedisDistributedLock) GetLockTTL(ctx context.Context, key string) (time
 	return ttl, nil
 }
 
-// GetLockInfo returns detailed information about a lock
+// GetLockInfo returns detailed information about a lock.
 func (r *RedisDistributedLock) GetLockInfo(ctx context.Context, key string) (*LockInfo, error) {
 	lockKey := r.lockKey(key)
 
-	// Use pipeline to get value and TTL atomically
+	// Use pipeline to get value and TTL atomically.
 	pipe := r.client.Pipeline()
 	valueCmd := pipe.Get(ctx, lockKey)
 	ttlCmd := pipe.TTL(ctx, lockKey)
 
 	_, err := pipe.Exec(ctx)
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return nil, fmt.Errorf("lock not found")
 		}
+
 		return nil, fmt.Errorf("failed to get lock info: %w", err)
 	}
 
@@ -247,7 +264,7 @@ func (r *RedisDistributedLock) GetLockInfo(ctx context.Context, key string) (*Lo
 	return lockInfo, nil
 }
 
-// ListLocks returns all active locks matching a pattern
+// ListLocks returns all active locks matching a pattern.
 func (r *RedisDistributedLock) ListLocks(ctx context.Context, pattern string) ([]*LockInfo, error) {
 	lockPattern := r.lockKey(pattern)
 	keys, err := r.client.Keys(ctx, lockPattern).Result()
@@ -257,7 +274,7 @@ func (r *RedisDistributedLock) ListLocks(ctx context.Context, pattern string) ([
 
 	locks := make([]*LockInfo, 0, len(keys))
 	for _, lockKey := range keys {
-		// Remove prefix to get original key
+		// Remove prefix to get original key.
 		originalKey := lockKey[len(r.prefix):]
 		lockInfo, err := r.GetLockInfo(ctx, originalKey)
 		if err != nil {
@@ -269,9 +286,9 @@ func (r *RedisDistributedLock) ListLocks(ctx context.Context, pattern string) ([
 	return locks, nil
 }
 
-// CleanupExpiredLocks removes expired locks (should be run periodically)
+// CleanupExpiredLocks removes expired locks (should be run periodically).
 func (r *RedisDistributedLock) CleanupExpiredLocks(ctx context.Context) error {
-	// Use SCAN to iterate through all lock keys
+	// Use SCAN to iterate through all lock keys.
 	var cursor uint64
 	var keys []string
 
@@ -282,15 +299,15 @@ func (r *RedisDistributedLock) CleanupExpiredLocks(ctx context.Context) error {
 			return fmt.Errorf("failed to scan lock keys: %w", err)
 		}
 
-		// Check each key's TTL
+		// Check each key's TTL.
 		for _, key := range keys {
 			ttl, err := r.client.TTL(ctx, key).Result()
 			if err != nil {
 				continue
 			}
 
-			// If TTL is -2 (key doesn't exist), it's already cleaned up
-			// If TTL is -1 (no expiration), something is wrong - clean it up
+			// If TTL is -2 (key doesn't exist), it's already cleaned up.
+			// If TTL is -1 (no expiration), something is wrong - clean it up.
 			if ttl == -1 || ttl == -2 {
 				r.client.Del(ctx, key)
 			}
@@ -304,9 +321,9 @@ func (r *RedisDistributedLock) CleanupExpiredLocks(ctx context.Context) error {
 	return nil
 }
 
-// WithLock executes a function while holding a lock
+// WithLock executes a function while holding a lock.
 func (r *RedisDistributedLock) WithLock(ctx context.Context, key string, expiration time.Duration, fn func() error) error {
-	// Acquire lock
+	// Acquire lock.
 	acquired, err := r.Lock(ctx, key, expiration)
 	if err != nil {
 		return fmt.Errorf("failed to acquire lock: %w", err)
@@ -315,21 +332,28 @@ func (r *RedisDistributedLock) WithLock(ctx context.Context, key string, expirat
 		return fmt.Errorf("failed to acquire lock: already locked")
 	}
 
-	// Ensure lock is released
+	// Ensure lock is released.
 	defer func() {
 		if unlockErr := r.Unlock(ctx, key); unlockErr != nil {
-			// Log error but don't override the original error
+			// Log error but don't override the original error.
 			fmt.Printf("Warning: failed to unlock %s: %v\n", key, unlockErr)
 		}
 	}()
 
-	// Execute function
+	// Execute function.
 	return fn()
 }
 
-// WithLockRetry executes a function while holding a lock with retry
-func (r *RedisDistributedLock) WithLockRetry(ctx context.Context, key string, expiration time.Duration, maxRetries int, retryDelay time.Duration, fn func() error) error {
-	// Acquire lock with retry
+// WithLockRetry executes a function while holding a lock with retry.
+func (r *RedisDistributedLock) WithLockRetry(
+	ctx context.Context,
+	key string,
+	expiration time.Duration,
+	maxRetries int,
+	retryDelay time.Duration,
+	fn func() error,
+) error {
+	// Acquire lock with retry.
 	acquired, err := r.LockWithRetry(ctx, key, expiration, maxRetries, retryDelay)
 	if err != nil {
 		return fmt.Errorf("failed to acquire lock with retry: %w", err)
@@ -338,14 +362,14 @@ func (r *RedisDistributedLock) WithLockRetry(ctx context.Context, key string, ex
 		return fmt.Errorf("failed to acquire lock after %d retries", maxRetries)
 	}
 
-	// Ensure lock is released
+	// Ensure lock is released.
 	defer func() {
 		if unlockErr := r.Unlock(ctx, key); unlockErr != nil {
-			// Log error but don't override the original error
+			// Log error but don't override the original error.
 			fmt.Printf("Warning: failed to unlock %s: %v\n", key, unlockErr)
 		}
 	}()
 
-	// Execute function
+	// Execute function.
 	return fn()
 }

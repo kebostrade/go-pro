@@ -1,0 +1,36 @@
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("╔════════════════════════════════════════════════════════════╗")
+	fmt.Println("║                                                            ║")
+	fmt.Println("║        Go Programming Examples - Fun Directory             ║")
+	fmt.Println("║                                                            ║")
+	fmt.Println("╚════════════════════════════════════════════════════════════╝")
+	fmt.Println()
+	fmt.Println("📚 How to use:")
+	fmt.Println()
+	fmt.Println("1. Basic Concepts:")
+	fmt.Println("   go run cmd/examples/basics/variables_demo.go")
+	fmt.Println("   go run cmd/examples/basics/functions_demo.go")
+	fmt.Println("   go run cmd/examples/basics/pointers_demo.go")
+	fmt.Println()
+	fmt.Println("2. Data Structures:")
+	fmt.Println("   go run cmd/examples/datastructures/stack_demo.go")
+	fmt.Println("   go run cmd/examples/datastructures/queue_demo.go")
+	fmt.Println()
+	fmt.Println("3. Algorithms:")
+	fmt.Println("   go run cmd/examples/algorithms/search_demo.go")
+	fmt.Println("   go run cmd/examples/algorithms/sort_demo.go")
+	fmt.Println()
+	fmt.Println("4. Concurrency:")
+	fmt.Println("   go run cmd/examples/concurrency/goroutines_demo.go")
+	fmt.Println("   go run cmd/examples/concurrency/channels_demo.go")
+	fmt.Println()
+	fmt.Println("5. Cache:")
+	fmt.Println("   go run cmd/examples/cache/cache_demo.go")
+	fmt.Println()
+	fmt.Println("📖 For more information, see README.md")
+	fmt.Println()
+}

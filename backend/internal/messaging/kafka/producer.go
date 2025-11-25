@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package kafka provides functionality for the GO-PRO Learning Platform.
 package kafka
 
 import (
@@ -10,14 +15,14 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// Producer wraps kafka-go writer with additional functionality
+// Producer wraps kafka-go writer with additional functionality.
 type Producer struct {
 	writer *kafka.Writer
 	config *Config
 	topics *Topics
 }
 
-// NewProducer creates a new Kafka producer
+// NewProducer creates a new Kafka producer.
 func NewProducer(config *Config, topics *Topics) *Producer {
 	if config == nil {
 		config = DefaultConfig()
@@ -45,53 +50,53 @@ func NewProducer(config *Config, topics *Topics) *Producer {
 	}
 }
 
-// Close closes the producer
+// Close closes the producer.
 func (p *Producer) Close() error {
 	return p.writer.Close()
 }
 
-// PublishEvent publishes a generic event to the appropriate topic
+// PublishEvent publishes a generic event to the appropriate topic.
 func (p *Producer) PublishEvent(ctx context.Context, event *Event) error {
 	topic := p.getTopicForEventType(event.Type)
 	return p.publishToTopic(ctx, topic, event.ID, event)
 }
 
-// PublishUserEvent publishes a user event
+// PublishUserEvent publishes a user event.
 func (p *Producer) PublishUserEvent(ctx context.Context, event *UserEvent) error {
 	return p.publishToTopic(ctx, p.topics.UserEvents, event.ID, event)
 }
 
-// PublishCourseEvent publishes a course event
+// PublishCourseEvent publishes a course event.
 func (p *Producer) PublishCourseEvent(ctx context.Context, event *CourseEvent) error {
 	return p.publishToTopic(ctx, p.topics.CourseEvents, event.ID, event)
 }
 
-// PublishLessonEvent publishes a lesson event
+// PublishLessonEvent publishes a lesson event.
 func (p *Producer) PublishLessonEvent(ctx context.Context, event *LessonEvent) error {
 	return p.publishToTopic(ctx, p.topics.LessonEvents, event.ID, event)
 }
 
-// PublishExerciseEvent publishes an exercise event
+// PublishExerciseEvent publishes an exercise event.
 func (p *Producer) PublishExerciseEvent(ctx context.Context, event *ExerciseEvent) error {
 	return p.publishToTopic(ctx, p.topics.ExerciseEvents, event.ID, event)
 }
 
-// PublishProgressEvent publishes a progress event
+// PublishProgressEvent publishes a progress event.
 func (p *Producer) PublishProgressEvent(ctx context.Context, event *ProgressEvent) error {
 	return p.publishToTopic(ctx, p.topics.ProgressEvents, event.ID, event)
 }
 
-// PublishNotificationEvent publishes a notification event
+// PublishNotificationEvent publishes a notification event.
 func (p *Producer) PublishNotificationEvent(ctx context.Context, event *NotificationEvent) error {
 	return p.publishToTopic(ctx, p.topics.NotificationEvents, event.ID, event)
 }
 
-// PublishAuditEvent publishes an audit event
+// PublishAuditEvent publishes an audit event.
 func (p *Producer) PublishAuditEvent(ctx context.Context, event *AuditEvent) error {
 	return p.publishToTopic(ctx, p.topics.AuditEvents, event.ID, event)
 }
 
-// PublishBatch publishes multiple events in a single batch
+// PublishBatch publishes multiple events in a single batch.
 func (p *Producer) PublishBatch(ctx context.Context, events []EventMessage) error {
 	messages := make([]kafka.Message, len(events))
 
@@ -116,7 +121,7 @@ func (p *Producer) PublishBatch(ctx context.Context, events []EventMessage) erro
 	return p.writer.WriteMessages(ctx, messages...)
 }
 
-// publishToTopic publishes data to a specific topic
+// publishToTopic publishes data to a specific topic.
 func (p *Producer) publishToTopic(ctx context.Context, topic, key string, data interface{}) error {
 	payload, err := json.Marshal(data)
 	if err != nil {
@@ -136,7 +141,7 @@ func (p *Producer) publishToTopic(ctx context.Context, topic, key string, data i
 	return p.writer.WriteMessages(ctx, message)
 }
 
-// getTopicForEventType returns the appropriate topic for an event type
+// getTopicForEventType returns the appropriate topic for an event type.
 func (p *Producer) getTopicForEventType(eventType EventType) string {
 	switch eventType {
 	case UserCreated, UserUpdated, UserDeleted, UserLoggedIn, UserLoggedOut:
@@ -158,7 +163,7 @@ func (p *Producer) getTopicForEventType(eventType EventType) string {
 	}
 }
 
-// getCompressionCodec returns the compression codec for the given type
+// getCompressionCodec returns the compression codec for the given type.
 func getCompressionCodec(compressionType string) kafka.Compression {
 	switch compressionType {
 	case "gzip":
@@ -174,7 +179,7 @@ func getCompressionCodec(compressionType string) kafka.Compression {
 	}
 }
 
-// EventMessage represents a message to be published
+// EventMessage represents a message to be published.
 type EventMessage struct {
 	Topic     string
 	Key       string
@@ -182,9 +187,9 @@ type EventMessage struct {
 	EventType string
 }
 
-// Helper functions to create events
+// Helper functions to create events.
 
-// NewUserEvent creates a new user event
+// NewUserEvent creates a new user event.
 func NewUserEvent(eventType EventType, userID string, data map[string]interface{}) *UserEvent {
 	return &UserEvent{
 		Event: Event{
@@ -201,7 +206,7 @@ func NewUserEvent(eventType EventType, userID string, data map[string]interface{
 	}
 }
 
-// NewCourseEvent creates a new course event
+// NewCourseEvent creates a new course event.
 func NewCourseEvent(eventType EventType, courseID, instructorID string, data map[string]interface{}) *CourseEvent {
 	return &CourseEvent{
 		Event: Event{
@@ -219,7 +224,7 @@ func NewCourseEvent(eventType EventType, courseID, instructorID string, data map
 	}
 }
 
-// NewProgressEvent creates a new progress event
+// NewProgressEvent creates a new progress event.
 func NewProgressEvent(eventType EventType, userID, lessonID, courseID string, completed bool, score, timeSpent int) *ProgressEvent {
 	data := map[string]interface{}{
 		"completed":  completed,
@@ -247,7 +252,7 @@ func NewProgressEvent(eventType EventType, userID, lessonID, courseID string, co
 	}
 }
 
-// NewAuditEvent creates a new audit event
+// NewAuditEvent creates a new audit event.
 func NewAuditEvent(userID, action, resource, resourceID string, success bool, oldValues, newValues map[string]interface{}) *AuditEvent {
 	data := map[string]interface{}{
 		"action":   action,

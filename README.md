@@ -20,18 +20,25 @@ This isn't just a course - it's a complete learning ecosystem that includes:
 - **Node.js 18+** for the frontend
 - **Git** for version control
 
-### Option 1: One-Command Start (Recommended)
+### Option 1: Full-Stack Development (Recommended)
 ```bash
 # Clone the repository
 git clone https://github.com/DimaJoyti/go-pro.git
 cd go-pro
 
-# Start everything with one command
-./start.sh
+# Start backend and frontend with one command
+./scripts/start-dev.sh
 
-# Or just setup without starting
-./start.sh --setup
+# Or test the integration
+./scripts/test-integration.sh
 ```
+
+This will start:
+- 🔧 **Backend API** at http://localhost:8080
+- 🌐 **Frontend** at http://localhost:3000
+- 📊 **API Documentation** at http://localhost:8080/api/v1
+
+See [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) for detailed setup instructions.
 
 ### Option 2: Start Learning Immediately
 ```bash

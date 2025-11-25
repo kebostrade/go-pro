@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package repository provides functionality for the GO-PRO Learning Platform.
 package repository
 
 import (
@@ -6,7 +11,7 @@ import (
 	"go-pro-backend/internal/domain"
 )
 
-// CourseRepository defines the interface for course data operations
+// CourseRepository defines the interface for course data operations.
 type CourseRepository interface {
 	Create(ctx context.Context, course *domain.Course) error
 	GetByID(ctx context.Context, id string) (*domain.Course, error)
@@ -15,7 +20,7 @@ type CourseRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
-// LessonRepository defines the interface for lesson data operations
+// LessonRepository defines the interface for lesson data operations.
 type LessonRepository interface {
 	Create(ctx context.Context, lesson *domain.Lesson) error
 	GetByID(ctx context.Context, id string) (*domain.Lesson, error)
@@ -25,7 +30,7 @@ type LessonRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
-// ExerciseRepository defines the interface for exercise data operations
+// ExerciseRepository defines the interface for exercise data operations.
 type ExerciseRepository interface {
 	Create(ctx context.Context, exercise *domain.Exercise) error
 	GetByID(ctx context.Context, id string) (*domain.Exercise, error)
@@ -35,7 +40,7 @@ type ExerciseRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
-// ProgressRepository defines the interface for progress data operations
+// ProgressRepository defines the interface for progress data operations.
 type ProgressRepository interface {
 	Create(ctx context.Context, progress *domain.Progress) error
 	GetByID(ctx context.Context, id string) (*domain.Progress, error)
@@ -45,10 +50,23 @@ type ProgressRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
-// Repositories aggregates all repository interfaces
+// UserRepository defines the interface for user data operations.
+type UserRepository interface {
+	Create(ctx context.Context, user *domain.User) error
+	GetByID(ctx context.Context, id string) (*domain.User, error)
+	GetByFirebaseUID(ctx context.Context, firebaseUID string) (*domain.User, error)
+	GetByEmail(ctx context.Context, email string) (*domain.User, error)
+	GetAll(ctx context.Context, pagination *domain.PaginationRequest) ([]*domain.User, int64, error)
+	Update(ctx context.Context, user *domain.User) error
+	UpdateLastLogin(ctx context.Context, userID string) error
+	Delete(ctx context.Context, id string) error
+}
+
+// Repositories aggregates all repository interfaces.
 type Repositories struct {
 	Course   CourseRepository
 	Lesson   LessonRepository
 	Exercise ExerciseRepository
 	Progress ProgressRepository
+	User     UserRepository
 }

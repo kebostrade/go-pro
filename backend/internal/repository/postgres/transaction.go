@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package postgres provides functionality for the GO-PRO Learning Platform.
 package postgres
 
 import (
@@ -10,13 +15,13 @@ import (
 	"go-pro-backend/pkg/logger"
 )
 
-// TransactionManager manages database transactions with advanced features
+// TransactionManager manages database transactions with advanced features.
 type TransactionManager struct {
 	db     *DB
 	logger logger.Logger
 }
 
-// NewTransactionManager creates a new transaction manager
+// NewTransactionManager creates a new transaction manager.
 func NewTransactionManager(db *DB, logger logger.Logger) *TransactionManager {
 	return &TransactionManager{
 		db:     db,
@@ -24,14 +29,14 @@ func NewTransactionManager(db *DB, logger logger.Logger) *TransactionManager {
 	}
 }
 
-// TxOptions represents transaction options
+// TxOptions represents transaction options.
 type TxOptions struct {
 	Isolation sql.IsolationLevel
 	ReadOnly  bool
 	Timeout   time.Duration
 }
 
-// DefaultTxOptions returns default transaction options
+// DefaultTxOptions returns default transaction options.
 func DefaultTxOptions() *TxOptions {
 	return &TxOptions{
 		Isolation: sql.LevelReadCommitted,
@@ -40,7 +45,7 @@ func DefaultTxOptions() *TxOptions {
 	}
 }
 
-// Transaction represents a database transaction with savepoint support
+// Transaction represents a database transaction with savepoint support.
 type Transaction struct {
 	tx         *sql.Tx
 	db         *DB
@@ -51,13 +56,13 @@ type Transaction struct {
 	rolledBack bool
 }
 
-// BeginTransaction starts a new transaction with options
+// BeginTransaction starts a new transaction with options.
 func (tm *TransactionManager) BeginTransaction(ctx context.Context, opts *TxOptions) (*Transaction, error) {
 	if opts == nil {
 		opts = DefaultTxOptions()
 	}
 
-	// Apply timeout if specified
+	// Apply timeout if specified.
 	if opts.Timeout > 0 {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, opts.Timeout)
@@ -87,7 +92,7 @@ func (tm *TransactionManager) BeginTransaction(ctx context.Context, opts *TxOpti
 	}, nil
 }
 
-// Commit commits the transaction
+// Commit commits the transaction.
 func (t *Transaction) Commit(ctx context.Context) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -106,10 +111,11 @@ func (t *Transaction) Commit(ctx context.Context) error {
 
 	t.committed = true
 	t.logger.Debug(ctx, "Transaction committed successfully")
+
 	return nil
 }
 
-// Rollback rolls back the transaction
+// Rollback rolls back the transaction.
 func (t *Transaction) Rollback(ctx context.Context) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -128,10 +134,11 @@ func (t *Transaction) Rollback(ctx context.Context) error {
 
 	t.rolledBack = true
 	t.logger.Debug(ctx, "Transaction rolled back successfully")
+
 	return nil
 }
 
-// Savepoint creates a savepoint within the transaction
+// Savepoint creates a savepoint within the transaction.
 func (t *Transaction) Savepoint(ctx context.Context, name string) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -148,10 +155,11 @@ func (t *Transaction) Savepoint(ctx context.Context, name string) error {
 
 	t.savepoints = append(t.savepoints, name)
 	t.logger.Debug(ctx, "Savepoint created", "savepoint", name)
+
 	return nil
 }
 
-// RollbackToSavepoint rolls back to a specific savepoint
+// RollbackToSavepoint rolls back to a specific savepoint.
 func (t *Transaction) RollbackToSavepoint(ctx context.Context, name string) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -160,7 +168,7 @@ func (t *Transaction) RollbackToSavepoint(ctx context.Context, name string) erro
 		return fmt.Errorf("transaction is not active")
 	}
 
-	// Check if savepoint exists
+	// Check if savepoint exists.
 	found := false
 	for _, sp := range t.savepoints {
 		if sp == name {
@@ -179,10 +187,11 @@ func (t *Transaction) RollbackToSavepoint(ctx context.Context, name string) erro
 	}
 
 	t.logger.Debug(ctx, "Rolled back to savepoint", "savepoint", name)
+
 	return nil
 }
 
-// ReleaseSavepoint releases a savepoint
+// ReleaseSavepoint releases a savepoint.
 func (t *Transaction) ReleaseSavepoint(ctx context.Context, name string) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -197,7 +206,7 @@ func (t *Transaction) ReleaseSavepoint(ctx context.Context, name string) error {
 		return fmt.Errorf("failed to release savepoint %s: %w", name, err)
 	}
 
-	// Remove savepoint from list
+	// Remove savepoint from list.
 	for i, sp := range t.savepoints {
 		if sp == name {
 			t.savepoints = append(t.savepoints[:i], t.savepoints[i+1:]...)
@@ -206,30 +215,31 @@ func (t *Transaction) ReleaseSavepoint(ctx context.Context, name string) error {
 	}
 
 	t.logger.Debug(ctx, "Savepoint released", "savepoint", name)
+
 	return nil
 }
 
-// Exec executes a query within the transaction
+// Exec executes a query within the transaction.
 func (t *Transaction) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	return t.tx.ExecContext(ctx, query, args...)
 }
 
-// Query executes a query that returns rows
+// Query executes a query that returns rows.
 func (t *Transaction) Query(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	return t.tx.QueryContext(ctx, query, args...)
 }
 
-// QueryRow executes a query that returns at most one row
+// QueryRow executes a query that returns at most one row.
 func (t *Transaction) QueryRow(ctx context.Context, query string, args ...interface{}) *sql.Row {
 	return t.tx.QueryRowContext(ctx, query, args...)
 }
 
-// Prepare creates a prepared statement within the transaction
+// Prepare creates a prepared statement within the transaction.
 func (t *Transaction) Prepare(ctx context.Context, query string) (*sql.Stmt, error) {
 	return t.tx.PrepareContext(ctx, query)
 }
 
-// WithTransaction executes a function within a transaction with automatic rollback on error
+// WithTransaction executes a function within a transaction with automatic rollback on error.
 func (tm *TransactionManager) WithTransaction(ctx context.Context, opts *TxOptions, fn func(*Transaction) error) error {
 	tx, err := tm.BeginTransaction(ctx, opts)
 	if err != nil {
@@ -238,7 +248,9 @@ func (tm *TransactionManager) WithTransaction(ctx context.Context, opts *TxOptio
 
 	defer func() {
 		if p := recover(); p != nil {
-			tx.Rollback(ctx)
+			if rbErr := tx.Rollback(ctx); rbErr != nil {
+				tm.logger.Error(ctx, "Failed to rollback after panic", "rollback_error", rbErr)
+			}
 			tm.logger.Error(ctx, "Transaction panicked", "panic", p)
 			panic(p)
 		}
@@ -249,8 +261,10 @@ func (tm *TransactionManager) WithTransaction(ctx context.Context, opts *TxOptio
 			tm.logger.Error(ctx, "Failed to rollback after error",
 				"original_error", err,
 				"rollback_error", rbErr)
-			return fmt.Errorf("transaction error: %v, rollback error: %w", err, rbErr)
+
+			return fmt.Errorf("transaction error: %w, rollback error: %w", err, rbErr)
 		}
+
 		return err
 	}
 
@@ -261,7 +275,7 @@ func (tm *TransactionManager) WithTransaction(ctx context.Context, opts *TxOptio
 	return nil
 }
 
-// WithSavepoint executes a function within a savepoint
+// WithSavepoint executes a function within a savepoint.
 func (tm *TransactionManager) WithSavepoint(ctx context.Context, tx *Transaction, name string, fn func() error) error {
 	if err := tx.Savepoint(ctx, name); err != nil {
 		return err
@@ -273,8 +287,10 @@ func (tm *TransactionManager) WithSavepoint(ctx context.Context, tx *Transaction
 				"savepoint", name,
 				"original_error", err,
 				"rollback_error", rbErr)
-			return fmt.Errorf("savepoint error: %v, rollback error: %w", err, rbErr)
+
+			return fmt.Errorf("savepoint error: %w, rollback error: %w", err, rbErr)
 		}
+
 		return err
 	}
 

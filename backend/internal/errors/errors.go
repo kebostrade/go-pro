@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package errors provides custom error types and error handling utilities.
 package errors
 
 import (
@@ -6,7 +11,7 @@ import (
 	"net/http"
 )
 
-// Error types for the application
+// Error types for the application.
 var (
 	ErrNotFound           = errors.New("resource not found")
 	ErrValidation         = errors.New("validation failed")
@@ -18,7 +23,7 @@ var (
 	ErrServiceUnavailable = errors.New("service unavailable")
 )
 
-// APIError represents an error in API operations
+// APIError represents an error in API operations.
 type APIError struct {
 	Type       string                 `json:"type"`
 	Code       string                 `json:"code"`
@@ -28,20 +33,21 @@ type APIError struct {
 	Cause      error                  `json:"-"`
 }
 
-// Error implements the error interface
+// Error implements the error interface.
 func (e *APIError) Error() string {
 	if e.Cause != nil {
 		return fmt.Sprintf("%s: %v", e.Message, e.Cause)
 	}
+
 	return e.Message
 }
 
-// Unwrap returns the underlying error
+// Unwrap returns the underlying error.
 func (e *APIError) Unwrap() error {
 	return e.Cause
 }
 
-// NewAPIError creates a new API error
+// NewAPIError creates a new API error.
 func NewAPIError(errType, message string, statusCode int, cause error) *APIError {
 	return &APIError{
 		Type:       errType,
@@ -51,7 +57,7 @@ func NewAPIError(errType, message string, statusCode int, cause error) *APIError
 	}
 }
 
-// Predefined API errors
+// Predefined API errors.
 func NewNotFoundError(message string) *APIError {
 	return &APIError{
 		Type:       "NOT_FOUND",
@@ -126,11 +132,21 @@ func NewInternalServerError(message string) *APIError {
 	}
 }
 
-// IsAPIError checks if an error is an APIError
+func NewRateLimitError(message string) *APIError {
+	return &APIError{
+		Type:       "RATE_LIMIT_EXCEEDED",
+		Code:       "TOO_MANY_REQUESTS",
+		Message:    message,
+		StatusCode: http.StatusTooManyRequests,
+	}
+}
+
+// IsAPIError checks if an error is an APIError.
 func IsAPIError(err error) (*APIError, bool) {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
 		return apiErr, true
 	}
+
 	return nil, false
 }

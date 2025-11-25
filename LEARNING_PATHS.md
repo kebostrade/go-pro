@@ -238,7 +238,112 @@ Choose a learning path based on your goals and interests. Each path combines les
 
 ---
 
-## 🏗️ PATH 4: SYSTEMS PROGRAMMING
+## 🤖 PATH 4: AI ENGINEERING
+
+**Goal**: Build production-ready AI applications with LLMs
+
+**Duration**: 12-14 weeks
+
+**Projects**: 5
+
+### Week 1-2: LLM Fundamentals
+**Tutorials**:
+- Tutorial 0: AI Engineering Overview
+- Tutorial 1: LLM Basics
+- Tutorial 2: Prompt Engineering
+
+**Project**: CLI Chatbot
+- OpenAI API integration
+- Streaming responses
+- Conversation history
+- Token management
+
+**Skills Gained**:
+- LLM API integration
+- Prompt engineering
+- Token optimization
+- Error handling
+- Streaming responses
+
+### Week 3-4: Embeddings & Search
+**Tutorials**:
+- Tutorial 3: Embeddings & Vectors
+- Tutorial 4: Vector Databases
+
+**Project**: Semantic Search Engine
+- Text embeddings generation
+- Vector similarity search
+- Document indexing
+- Query optimization
+
+**Skills Gained**:
+- Embedding generation
+- Vector operations
+- Similarity algorithms
+- Vector databases
+- Search optimization
+
+### Week 5-7: RAG Systems
+**Tutorials**:
+- Tutorial 5: RAG Architecture
+- Tutorial 6: Document Processing
+
+**Project**: RAG Q&A System
+- Document ingestion
+- Chunking strategies
+- Retrieval pipeline
+- Context management
+- Answer generation
+
+**Skills Gained**:
+- RAG architecture
+- Document processing
+- Retrieval strategies
+- Context optimization
+- Production patterns
+
+### Week 8-10: AI Agents
+**Tutorials**:
+- Tutorial 7: AI Agents & ReAct
+- Tutorial 8: Tool Calling
+
+**Project**: Coding Assistant Agent
+- ReAct pattern implementation
+- Tool system design
+- Code analysis tools
+- Multi-step reasoning
+
+**Skills Gained**:
+- Agent architecture
+- ReAct pattern
+- Tool calling
+- Multi-step reasoning
+- Agent orchestration
+
+### Week 11-14: Production Systems
+**Tutorials**:
+- Tutorial 9: Multi-Agent Systems
+- Tutorial 10: Production Deployment
+
+**Project**: Production AI Service
+- Multi-agent orchestration
+- Caching strategies
+- Rate limiting
+- Monitoring & logging
+- Cost optimization
+
+**Skills Gained**:
+- Multi-agent systems
+- Production deployment
+- Performance optimization
+- Monitoring & observability
+- Cost management
+
+**Final Project**: Build a complete AI-powered application
+
+---
+
+## 🏗️ PATH 5: SYSTEMS PROGRAMMING
 
 **Goal**: Build low-level systems and infrastructure
 
@@ -329,6 +434,9 @@ Choose a learning path based on your goals and interests. Each path combines les
 | **Concurrency** | - | Job Queue | Container Orch |
 | **CLI** | Weather CLI | File Encryptor | Log Aggregator |
 | **Distributed** | - | Job Queue | Service Mesh |
+| **AI/LLMs** | CLI Chatbot | RAG Q&A System | Production AI Service |
+| **Embeddings** | - | Semantic Search | RAG Q&A System |
+| **AI Agents** | - | Coding Assistant | Multi-Agent System |
 
 ---
 
@@ -379,6 +487,7 @@ Choose a learning path based on your goals and interests. Each path combines les
 - [ ] Build URL Shortener
 - [ ] Build Weather CLI
 - [ ] Build File Encryptor
+- [ ] Build CLI Chatbot (AI)
 - [ ] Pass all tests
 
 ### Intermediate Level
@@ -387,12 +496,16 @@ Choose a learning path based on your goals and interests. Each path combines les
 - [ ] Build Job Queue
 - [ ] Build Rate Limiter
 - [ ] Build Log Aggregator
+- [ ] Build Semantic Search (AI)
+- [ ] Build RAG Q&A System (AI)
 
 ### Advanced Level
 - [ ] Complete Lessons 15-20
 - [ ] Build Service Mesh
 - [ ] Build TimeSeries DB
 - [ ] Build Container Orchestrator
+- [ ] Build Coding Assistant Agent (AI)
+- [ ] Build Production AI Service (AI)
 - [ ] Deploy to production
 
 ---

@@ -1,22 +1,27 @@
-// Package cache provides session management functionality using Redis
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package cache provides functionality for the GO-PRO Learning Platform.
 package cache
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 )
 
-// RedisSessionStore implements session storage using Redis
+// RedisSessionStore implements session storage using Redis.
 type RedisSessionStore struct {
 	client *redis.Client
 	prefix string
 }
 
-// SessionData represents session data structure
+// SessionData represents session data structure.
 type SessionData struct {
 	UserID    string                 `json:"user_id"`
 	Username  string                 `json:"username"`
@@ -30,28 +35,29 @@ type SessionData struct {
 	UserAgent string                 `json:"user_agent"`
 }
 
-// NewRedisSessionStore creates a new Redis session store
+// NewRedisSessionStore creates a new Redis session store.
 func NewRedisSessionStore(client *redis.Client, prefix string) *RedisSessionStore {
 	if prefix == "" {
 		prefix = "session:"
 	}
+
 	return &RedisSessionStore{
 		client: client,
 		prefix: prefix,
 	}
 }
 
-// sessionKey generates a session key with prefix
+// sessionKey generates a session key with prefix.
 func (r *RedisSessionStore) sessionKey(sessionID string) string {
 	return r.prefix + sessionID
 }
 
-// userSessionsKey generates a user sessions key
+// userSessionsKey generates a user sessions key.
 func (r *RedisSessionStore) userSessionsKey(userID string) string {
 	return r.prefix + "user:" + userID
 }
 
-// CreateSession creates a new session
+// CreateSession creates a new session.
 func (r *RedisSessionStore) CreateSession(ctx context.Context, sessionID string, data map[string]interface{}, expiration time.Duration) error {
 	sessionData := &SessionData{
 		Data:      data,
@@ -60,7 +66,7 @@ func (r *RedisSessionStore) CreateSession(ctx context.Context, sessionID string,
 		ExpiresAt: time.Now().Add(expiration),
 	}
 
-	// Extract common fields from data
+	// Extract common fields from data.
 	if userID, ok := data["user_id"].(string); ok {
 		sessionData.UserID = userID
 	}
@@ -80,25 +86,25 @@ func (r *RedisSessionStore) CreateSession(ctx context.Context, sessionID string,
 		sessionData.UserAgent = userAgent
 	}
 
-	// Serialize session data
+	// Serialize session data.
 	sessionJSON, err := json.Marshal(sessionData)
 	if err != nil {
 		return fmt.Errorf("failed to marshal session data: %w", err)
 	}
 
-	// Use pipeline for atomic operations
+	// Use pipeline for atomic operations.
 	pipe := r.client.TxPipeline()
 
-	// Set session data
+	// Set session data.
 	pipe.Set(ctx, r.sessionKey(sessionID), sessionJSON, expiration)
 
-	// Add session to user's session list if user_id is present
+	// Add session to user's session list if user_id is present.
 	if sessionData.UserID != "" {
 		pipe.SAdd(ctx, r.userSessionsKey(sessionData.UserID), sessionID)
 		pipe.Expire(ctx, r.userSessionsKey(sessionData.UserID), expiration)
 	}
 
-	// Execute pipeline
+	// Execute pipeline.
 	_, err = pipe.Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to create session: %w", err)
@@ -107,13 +113,14 @@ func (r *RedisSessionStore) CreateSession(ctx context.Context, sessionID string,
 	return nil
 }
 
-// GetSession retrieves session data
+// GetSession retrieves session data.
 func (r *RedisSessionStore) GetSession(ctx context.Context, sessionID string) (map[string]interface{}, error) {
 	sessionJSON, err := r.client.Get(ctx, r.sessionKey(sessionID)).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return nil, ErrCacheNotFound
 		}
+
 		return nil, fmt.Errorf("failed to get session: %w", err)
 	}
 
@@ -122,14 +129,17 @@ func (r *RedisSessionStore) GetSession(ctx context.Context, sessionID string) (m
 		return nil, fmt.Errorf("failed to unmarshal session data: %w", err)
 	}
 
-	// Check if session is expired
+	// Check if session is expired.
 	if time.Now().After(sessionData.ExpiresAt) {
-		// Clean up expired session
-		r.DeleteSession(ctx, sessionID)
+		// Clean up expired session.
+		if delErr := r.DeleteSession(ctx, sessionID); delErr != nil {
+			// Log error but don't fail the operation
+			_ = delErr
+		}
 		return nil, ErrCacheNotFound
 	}
 
-	// Return session data
+	// Return session data.
 	result := make(map[string]interface{})
 	result["user_id"] = sessionData.UserID
 	result["username"] = sessionData.Username
@@ -141,7 +151,7 @@ func (r *RedisSessionStore) GetSession(ctx context.Context, sessionID string) (m
 	result["ip_address"] = sessionData.IPAddress
 	result["user_agent"] = sessionData.UserAgent
 
-	// Add custom data
+	// Add custom data.
 	for k, v := range sessionData.Data {
 		result[k] = v
 	}
@@ -149,52 +159,52 @@ func (r *RedisSessionStore) GetSession(ctx context.Context, sessionID string) (m
 	return result, nil
 }
 
-// UpdateSession updates existing session data
+// UpdateSession updates existing session data.
 func (r *RedisSessionStore) UpdateSession(ctx context.Context, sessionID string, data map[string]interface{}) error {
-	// Get existing session
+	// Get existing session.
 	existingData, err := r.GetSession(ctx, sessionID)
 	if err != nil {
 		return fmt.Errorf("failed to get existing session: %w", err)
 	}
 
-	// Merge data
+	// Merge data.
 	for k, v := range data {
 		existingData[k] = v
 	}
 	existingData["updated_at"] = time.Now()
 
-	// Get current TTL
+	// Get current TTL.
 	ttl, err := r.client.TTL(ctx, r.sessionKey(sessionID)).Result()
 	if err != nil {
 		return fmt.Errorf("failed to get session TTL: %w", err)
 	}
 
-	// Create updated session
+	// Create updated session.
 	return r.CreateSession(ctx, sessionID, existingData, ttl)
 }
 
-// DeleteSession removes a session
+// DeleteSession removes a session.
 func (r *RedisSessionStore) DeleteSession(ctx context.Context, sessionID string) error {
-	// Get session to find user ID
+	// Get session to find user ID.
 	sessionData, err := r.GetSession(ctx, sessionID)
-	if err != nil && err != ErrCacheNotFound {
+	if err != nil && !errors.Is(err, ErrCacheNotFound) {
 		return fmt.Errorf("failed to get session for deletion: %w", err)
 	}
 
-	// Use pipeline for atomic operations
+	// Use pipeline for atomic operations.
 	pipe := r.client.TxPipeline()
 
-	// Delete session
+	// Delete session.
 	pipe.Del(ctx, r.sessionKey(sessionID))
 
-	// Remove from user's session list if user_id is present
+	// Remove from user's session list if user_id is present.
 	if sessionData != nil {
 		if userID, ok := sessionData["user_id"].(string); ok && userID != "" {
 			pipe.SRem(ctx, r.userSessionsKey(userID), sessionID)
 		}
 	}
 
-	// Execute pipeline
+	// Execute pipeline.
 	_, err = pipe.Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete session: %w", err)
@@ -203,9 +213,9 @@ func (r *RedisSessionStore) DeleteSession(ctx context.Context, sessionID string)
 	return nil
 }
 
-// RefreshSession extends session expiration
+// RefreshSession extends session expiration.
 func (r *RedisSessionStore) RefreshSession(ctx context.Context, sessionID string, expiration time.Duration) error {
-	// Check if session exists
+	// Check if session exists.
 	exists, err := r.client.Exists(ctx, r.sessionKey(sessionID)).Result()
 	if err != nil {
 		return fmt.Errorf("failed to check session existence: %w", err)
@@ -214,13 +224,13 @@ func (r *RedisSessionStore) RefreshSession(ctx context.Context, sessionID string
 		return ErrCacheNotFound
 	}
 
-	// Update expiration
+	// Update expiration.
 	err = r.client.Expire(ctx, r.sessionKey(sessionID), expiration).Err()
 	if err != nil {
 		return fmt.Errorf("failed to refresh session: %w", err)
 	}
 
-	// Update session data with new expiration time
+	// Update session data with new expiration time.
 	sessionData, err := r.GetSession(ctx, sessionID)
 	if err != nil {
 		return fmt.Errorf("failed to get session for refresh: %w", err)
@@ -232,17 +242,18 @@ func (r *RedisSessionStore) RefreshSession(ctx context.Context, sessionID string
 	return r.UpdateSession(ctx, sessionID, sessionData)
 }
 
-// ListUserSessions returns all session IDs for a user
+// ListUserSessions returns all session IDs for a user.
 func (r *RedisSessionStore) ListUserSessions(ctx context.Context, userID string) ([]string, error) {
 	sessions, err := r.client.SMembers(ctx, r.userSessionsKey(userID)).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return []string{}, nil
 		}
+
 		return nil, fmt.Errorf("failed to list user sessions: %w", err)
 	}
 
-	// Filter out expired sessions
+	// Filter out expired sessions.
 	validSessions := make([]string, 0, len(sessions))
 	for _, sessionID := range sessions {
 		exists, err := r.client.Exists(ctx, r.sessionKey(sessionID)).Result()
@@ -252,7 +263,7 @@ func (r *RedisSessionStore) ListUserSessions(ctx context.Context, userID string)
 		if exists > 0 {
 			validSessions = append(validSessions, sessionID)
 		} else {
-			// Remove expired session from user's session list
+			// Remove expired session from user's session list.
 			r.client.SRem(ctx, r.userSessionsKey(userID), sessionID)
 		}
 	}
@@ -260,9 +271,9 @@ func (r *RedisSessionStore) ListUserSessions(ctx context.Context, userID string)
 	return validSessions, nil
 }
 
-// DeleteUserSessions removes all sessions for a user
+// DeleteUserSessions removes all sessions for a user.
 func (r *RedisSessionStore) DeleteUserSessions(ctx context.Context, userID string) error {
-	// Get all user sessions
+	// Get all user sessions.
 	sessions, err := r.ListUserSessions(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("failed to list user sessions: %w", err)
@@ -272,20 +283,20 @@ func (r *RedisSessionStore) DeleteUserSessions(ctx context.Context, userID strin
 		return nil
 	}
 
-	// Use pipeline for batch deletion
+	// Use pipeline for batch deletion.
 	pipe := r.client.TxPipeline()
 
-	// Delete all session keys
+	// Delete all session keys.
 	sessionKeys := make([]string, len(sessions))
 	for i, sessionID := range sessions {
 		sessionKeys[i] = r.sessionKey(sessionID)
 	}
 	pipe.Del(ctx, sessionKeys...)
 
-	// Delete user sessions set
+	// Delete user sessions set.
 	pipe.Del(ctx, r.userSessionsKey(userID))
 
-	// Execute pipeline
+	// Execute pipeline.
 	_, err = pipe.Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete user sessions: %w", err)
@@ -294,9 +305,9 @@ func (r *RedisSessionStore) DeleteUserSessions(ctx context.Context, userID strin
 	return nil
 }
 
-// CleanupExpiredSessions removes expired sessions (should be run periodically)
+// CleanupExpiredSessions removes expired sessions (should be run periodically).
 func (r *RedisSessionStore) CleanupExpiredSessions(ctx context.Context) error {
-	// Use SCAN to iterate through all session keys
+	// Use SCAN to iterate through all session keys.
 	var cursor uint64
 	var keys []string
 
@@ -307,19 +318,19 @@ func (r *RedisSessionStore) CleanupExpiredSessions(ctx context.Context) error {
 			return fmt.Errorf("failed to scan session keys: %w", err)
 		}
 
-		// Check each key's TTL
+		// Check each key's TTL.
 		for _, key := range keys {
 			ttl, err := r.client.TTL(ctx, key).Result()
 			if err != nil {
 				continue
 			}
 
-			// If TTL is -1 (no expiration) or -2 (key doesn't exist), skip
+			// If TTL is -1 (no expiration) or -2 (key doesn't exist), skip.
 			if ttl == -1 || ttl == -2 {
 				continue
 			}
 
-			// If TTL is very small (less than 1 second), consider it expired
+			// If TTL is very small (less than 1 second), consider it expired.
 			if ttl < time.Second {
 				r.client.Del(ctx, key)
 			}
@@ -333,7 +344,7 @@ func (r *RedisSessionStore) CleanupExpiredSessions(ctx context.Context) error {
 	return nil
 }
 
-// GetSessionCount returns the total number of active sessions
+// GetSessionCount returns the total number of active sessions.
 func (r *RedisSessionStore) GetSessionCount(ctx context.Context) (int64, error) {
 	keys, err := r.client.Keys(ctx, r.prefix+"*").Result()
 	if err != nil {
@@ -351,7 +362,7 @@ func (r *RedisSessionStore) GetSessionCount(ctx context.Context) (int64, error) 
 	return count, nil
 }
 
-// GetUserSessionCount returns the number of active sessions for a user
+// GetUserSessionCount returns the number of active sessions for a user.
 func (r *RedisSessionStore) GetUserSessionCount(ctx context.Context, userID string) (int64, error) {
 	sessions, err := r.ListUserSessions(ctx, userID)
 	if err != nil {
@@ -361,7 +372,7 @@ func (r *RedisSessionStore) GetUserSessionCount(ctx context.Context, userID stri
 	return int64(len(sessions)), nil
 }
 
-// Helper function to check if string contains substring
+// Helper function to check if string contains substring.
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || (len(s) > len(substr) &&
 		(s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||

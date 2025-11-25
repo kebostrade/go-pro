@@ -101,3 +101,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 frontend/package-lock.json
+mcp.json
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md
+advanced
+advanced/gocourse
+.github/agents
+go-pro-platform-firebase-adminsdk-fbsvc-27abf2a7fa.json
+firebase-admin-sdk.json
+*-firebase-adminsdk-*.json
+config/firebase-admin-sdk.json

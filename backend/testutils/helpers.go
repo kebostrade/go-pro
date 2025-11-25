@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package testutils provides testing utilities and helpers.
 package testutils
 
 import (
@@ -9,7 +14,7 @@ import (
 	"time"
 )
 
-// TestCourse creates a test course for use in tests
+// TestCourse creates a test course for use in tests.
 func TestCourse(id string) Course {
 	return Course{
 		ID:          id,
@@ -20,7 +25,7 @@ func TestCourse(id string) Course {
 	}
 }
 
-// TestLesson creates a test lesson for use in tests
+// TestLesson creates a test lesson for use in tests.
 func TestLesson(id, courseID string) Lesson {
 	return Lesson{
 		ID:          id,
@@ -33,7 +38,7 @@ func TestLesson(id, courseID string) Lesson {
 	}
 }
 
-// TestExercise creates a test exercise for use in tests
+// TestExercise creates a test exercise for use in tests.
 func TestExercise(id, lessonID string) Exercise {
 	return Exercise{
 		ID:          id,
@@ -45,7 +50,7 @@ func TestExercise(id, lessonID string) Exercise {
 	}
 }
 
-// TestProgress creates a test progress record for use in tests
+// TestProgress creates a test progress record for use in tests.
 func TestProgress(userID, lessonID string, completed bool, score int) Progress {
 	return Progress{
 		UserID:      userID,
@@ -56,7 +61,7 @@ func TestProgress(userID, lessonID string, completed bool, score int) Progress {
 	}
 }
 
-// AssertJSONResponse validates a JSON API response
+// AssertJSONResponse validates a JSON API response.
 func AssertJSONResponse(t *testing.T, rr *httptest.ResponseRecorder, expectedStatus int) APIResponse {
 	t.Helper()
 
@@ -78,7 +83,7 @@ func AssertJSONResponse(t *testing.T, rr *httptest.ResponseRecorder, expectedSta
 	return response
 }
 
-// AssertSuccessResponse validates a successful API response
+// AssertSuccessResponse validates a successful API response.
 func AssertSuccessResponse(t *testing.T, rr *httptest.ResponseRecorder) APIResponse {
 	t.Helper()
 
@@ -95,7 +100,7 @@ func AssertSuccessResponse(t *testing.T, rr *httptest.ResponseRecorder) APIRespo
 	return response
 }
 
-// AssertErrorResponse validates an error API response
+// AssertErrorResponse validates an error API response.
 func AssertErrorResponse(t *testing.T, rr *httptest.ResponseRecorder, expectedStatus int) APIResponse {
 	t.Helper()
 
@@ -112,7 +117,7 @@ func AssertErrorResponse(t *testing.T, rr *httptest.ResponseRecorder, expectedSt
 	return response
 }
 
-// MockHTTPRequest creates a mock HTTP request for testing
+// MockHTTPRequest creates a mock HTTP request for testing.
 func MockHTTPRequest(method, url string, body interface{}) *http.Request {
 	var reqBody []byte
 	if body != nil {
@@ -124,34 +129,34 @@ func MockHTTPRequest(method, url string, body interface{}) *http.Request {
 		req = httptest.NewRequest(method, url, bytes.NewBuffer(reqBody))
 		req.Header.Set("Content-Type", "application/json")
 	} else {
-		req = httptest.NewRequest(method, url, nil)
+		req = httptest.NewRequest(method, url, http.NoBody)
 	}
 
 	return req
 }
 
-// SetupTestData initializes test data for testing
+// SetupTestData initializes test data for testing.
 func SetupTestData() (map[string]Course, map[string]Lesson, map[string]Exercise, map[string][]Progress) {
 	courses := make(map[string]Course)
 	lessons := make(map[string]Lesson)
 	exercises := make(map[string]Exercise)
 	progress := make(map[string][]Progress)
 
-	// Test courses
+	// Test courses.
 	courses["test-course-1"] = TestCourse("test-course-1")
 	courses["test-course-2"] = TestCourse("test-course-2")
 
-	// Test lessons
+	// Test lessons.
 	lessons["lesson-1"] = TestLesson("lesson-1", "test-course-1")
 	lessons["lesson-2"] = TestLesson("lesson-2", "test-course-1")
 	lessons["lesson-3"] = TestLesson("lesson-3", "test-course-2")
 
-	// Test exercises
+	// Test exercises.
 	exercises["exercise-1"] = TestExercise("exercise-1", "lesson-1")
 	exercises["exercise-2"] = TestExercise("exercise-2", "lesson-1")
 	exercises["exercise-3"] = TestExercise("exercise-3", "lesson-2")
 
-	// Test progress
+	// Test progress.
 	progress["test-user-1"] = []Progress{
 		TestProgress("test-user-1", "lesson-1", true, 90),
 		TestProgress("test-user-1", "lesson-2", false, 0),
@@ -165,7 +170,7 @@ func SetupTestData() (map[string]Course, map[string]Lesson, map[string]Exercise,
 	return courses, lessons, exercises, progress
 }
 
-// CompareObjects compares two objects using JSON marshaling
+// CompareObjects compares two objects using JSON marshaling.
 func CompareObjects(t *testing.T, expected, actual interface{}) {
 	t.Helper()
 
@@ -185,7 +190,7 @@ func CompareObjects(t *testing.T, expected, actual interface{}) {
 	}
 }
 
-// AssertSliceLength validates the length of a slice
+// AssertSliceLength validates the length of a slice.
 func AssertSliceLength(t *testing.T, slice interface{}, expectedLength int, description string) {
 	t.Helper()
 
@@ -215,7 +220,7 @@ func AssertSliceLength(t *testing.T, slice interface{}, expectedLength int, desc
 	}
 }
 
-// ValidateRequiredFields checks if required fields are present in a map
+// ValidateRequiredFields checks if required fields are present in a map.
 func ValidateRequiredFields(t *testing.T, obj map[string]interface{}, requiredFields []string, objectType string) {
 	t.Helper()
 
@@ -226,24 +231,24 @@ func ValidateRequiredFields(t *testing.T, obj map[string]interface{}, requiredFi
 	}
 }
 
-// TimingHelper helps measure execution time in tests
+// TimingHelper helps measure execution time in tests.
 type TimingHelper struct {
 	start time.Time
 }
 
-// NewTiming creates a new timing helper
+// NewTiming creates a new timing helper.
 func NewTiming() *TimingHelper {
 	return &TimingHelper{
 		start: time.Now(),
 	}
 }
 
-// Elapsed returns the elapsed time since creation
+// Elapsed returns the elapsed time since creation.
 func (th *TimingHelper) Elapsed() time.Duration {
 	return time.Since(th.start)
 }
 
-// AssertMaxDuration fails the test if execution took longer than expected
+// AssertMaxDuration fails the test if execution took longer than expected.
 func (th *TimingHelper) AssertMaxDuration(t *testing.T, maxDuration time.Duration, operation string) {
 	t.Helper()
 
@@ -253,7 +258,7 @@ func (th *TimingHelper) AssertMaxDuration(t *testing.T, maxDuration time.Duratio
 	}
 }
 
-// MockStorage provides test storage implementations
+// MockStorage provides test storage implementations.
 type MockStorage struct {
 	Courses   map[string]Course
 	Lessons   map[string]Lesson
@@ -261,7 +266,7 @@ type MockStorage struct {
 	Progress  map[string][]Progress
 }
 
-// NewMockStorage creates a new mock storage with test data
+// NewMockStorage creates a new mock storage with test data.
 func NewMockStorage() *MockStorage {
 	courses, lessons, exercises, progress := SetupTestData()
 	return &MockStorage{
@@ -272,7 +277,7 @@ func NewMockStorage() *MockStorage {
 	}
 }
 
-// Clear removes all data from mock storage
+// Clear removes all data from mock storage.
 func (ms *MockStorage) Clear() {
 	ms.Courses = make(map[string]Course)
 	ms.Lessons = make(map[string]Lesson)
@@ -280,7 +285,7 @@ func (ms *MockStorage) Clear() {
 	ms.Progress = make(map[string][]Progress)
 }
 
-// TableTest represents a table-driven test case
+// TableTest represents a table-driven test case.
 type TableTest struct {
 	Name     string
 	Setup    func()
@@ -288,8 +293,9 @@ type TableTest struct {
 	Test     func(*testing.T)
 }
 
-// RunTableTests runs a series of table-driven tests
+// RunTableTests runs a series of table-driven tests.
 func RunTableTests(t *testing.T, tests []TableTest) {
+	t.Helper()
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
 			if tt.Setup != nil {
@@ -305,7 +311,7 @@ func RunTableTests(t *testing.T, tests []TableTest) {
 	}
 }
 
-// HTTPTestCase represents an HTTP test case
+// HTTPTestCase represents an HTTP test case.
 type HTTPTestCase struct {
 	Name           string
 	Method         string
@@ -316,13 +322,13 @@ type HTTPTestCase struct {
 	PathValues     map[string]string
 }
 
-// RunHTTPTests runs a series of HTTP tests
+// RunHTTPTests runs a series of HTTP tests.
 func RunHTTPTests(t *testing.T, tests []HTTPTestCase, handler http.HandlerFunc) {
 	for _, tt := range tests {
 		t.Run(tt.Name, func(t *testing.T) {
 			req := MockHTTPRequest(tt.Method, tt.URL, tt.Body)
 
-			// Set path values if provided
+			// Set path values if provided.
 			if tt.PathValues != nil {
 				for key, value := range tt.PathValues {
 					req.SetPathValue(key, value)
@@ -334,7 +340,7 @@ func RunHTTPTests(t *testing.T, tests []HTTPTestCase, handler http.HandlerFunc) 
 
 			response := AssertJSONResponse(t, rr, tt.ExpectedStatus)
 
-			// Validate expected fields if provided
+			// Validate expected fields if provided.
 			if tt.ExpectedFields != nil && tt.ExpectedStatus == http.StatusOK {
 				if !response.Success {
 					t.Error("Expected successful response")

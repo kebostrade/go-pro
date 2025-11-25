@@ -1,3 +1,8 @@
+// GO-PRO Learning Platform Backend
+// Copyright (c) 2025 GO-PRO Team
+// Licensed under MIT License
+
+// Package security provides authentication, authorization, and security middleware.
 package security
 
 import (
@@ -9,7 +14,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// Custom JWT claims
+// Custom JWT claims.
 type Claims struct {
 	UserID    string   `json:"user_id"`
 	Email     string   `json:"email"`
@@ -18,27 +23,27 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// JWTManager handles JWT token operations
+// JWTManager handles JWT token operations.
 type JWTManager struct {
 	config JWTConfig
 }
 
-// NewJWTManager creates a new JWT manager
+// NewJWTManager creates a new JWT manager.
 func NewJWTManager(config JWTConfig) *JWTManager {
 	return &JWTManager{
 		config: config,
 	}
 }
 
-// GenerateTokens generates both access and refresh tokens
+// GenerateTokens generates both access and refresh tokens.
 func (j *JWTManager) GenerateTokens(userID, email string, roles []string) (accessToken, refreshToken string, err error) {
-	// Generate access token
+	// Generate access token.
 	accessToken, err = j.generateToken(userID, email, roles, "access", j.config.AccessTokenTTL)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to generate access token: %w", err)
 	}
 
-	// Generate refresh token
+	// Generate refresh token.
 	refreshToken, err = j.generateToken(userID, email, roles, "refresh", j.config.RefreshTokenTTL)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to generate refresh token: %w", err)
@@ -47,7 +52,7 @@ func (j *JWTManager) GenerateTokens(userID, email string, roles []string) (acces
 	return accessToken, refreshToken, nil
 }
 
-// generateToken creates a JWT token with the specified parameters
+// generateToken creates a JWT token with the specified parameters.
 func (j *JWTManager) generateToken(userID, email string, roles []string, tokenType string, ttl time.Duration) (string, error) {
 	now := time.Now()
 	claims := Claims{
@@ -67,22 +72,23 @@ func (j *JWTManager) generateToken(userID, email string, roles []string, tokenTy
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	return token.SignedString(j.config.Secret)
 }
 
-// ValidateToken validates a JWT token and returns the claims
+// ValidateToken validates a JWT token and returns the claims.
 func (j *JWTManager) ValidateToken(tokenString string) (*Claims, error) {
-	// Remove Bearer prefix if present
+	// Remove Bearer prefix if present.
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		// Verify the signing method
+		// Verify the signing method.
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
+
 		return j.config.Secret, nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
@@ -92,7 +98,7 @@ func (j *JWTManager) ValidateToken(tokenString string) (*Claims, error) {
 		return nil, errors.New("invalid token claims")
 	}
 
-	// Additional validation
+	// Additional validation.
 	if err := j.validateClaims(claims); err != nil {
 		return nil, fmt.Errorf("token validation failed: %w", err)
 	}
@@ -100,34 +106,34 @@ func (j *JWTManager) ValidateToken(tokenString string) (*Claims, error) {
 	return claims, nil
 }
 
-// validateClaims performs additional validation on the claims
+// validateClaims performs additional validation on the claims.
 func (j *JWTManager) validateClaims(claims *Claims) error {
-	// Check if token is expired
+	// Check if token is expired.
 	if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now()) {
 		return errors.New("token has expired")
 	}
 
-	// Check if token is not valid yet
+	// Check if token is not valid yet.
 	if claims.NotBefore != nil && claims.NotBefore.After(time.Now()) {
 		return errors.New("token not valid yet")
 	}
 
-	// Check issuer
+	// Check issuer.
 	if claims.Issuer != j.config.Issuer {
 		return errors.New("invalid token issuer")
 	}
 
-	// Check audience
+	// Check audience.
 	if len(claims.Audience) == 0 || claims.Audience[0] != j.config.Audience {
 		return errors.New("invalid token audience")
 	}
 
-	// Validate user ID
+	// Validate user ID.
 	if claims.UserID == "" {
 		return errors.New("missing user ID in token")
 	}
 
-	// Validate token type
+	// Validate token type.
 	if claims.TokenType != "access" && claims.TokenType != "refresh" {
 		return errors.New("invalid token type")
 	}
@@ -135,29 +141,29 @@ func (j *JWTManager) validateClaims(claims *Claims) error {
 	return nil
 }
 
-// RefreshTokens validates a refresh token and generates new tokens
+// RefreshTokens validates a refresh token and generates new tokens.
 func (j *JWTManager) RefreshTokens(refreshToken string) (newAccessToken, newRefreshToken string, err error) {
 	claims, err := j.ValidateToken(refreshToken)
 	if err != nil {
 		return "", "", fmt.Errorf("invalid refresh token: %w", err)
 	}
 
-	// Verify this is actually a refresh token
+	// Verify this is actually a refresh token.
 	if claims.TokenType != "refresh" {
 		return "", "", errors.New("provided token is not a refresh token")
 	}
 
-	// Generate new tokens
+	// Generate new tokens.
 	return j.GenerateTokens(claims.UserID, claims.Email, claims.Roles)
 }
 
-// ExtractTokenFromHeader extracts JWT token from Authorization header
+// ExtractTokenFromHeader extracts JWT token from Authorization header.
 func ExtractTokenFromHeader(authHeader string) string {
 	if authHeader == "" {
 		return ""
 	}
 
-	// Remove "Bearer " prefix
+	// Remove "Bearer " prefix.
 	const bearerPrefix = "Bearer "
 	if strings.HasPrefix(authHeader, bearerPrefix) {
 		return authHeader[len(bearerPrefix):]
@@ -166,37 +172,39 @@ func ExtractTokenFromHeader(authHeader string) string {
 	return authHeader
 }
 
-// HasRole checks if the user has a specific role
+// HasRole checks if the user has a specific role.
 func (c *Claims) HasRole(role string) bool {
 	for _, userRole := range c.Roles {
 		if userRole == role {
 			return true
 		}
 	}
+
 	return false
 }
 
-// HasAnyRole checks if the user has any of the specified roles
+// HasAnyRole checks if the user has any of the specified roles.
 func (c *Claims) HasAnyRole(roles []string) bool {
 	for _, role := range roles {
 		if c.HasRole(role) {
 			return true
 		}
 	}
+
 	return false
 }
 
-// IsAccessToken checks if the token is an access token
+// IsAccessToken checks if the token is an access token.
 func (c *Claims) IsAccessToken() bool {
 	return c.TokenType == "access"
 }
 
-// IsRefreshToken checks if the token is a refresh token
+// IsRefreshToken checks if the token is a refresh token.
 func (c *Claims) IsRefreshToken() bool {
 	return c.TokenType == "refresh"
 }
 
-// generateTokenID creates a unique token ID
+// generateTokenID creates a unique token ID.
 func generateTokenID() string {
 	return fmt.Sprintf("tkn_%d_%d", time.Now().UnixNano(), time.Now().Unix())
 }
