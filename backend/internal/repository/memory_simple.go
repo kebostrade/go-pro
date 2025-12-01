@@ -129,9 +129,9 @@ func (r *MemoryCourseRepository) Delete(ctx context.Context, id string) error {
 
 // MemoryUserRepository implements UserRepository using in-memory storage.
 type MemoryUserRepository struct {
-	users           map[string]*domain.User            // Keyed by user ID
-	usersByFirebase map[string]*domain.User            // Keyed by Firebase UID
-	usersByEmail    map[string]*domain.User            // Keyed by email
+	users           map[string]*domain.User // Keyed by user ID
+	usersByFirebase map[string]*domain.User // Keyed by Firebase UID
+	usersByEmail    map[string]*domain.User // Keyed by email
 	mu              sync.RWMutex
 }
 

@@ -130,8 +130,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setBackendUser(response.user);
       console.log('✅ Synced with backend:', response.user);
     } catch (err: any) {
-      console.error('❌ Backend sync failed:', err);
-      setError(err.message || 'Failed to sync with backend');
+      // Silently skip if backend not configured
+      if (err?.type !== 'backend_not_configured') {
+        console.error('❌ Backend sync failed:', err);
+        setError(err.message || 'Failed to sync with backend');
+      }
     }
   };
 
@@ -213,14 +216,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // Try backend sync (non-blocking)
+    // Try backend sync (non-blocking) - skip silently if backend not configured
     try {
       const idToken = await user.getIdToken();
       const response = await api.verifyToken(idToken);
       setBackendUser(response.user);
       console.log('✅ Backend sync successful');
-    } catch (backendErr) {
-      console.warn('⚠️ Backend sync failed:', backendErr);
+    } catch (backendErr: any) {
+      // Silently skip if backend not configured (production without backend)
+      if (backendErr?.type !== 'backend_not_configured') {
+        console.warn('⚠️ Backend sync failed:', backendErr);
+      }
       // User still authenticated, just no backend sync
     }
   };

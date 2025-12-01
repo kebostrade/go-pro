@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"go-pro-backend/internal/domain"
-	"go-pro-backend/internal/middleware"
 	apierrors "go-pro-backend/internal/errors"
+	"go-pro-backend/internal/middleware"
 )
 
 // TestHelper provides common test utilities.

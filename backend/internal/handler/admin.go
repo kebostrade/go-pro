@@ -8,9 +8,9 @@ import (
 	"net/http"
 
 	"go-pro-backend/internal/domain"
+	apierrors "go-pro-backend/internal/errors"
 	"go-pro-backend/internal/middleware"
 	"go-pro-backend/internal/service"
-	apierrors "go-pro-backend/internal/errors"
 	"go-pro-backend/pkg/logger"
 	"go-pro-backend/pkg/validator"
 )

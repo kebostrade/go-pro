@@ -209,8 +209,8 @@ type User struct {
 	PasswordHash string     `json:"-"`                      // Never expose password hash in JSON
 	FirstName    string     `json:"first_name,omitempty"`
 	LastName     string     `json:"last_name,omitempty"`
-	Role         UserRole   `json:"role"`                        // Single role: student or admin
-	Roles        []string   `json:"roles,omitempty"`             // Legacy: multiple roles support
+	Role         UserRole   `json:"role"`            // Single role: student or admin
+	Roles        []string   `json:"roles,omitempty"` // Legacy: multiple roles support
 	IsActive     bool       `json:"is_active"`
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`

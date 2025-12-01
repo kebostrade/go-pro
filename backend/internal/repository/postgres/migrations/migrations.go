@@ -20,9 +20,9 @@ func GetAllMigrations() []postgres.MigrationV2 {
 		createExercisesTable(),
 		createProgressTable(),
 		addIndexes(),
-		extendLessonsTable(),       // Version 7: Add detailed content fields
-		seedLessonsData(),          // Version 8: Populate with 20 lessons
-		addPerformanceIndexes(),    // Version 9: Add performance optimization indexes
+		extendLessonsTable(),          // Version 7: Add detailed content fields
+		seedLessonsData(),             // Version 8: Populate with 20 lessons
+		addPerformanceIndexes(),       // Version 9: Add performance optimization indexes
 		updateUsersTableForFirebase(), // Version 10: Add Firebase authentication fields
 	}
 }

@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export',
   webpack: (config, { isServer }) => {
     config.resolve.alias['@'] = require('path').resolve(__dirname, 'src');
     return config;

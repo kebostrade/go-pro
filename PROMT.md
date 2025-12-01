@@ -105,3 +105,5 @@ go test
 
 ## Contributing
 PRs and improvements to lessons, examples, and tests are welcome. Keep changes small and include a short note on why/what changed.
+
+Explain complex programming concepts clearly and concisely with practical examples.

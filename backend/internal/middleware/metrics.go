@@ -124,13 +124,13 @@ func (m *Metrics) GetMetrics() map[string]interface{} {
 			continue
 		}
 		durationStats[path] = map[string]interface{}{
-			"count":  len(durations),
-			"avg":    avg(durations),
-			"p50":    percentile(durations, 50),
-			"p95":    percentile(durations, 95),
-			"p99":    percentile(durations, 99),
-			"min":    min(durations),
-			"max":    max(durations),
+			"count": len(durations),
+			"avg":   avg(durations),
+			"p50":   percentile(durations, 50),
+			"p95":   percentile(durations, 95),
+			"p99":   percentile(durations, 99),
+			"min":   min(durations),
+			"max":   max(durations),
 		}
 	}
 	metrics["request_duration_seconds"] = durationStats
@@ -143,13 +143,13 @@ func (m *Metrics) GetMetrics() map[string]interface{} {
 		}
 		sizesFloat := intsToFloats(sizes)
 		sizeStats[path] = map[string]interface{}{
-			"count":  len(sizes),
-			"avg":    avg(sizesFloat),
-			"p50":    percentile(sizesFloat, 50),
-			"p95":    percentile(sizesFloat, 95),
-			"p99":    percentile(sizesFloat, 99),
-			"min":    min(sizesFloat),
-			"max":    max(sizesFloat),
+			"count": len(sizes),
+			"avg":   avg(sizesFloat),
+			"p50":   percentile(sizesFloat, 50),
+			"p95":   percentile(sizesFloat, 95),
+			"p99":   percentile(sizesFloat, 99),
+			"min":   min(sizesFloat),
+			"max":   max(sizesFloat),
 		}
 	}
 	metrics["response_size_bytes"] = sizeStats

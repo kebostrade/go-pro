@@ -30,7 +30,7 @@ Immutable values defined at compile time
 - Mutexes: Mutual exclusion for shared resource access
 - WaitGroups: Synchronization for multiple goroutines
 - Select: Multi-way concurrent control structure
-- Context: Cancellation, deadlines, and request-scoped values
+- Context: Cancellation, deadlines, and request-scoped values 
 
 # Memory and Safety
 - Memory Management: Automatic memory allocation
