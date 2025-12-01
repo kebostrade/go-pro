@@ -228,7 +228,7 @@ func checkXSSVulnerability(targetURL string, client *http.Client) []Vulnerabilit
 		// Safe query construction: url.Values.Encode() prevents injection
 		// Dynamic payloads are intentional (purpose of this security scanner)
 		// #nosec G107: SSRF prevented by ValidateURL() validation of base URL before loop
-		resp, err := client.Get(testURL.String()) //nolint:gosec
+		resp, err := client.Get(testURL.String()) //nolint:gosec // G107: URL validated by ValidateURL()
 		if err != nil {
 			continue
 		}
