@@ -13,12 +13,12 @@ Variables that store memory addresses of other variables
 
 # Constants
 Immutable values defined at compile time
-
 # Data Types and Structures
+- Basic Types: int, float64, string, bool
 - Arrays: Fixed-size sequences
 - Slices: Dynamic, flexible view into arrays
 - Maps: Hash table implementation, key-value pairs
-- Structs: Custom data types grouping related fields
+- Structs: Collection of custom data types grouping related fields
 - Custom Types: Define new types based on existing ones
 - Type Embedding: Composition mechanism for types
 - Interfaces: Define behavior through method signatures
@@ -66,7 +66,7 @@ Immutable values defined at compile time
 package main
 
 import (
-	"fmt"
+	"fmt" // Imports formatted IO
 	"sync"
 	"time"
 )
@@ -112,7 +112,7 @@ func demoSlices() {
 
 // demoMaps demonstrates map usage
 func demoMaps() {
-	vertices := make(map[string]int)
+	vertices := make(map[string]int) // Declared empty map
 	vertices["a"] = 1
 	vertices["b"] = 2
 	vertices["c"] = 3

@@ -106,6 +106,14 @@ go test
 ## Contributing
 PRs and improvements to lessons, examples, and tests are welcome. Keep changes small and include a short note on why/what changed.
 
-Explain complex programming concepts clearly and concisely with practical ex
+Explain complex programming concepts clearly and concisely with practical exampls.
 
 Utilize Kafka for real-time data processing.
+
+Build a Snake Game Tutorial in Go and Ebiten
+
+Make Makefiles Tutorial Simplify and automate your workflow
+
+Make Data Structures in Golang Tutoriaal - Hash Tables
+
+Graph data structure and graph representation in Golang

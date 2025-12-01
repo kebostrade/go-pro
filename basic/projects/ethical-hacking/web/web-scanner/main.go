@@ -232,9 +232,9 @@ func checkXSSVulnerability(targetURL string, client *http.Client) []Vulnerabilit
 		if err != nil {
 			continue
 		}
-		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
 		if err != nil {
 			continue
 		}
@@ -287,9 +287,9 @@ func checkSQLInjection(targetURL string, client *http.Client) []Vulnerability {
 		if err != nil {
 			continue
 		}
-		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
 		if err != nil {
 			continue
 		}
@@ -350,9 +350,9 @@ func checkDirectoryListing(targetURL string, client *http.Client) []Vulnerabilit
 		if err != nil {
 			continue
 		}
-		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
 		if err != nil {
 			continue
 		}
