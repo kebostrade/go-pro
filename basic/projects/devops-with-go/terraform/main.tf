@@ -211,11 +211,31 @@ resource "aws_lb_listener" "app" {
   port              = "80"
   protocol          = "HTTP"
 
+  # Redirect HTTP to HTTPS (security best practice)
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app.arn
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 }
+
+# HTTPS Listener (requires certificate)
+# resource "aws_lb_listener" "app_https" {
+#   load_balancer_arn = aws_lb.main.arn
+#   port              = "443"
+#   protocol          = "HTTPS"
+#   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+#   certificate_arn   = var.certificate_arn  # Provide ACM certificate ARN
+#
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.app.arn
+#   }
+# }
 
 # IAM Role for ECS Task Execution
 resource "aws_iam_role" "ecs_task_execution" {

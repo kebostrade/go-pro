@@ -17,6 +17,15 @@ resource "aws_eks_cluster" "main" {
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
+  # Encryption configuration for secrets at rest (production)
+  # Uncomment and provide KMS key ARN for production deployments
+  # encryption_config {
+  #   provider {
+  #     key_arn = var.kms_key_arn  # Must provide valid KMS key ARN
+  #   }
+  #   resources = ["secrets"]
+  # }
+
   tags = var.tags
 
   depends_on = [

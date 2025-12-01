@@ -128,6 +128,10 @@ resource "aws_db_instance" "main" {
   # Deletion Protection
   deletion_protection = var.deletion_protection
 
+  # Security: IAM database authentication
+  # Allows database access using temporary AWS credentials instead of passwords
+  iam_database_authentication_enabled = true
+
   # Auto Minor Version Upgrade
   auto_minor_version_upgrade = var.auto_minor_version_upgrade
 
