@@ -1,4 +1,7 @@
-# Full implementation will be added in next iteration
+# EKS Cluster Configuration
+# Security notes:
+# - Secrets encryption is disabled for development (enable in production with KMS)
+# - Public API endpoint is enabled for dev access (restrict to specific IPs in production)
 
 resource "aws_eks_cluster" "main" {
   name     = var.cluster_name
@@ -9,6 +12,7 @@ resource "aws_eks_cluster" "main" {
     subnet_ids              = var.subnet_ids
     endpoint_private_access = true
     endpoint_public_access  = true
+    public_access_cidrs     = ["0.0.0.0/0"] # Development: open access. Production: restrict to specific CIDRs
   }
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]

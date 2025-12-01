@@ -26,7 +26,7 @@ Immutable values defined at compile time
 
 # Concurrency Primitives
 - Goroutines: Lightweight threads for concurrent execution
-- Channels: Communication pipes between goroutines
+- Channels: Communication pipes between goroutines. Use when you want to transfer data between goroutines safely.
 - Mutexes: Mutual exclusion for shared resource access
 - WaitGroups: Synchronization for multiple goroutines
 - Select: Multi-way concurrent control structure

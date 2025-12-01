@@ -220,6 +220,7 @@ resource "google_cloud_run_service_iam_member" "public_access" {
 resource "google_container_cluster" "primary" {
   name     = "${var.app_name}-gke-${var.environment}"
   location = var.region
+  project  = var.project_id
 
   # We can't create a cluster with no node pool defined, but we want to only use
   # separately managed node pools. So we create the smallest possible default
@@ -229,6 +230,24 @@ resource "google_container_cluster" "primary" {
 
   network    = "default"
   subnetwork = "default"
+
+  # VPC-native cluster with secondary IP ranges (modern GKE best practice)
+  ip_allocation_policy {
+    cluster_secondary_range_name  = "pods"
+    services_secondary_range_name = "services"
+  }
+
+  # Disable legacy client certificate authentication for security
+  # Client certificate auth is deprecated and increases attack surface
+  master_auth {
+    client_certificate_config {
+      issue_client_certificate = false
+    }
+  }
+
+  # Logging and monitoring configuration
+  logging_service    = "logging.googleapis.com/kubernetes"
+  monitoring_service = "monitoring.googleapis.com/kubernetes"
 
   # Required for GKE - set to false for dev environments
   deletion_protection = false
@@ -240,6 +259,7 @@ resource "google_container_cluster" "primary" {
 resource "google_container_node_pool" "primary_nodes" {
   name       = "${var.app_name}-node-pool"
   location   = var.region
+  project    = var.project_id
   cluster    = google_container_cluster.primary.name
   node_count = 1
   

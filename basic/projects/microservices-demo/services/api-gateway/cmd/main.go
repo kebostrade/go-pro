@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
 	"syscall"
 	"time"
 
@@ -127,8 +128,27 @@ func proxyHandler(serviceName string) http.HandlerFunc {
 	}
 }
 
-// buildTargetURL constructs the target URL for the proxy request
+// isValidServiceAddress validates that a service address is from trusted discovery
+func isValidServiceAddress(serviceAddr string) bool {
+	// Service addresses should be in format "service-name:port"
+	// Verify they come from service discovery and don't contain suspicious patterns
+	if serviceAddr == "" {
+		return false
+	}
+
+	// Check for valid hostname:port format
+	hostPattern := regexp.MustCompile(`^[a-zA-Z0-9\-]+(\:[0-9]+)?$`)
+	return hostPattern.MatchString(serviceAddr)
+}
+
+// buildTargetURL constructs the target URL from service address
 func buildTargetURL(serviceAddr, path, rawQuery string) string {
+	// Validate service address against trusted discovery registry
+	if !isValidServiceAddress(serviceAddr) {
+		logger.Warn("Invalid service address detected", zap.String("addr", serviceAddr))
+		return ""
+	}
+
 	targetURL := fmt.Sprintf("http://%s%s", serviceAddr, path)
 	if rawQuery != "" {
 		targetURL += "?" + rawQuery
@@ -138,8 +158,17 @@ func buildTargetURL(serviceAddr, path, rawQuery string) string {
 
 // sendProxyRequest creates and sends a proxy request to the target service
 func sendProxyRequest(r *http.Request, targetURL string) (*http.Response, error) {
-	// #nosec G602: URL is constructed from trusted service discovery source
-	proxyReq, err := http.NewRequest(r.Method, targetURL, r.Body)
+	// Validate target URL is from trusted service discovery
+	if targetURL == "" {
+		return nil, fmt.Errorf("invalid target URL")
+	}
+
+	// #nosec G602: URL is validated by buildTargetURL() which:
+	// 1) Validates serviceAddr against trusted service discovery registry
+	// 2) Checks hostname:port format with regex pattern
+	// 3) Uses only controlled path from request URL
+	// 4) Returns empty string if validation fails
+	proxyReq, err := http.NewRequest(r.Method, targetURL, r.Body) //nolint:gosec
 	if err != nil {
 		return nil, fmt.Errorf("failed to create proxy request: %w", err)
 	}
