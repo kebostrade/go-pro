@@ -6,6 +6,7 @@
 *.dylib
 bin/
 *.out
+web/web-scanner/web-scanner
 
 # Test binary
 *.test
