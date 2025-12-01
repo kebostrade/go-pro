@@ -124,7 +124,9 @@ func proxyHandler(serviceName string) http.HandlerFunc {
 		// Copy response headers and body
 		copyResponseHeaders(w, resp.Header)
 		w.WriteHeader(resp.StatusCode)
-		io.Copy(w, resp.Body)
+		if _, err := io.Copy(w, resp.Body); err != nil {
+			logger.Error("Failed to copy response body", zap.Error(err))
+		}
 	}
 }
 
@@ -163,18 +165,31 @@ func sendProxyRequest(r *http.Request, targetURL string) (*http.Response, error)
 		return nil, fmt.Errorf("invalid target URL")
 	}
 
-	// #nosec G602: URL is validated by buildTargetURL() which:
+	// #nosec G107: URL is validated by buildTargetURL() which:
 	// 1) Validates serviceAddr against trusted service discovery registry
 	// 2) Checks hostname:port format with regex pattern
 	// 3) Uses only controlled path from request URL
 	// 4) Returns empty string if validation fails
-	proxyReq, err := http.NewRequest(r.Method, targetURL, r.Body) //nolint:gosec
+	proxyReq, err := http.NewRequest(r.Method, targetURL, r.Body) //nolint:gosec // G107: SSRF prevented by ValidateURL()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create proxy request: %w", err)
 	}
 
-	// Copy headers
+	// Copy headers (skip hop-by-hop headers)
+	hopByHop := map[string]bool{
+		"Connection":          true,
+		"Keep-Alive":          true,
+		"Proxy-Authenticate":  true,
+		"Proxy-Authorization": true,
+		"Te":                  true,
+		"Trailers":            true,
+		"Transfer-Encoding":   true,
+		"Upgrade":             true,
+	}
 	for key, values := range r.Header {
+		if hopByHop[key] {
+			continue
+		}
 		for _, value := range values {
 			proxyReq.Header.Add(key, value)
 		}
@@ -190,7 +205,22 @@ func sendProxyRequest(r *http.Request, targetURL string) (*http.Response, error)
 
 // copyResponseHeaders copies response headers from the upstream service
 func copyResponseHeaders(w http.ResponseWriter, headers http.Header) {
+	// Hop-by-hop headers to skip
+	hopByHop := map[string]bool{
+		"Connection":          true,
+		"Keep-Alive":          true,
+		"Proxy-Authenticate":  true,
+		"Proxy-Authorization": true,
+		"Te":                  true,
+		"Trailers":            true,
+		"Transfer-Encoding":   true,
+		"Upgrade":             true,
+	}
+
 	for key, values := range headers {
+		if hopByHop[key] {
+			continue
+		}
 		for _, value := range values {
 			w.Header().Add(key, value)
 		}
