@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"regexp"
+	"strings"
 	"syscall"
 	"time"
 
@@ -143,7 +145,20 @@ func isValidServiceAddress(serviceAddr string) bool {
 	return hostPattern.MatchString(serviceAddr)
 }
 
-// buildTargetURL constructs the target URL from service address
+// sanitizePath validates and sanitizes a URL path to prevent path traversal
+func sanitizePath(path string) string {
+	// Prevent path traversal attacks
+	if strings.Contains(path, "..") {
+		return "/"
+	}
+	// Ensure path starts with /
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	return path
+}
+
+// buildTargetURL constructs the target URL from service address using safe URL construction
 func buildTargetURL(serviceAddr, path, rawQuery string) string {
 	// Validate service address against trusted discovery registry
 	if !isValidServiceAddress(serviceAddr) {
@@ -151,11 +166,18 @@ func buildTargetURL(serviceAddr, path, rawQuery string) string {
 		return ""
 	}
 
-	targetURL := fmt.Sprintf("http://%s%s", serviceAddr, path)
-	if rawQuery != "" {
-		targetURL += "?" + rawQuery
+	// Sanitize path to prevent traversal attacks
+	safePath := sanitizePath(path)
+
+	// Use url.URL for safe URL construction
+	targetURL := &url.URL{
+		Scheme:   "http",
+		Host:     serviceAddr,
+		Path:     safePath,
+		RawQuery: rawQuery,
 	}
-	return targetURL
+
+	return targetURL.String()
 }
 
 // sendProxyRequest creates and sends a proxy request to the target service
@@ -165,12 +187,25 @@ func sendProxyRequest(r *http.Request, targetURL string) (*http.Response, error)
 		return nil, fmt.Errorf("invalid target URL")
 	}
 
-	// #nosec G107: URL is validated by buildTargetURL() which:
-	// 1) Validates serviceAddr against trusted service discovery registry
-	// 2) Checks hostname:port format with regex pattern
-	// 3) Uses only controlled path from request URL
-	// 4) Returns empty string if validation fails
-	proxyReq, err := http.NewRequest(r.Method, targetURL, r.Body) //nolint:gosec // G107: SSRF prevented by ValidateURL()
+	// Parse and re-validate the URL to ensure it's well-formed
+	parsedURL, err := url.Parse(targetURL)
+	if err != nil {
+		return nil, fmt.Errorf("invalid URL format: %w", err)
+	}
+
+	// Final validation: ensure scheme is http and host is valid
+	if parsedURL.Scheme != "http" || !isValidServiceAddress(parsedURL.Host) {
+		return nil, fmt.Errorf("URL validation failed")
+	}
+
+	// Construct request with validated URL string
+	// SSRF Protection enforced by:
+	// 1. isValidServiceAddress() - regex validates hostname:port format
+	// 2. sanitizePath() - blocks path traversal (..)
+	// 3. url.Parse() - validates URL structure
+	// 4. Scheme/host check above - ensures only http to valid services
+	validatedURL := parsedURL.String()
+	proxyReq, err := http.NewRequest(r.Method, validatedURL, r.Body) // #nosec G107
 	if err != nil {
 		return nil, fmt.Errorf("failed to create proxy request: %w", err)
 	}

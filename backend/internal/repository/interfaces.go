@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"go-pro-backend/internal/domain"
 )
@@ -59,7 +60,15 @@ type UserRepository interface {
 	GetAll(ctx context.Context, pagination *domain.PaginationRequest) ([]*domain.User, int64, error)
 	Update(ctx context.Context, user *domain.User) error
 	UpdateLastLogin(ctx context.Context, userID string) error
+	UpdateLastActivity(ctx context.Context, userID string) error
 	Delete(ctx context.Context, id string) error
+}
+
+// StreakRepository defines the interface for streak data operations.
+type StreakRepository interface {
+	GetByUserID(ctx context.Context, userID string) (*domain.Streak, error)
+	Upsert(ctx context.Context, streak *domain.Streak) error
+	UpdateStreak(ctx context.Context, userID string, lastActivityDate *time.Time) error
 }
 
 // Repositories aggregates all repository interfaces.
@@ -69,4 +78,5 @@ type Repositories struct {
 	Exercise ExerciseRepository
 	Progress ProgressRepository
 	User     UserRepository
+	Streak   StreakRepository
 }

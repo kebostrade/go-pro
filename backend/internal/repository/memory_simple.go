@@ -294,6 +294,21 @@ func (r *MemoryUserRepository) UpdateLastLogin(ctx context.Context, userID strin
 	return nil
 }
 
+// UpdateLastActivity implements UserRepository.UpdateLastActivity.
+func (r *MemoryUserRepository) UpdateLastActivity(ctx context.Context, userID string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	user, exists := r.users[userID]
+	if !exists {
+		return errors.NewNotFoundError(fmt.Sprintf("user with id %s not found", userID))
+	}
+
+	user.UpdatedAt = time.Now()
+
+	return nil
+}
+
 // Delete implements UserRepository.Delete.
 func (r *MemoryUserRepository) Delete(ctx context.Context, id string) error {
 	r.mu.Lock()

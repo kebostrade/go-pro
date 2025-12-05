@@ -24,6 +24,7 @@ func GetAllMigrations() []postgres.MigrationV2 {
 		seedLessonsData(),             // Version 8: Populate with 20 lessons
 		addPerformanceIndexes(),       // Version 9: Add performance optimization indexes
 		updateUsersTableForFirebase(), // Version 10: Add Firebase authentication fields
+		createStreaksTable(),           // Version 11: Create streaks table
 	}
 }
 
@@ -341,6 +342,9 @@ func updateUsersTableForFirebase() postgres.MigrationV2 {
 
 				// Add single role column (replaces roles array)
 				"ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'student'",
+
+				// Add last_activity_date for streak tracking
+				"ALTER TABLE users ADD COLUMN IF NOT EXISTS last_activity_date DATE",
 			}
 
 			for _, query := range alterQueries {
@@ -397,6 +401,7 @@ func updateUsersTableForFirebase() postgres.MigrationV2 {
 			indexQueries := []string{
 				"CREATE INDEX IF NOT EXISTS idx_users_firebase_uid ON users(firebase_uid)",
 				"CREATE INDEX IF NOT EXISTS idx_users_role ON users(role) WHERE is_active = TRUE",
+				"CREATE INDEX IF NOT EXISTS idx_users_last_activity ON users(last_activity_date)",
 			}
 
 			for _, query := range indexQueries {
@@ -412,6 +417,7 @@ func updateUsersTableForFirebase() postgres.MigrationV2 {
 			dropIndexQueries := []string{
 				"DROP INDEX IF EXISTS idx_users_firebase_uid",
 				"DROP INDEX IF EXISTS idx_users_role",
+				"DROP INDEX IF EXISTS idx_users_last_activity",
 			}
 
 			for _, query := range dropIndexQueries {
@@ -438,9 +444,67 @@ func updateUsersTableForFirebase() postgres.MigrationV2 {
 				DROP COLUMN IF EXISTS firebase_uid,
 				DROP COLUMN IF EXISTS display_name,
 				DROP COLUMN IF EXISTS photo_url,
-				DROP COLUMN IF EXISTS role
+				DROP COLUMN IF EXISTS role,
+				DROP COLUMN IF EXISTS last_activity_date
 			`
 			_, err := tx.Exec(dropColumnQuery)
+			return err
+		},
+	}
+}
+
+// createStreaksTable creates the streaks table for tracking user streaks.
+// Version 11: Tracks daily login streaks for gamification.
+func createStreaksTable() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     11,
+		Description: "Create streaks table for tracking user streaks",
+		Up: func(tx *sql.Tx) error {
+			query := `
+				CREATE TABLE IF NOT EXISTS streaks (
+					user_id VARCHAR(255) PRIMARY KEY,
+					current_streak INTEGER NOT NULL DEFAULT 0,
+					longest_streak INTEGER NOT NULL DEFAULT 0,
+					last_activity_date DATE,
+					created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+				)
+			`
+			if _, err := tx.Exec(query); err != nil {
+				return err
+			}
+
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_streaks_user_id ON streaks(user_id)",
+				"CREATE INDEX IF NOT EXISTS idx_streaks_current_streak ON streaks(current_streak DESC)",
+				"CREATE INDEX IF NOT EXISTS idx_streaks_longest_streak ON streaks(longest_streak DESC)",
+				"CREATE INDEX IF NOT EXISTS idx_streaks_last_activity ON streaks(last_activity_date DESC)",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			indexQueries := []string{
+				"DROP INDEX IF EXISTS idx_streaks_user_id",
+				"DROP INDEX IF EXISTS idx_streaks_current_streak",
+				"DROP INDEX IF EXISTS idx_streaks_longest_streak",
+				"DROP INDEX IF EXISTS idx_streaks_last_activity",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			_, err := tx.Exec("DROP TABLE IF EXISTS streaks")
 			return err
 		},
 	}

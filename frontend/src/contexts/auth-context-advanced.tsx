@@ -43,7 +43,7 @@ import {
   getDocs,
   Timestamp,
 } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { getAuthInstance, getDbInstance } from '@/lib/firebase';
 
 export interface LoginHistory {
   timestamp: Date;

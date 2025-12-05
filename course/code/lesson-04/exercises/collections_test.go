@@ -215,7 +215,8 @@ func TestInventoryOperations(t *testing.T) {
 	// Test total value
 	expectedValue := 15*999.99 + 5*29.99
 	totalValue := inv.GetTotalValue()
-	if totalValue != expectedValue {
+	delta := 0.01 // Allow small floating-point precision difference
+	if (totalValue-expectedValue) > delta || (expectedValue-totalValue) > delta {
 		t.Errorf("GetTotalValue() = %.2f, want %.2f", totalValue, expectedValue)
 	}
 }

@@ -1,95 +1,131 @@
 package exercises
 
 // Exercise 1: Array Practice
-// Complete the functions below to work with arrays
 
-// TODO: Create a function that returns an array of the first 5 prime numbers
-// The function should return [5]int containing {2, 3, 5, 7, 11}
+// GetFirstFivePrimes returns an array of the first 5 prime numbers
 func GetFirstFivePrimes() [5]int {
-	// TODO: Implement this function
-	return [5]int{}
+	return [5]int{2, 3, 5, 7, 11}
 }
 
-// TODO: Create a function that finds the maximum value in an array
-// Return both the maximum value and its index
+// FindMaxInArray finds the maximum value in an array
 func FindMaxInArray(arr [10]int) (max int, index int) {
-	// TODO: Implement this function
-	return 0, 0
+	max = arr[0]
+	index = 0
+	for i := 1; i < len(arr); i++ {
+		if arr[i] > max {
+			max = arr[i]
+			index = i
+		}
+	}
+	return max, index
 }
 
 // Exercise 2: Slice Manipulation
-// Complete the slice operations below
 
-// TODO: Create a function that removes duplicates from a slice
-// Input: []int{1, 2, 2, 3, 3, 3, 4}
-// Output: []int{1, 2, 3, 4}
+// RemoveDuplicates removes duplicates from a slice
 func RemoveDuplicates(slice []int) []int {
-	// TODO: Implement this function
-	return nil
+	if len(slice) == 0 {
+		return slice
+	}
+	seen := make(map[int]bool)
+	result := []int{}
+	for _, v := range slice {
+		if !seen[v] {
+			seen[v] = true
+			result = append(result, v)
+		}
+	}
+	return result
 }
 
-// TODO: Create a function that reverses a slice in place
-// Input: []string{"a", "b", "c", "d"}
-// Output: []string{"d", "c", "b", "a"}
+// ReverseSlice reverses a slice in place
 func ReverseSlice(slice []string) {
-	// TODO: Implement this function
+	for i := 0; i < len(slice)/2; i++ {
+		j := len(slice) - 1 - i
+		slice[i], slice[j] = slice[j], slice[i]
+	}
 }
 
-// TODO: Create a function that merges two sorted slices into one sorted slice
-// Input: []int{1, 3, 5}, []int{2, 4, 6}
-// Output: []int{1, 2, 3, 4, 5, 6}
+// MergeSortedSlices merges two sorted slices into one sorted slice
 func MergeSortedSlices(slice1, slice2 []int) []int {
-	// TODO: Implement this function
-	return nil
+	result := make([]int, 0, len(slice1)+len(slice2))
+	i, j := 0, 0
+	for i < len(slice1) && j < len(slice2) {
+		if slice1[i] < slice2[j] {
+			result = append(result, slice1[i])
+			i++
+		} else {
+			result = append(result, slice2[j])
+			j++
+		}
+	}
+	result = append(result, slice1[i:]...)
+	result = append(result, slice2[j:]...)
+	return result
 }
 
 // Exercise 3: Map Operations
-// Complete the map-related functions below
 
-// TODO: Create a function that counts the frequency of each character in a string
-// Input: "hello"
-// Output: map[rune]int{'h': 1, 'e': 1, 'l': 2, 'o': 1}
+// CountCharacters counts the frequency of each character in a string
 func CountCharacters(s string) map[rune]int {
-	// TODO: Implement this function
-	return nil
+	counts := make(map[rune]int)
+	for _, ch := range s {
+		counts[ch]++
+	}
+	return counts
 }
 
-// TODO: Create a function that inverts a map (keys become values, values become keys)
-// Input: map[string]int{"a": 1, "b": 2, "c": 3}
-// Output: map[int]string{1: "a", 2: "b", 3: "c"}
+// InvertMap inverts a map (keys become values, values become keys)
 func InvertMap(m map[string]int) map[int]string {
-	// TODO: Implement this function
-	return nil
+	inverted := make(map[int]string)
+	for k, v := range m {
+		inverted[v] = k
+	}
+	return inverted
 }
 
-// TODO: Create a function that merges two maps
-// If a key exists in both maps, use the value from the second map
+// MergeMaps merges two maps
 func MergeMaps(map1, map2 map[string]int) map[string]int {
-	// TODO: Implement this function
-	return nil
+	result := make(map[string]int)
+	for k, v := range map1 {
+		result[k] = v
+	}
+	for k, v := range map2 {
+		result[k] = v
+	}
+	return result
 }
 
 // Exercise 4: Advanced Collection Operations
-// Implement more complex algorithms
 
-// TODO: Create a function that finds the intersection of two slices
-// Input: []int{1, 2, 3, 4}, []int{3, 4, 5, 6}
-// Output: []int{3, 4}
+// FindIntersection finds the intersection of two slices
 func FindIntersection(slice1, slice2 []int) []int {
-	// TODO: Implement this function
-	return nil
+	set := make(map[int]bool)
+	for _, v := range slice1 {
+		set[v] = true
+	}
+	result := []int{}
+	seen := make(map[int]bool)
+	for _, v := range slice2 {
+		if set[v] && !seen[v] {
+			result = append(result, v)
+			seen[v] = true
+		}
+	}
+	return result
 }
 
-// TODO: Create a function that groups strings by their length
-// Input: []string{"cat", "dog", "elephant", "ant", "horse"}
-// Output: map[int][]string{3: {"cat", "dog", "ant"}, 5: {"horse"}, 8: {"elephant"}}
+// GroupByLength groups strings by their length
 func GroupByLength(words []string) map[int][]string {
-	// TODO: Implement this function
-	return nil
+	groups := make(map[int][]string)
+	for _, word := range words {
+		length := len(word)
+		groups[length] = append(groups[length], word)
+	}
+	return groups
 }
 
 // Exercise 5: Real-World Scenario - Inventory Management
-// Complete the inventory management system
 
 type Product struct {
 	ID    string
@@ -102,54 +138,73 @@ type Inventory struct {
 	products map[string]*Product
 }
 
-// TODO: Create a new inventory
+// NewInventory creates a new inventory
 func NewInventory() *Inventory {
-	// TODO: Implement this function
-	return nil
+	return &Inventory{
+		products: make(map[string]*Product),
+	}
 }
 
-// TODO: Add a product to the inventory
+// AddProduct adds a product to the inventory
 func (inv *Inventory) AddProduct(product *Product) {
-	// TODO: Implement this method
+	inv.products[product.ID] = product
 }
 
-// TODO: Get a product by ID
+// GetProduct gets a product by ID
 func (inv *Inventory) GetProduct(id string) (*Product, bool) {
-	// TODO: Implement this method
-	return nil, false
+	product, exists := inv.products[id]
+	return product, exists
 }
 
-// TODO: Update product stock
+// UpdateStock updates product stock
 func (inv *Inventory) UpdateStock(id string, newStock int) bool {
-	// TODO: Implement this method
-	return false
+	product, exists := inv.products[id]
+	if !exists {
+		return false
+	}
+	product.Stock = newStock
+	return true
 }
 
-// TODO: Get all products with stock below a threshold
+// GetLowStockProducts gets all products with stock below a threshold
 func (inv *Inventory) GetLowStockProducts(threshold int) []*Product {
-	// TODO: Implement this method
-	return nil
+	lowStock := []*Product{}
+	for _, product := range inv.products {
+		if product.Stock < threshold {
+			lowStock = append(lowStock, product)
+		}
+	}
+	return lowStock
 }
 
-// TODO: Calculate total inventory value
+// GetTotalValue calculates total inventory value
 func (inv *Inventory) GetTotalValue() float64 {
-	// TODO: Implement this method
-	return 0.0
+	total := 0.0
+	for _, product := range inv.products {
+		total += product.Price * float64(product.Stock)
+	}
+	return total
 }
 
 // Exercise 6: Memory Efficiency Challenge
-// Implement functions that demonstrate efficient memory usage
 
-// TODO: Create a function that efficiently appends to a slice
-// Pre-allocate capacity to avoid multiple reallocations
+// EfficientAppend efficiently appends to a slice
 func EfficientAppend(initialSize int, values []int) []int {
-	// TODO: Implement this function with proper capacity management
-	return nil
+	result := make([]int, 0, initialSize+len(values))
+	result = append(result, values...)
+	return result
 }
 
-// TODO: Create a function that efficiently processes large slices in chunks
-// Process the slice in chunks of specified size to manage memory usage
+// ProcessInChunks processes large slices in chunks
 func ProcessInChunks(data []int, chunkSize int, processor func([]int) int) []int {
-	// TODO: Implement this function
-	return nil
+	results := []int{}
+	for i := 0; i < len(data); i += chunkSize {
+		end := i + chunkSize
+		if end > len(data) {
+			end = len(data)
+		}
+		chunk := data[i:end]
+		results = append(results, processor(chunk))
+	}
+	return results
 }

@@ -61,6 +61,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Initialize Firebase Auth Service at startup
+	if err := appContainer.Services.Auth.Initialize(ctx); err != nil {
+		devMode := os.Getenv("DEV_MODE") == "true"
+		projectID := os.Getenv("FIREBASE_PROJECT_ID")
+
+		if devMode && projectID == "" {
+			log.Warn(ctx, "Firebase not configured, continuing in mock DEV_MODE")
+		} else {
+			log.Error(ctx, "Failed to initialize Firebase Auth service", "error", err)
+			if !devMode {
+				os.Exit(1)
+			}
+		}
+	} else {
+		log.Info(ctx, "Firebase Auth service initialized successfully")
+	}
+
 	// Initialize Firebase Auth Service adapter for middleware.
 	authServiceAdapter := &firebaseAuthAdapter{authService: appContainer.Services.Auth}
 

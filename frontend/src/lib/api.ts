@@ -1,5 +1,5 @@
 // API client for GO-PRO backend
-import { auth } from './firebase';
+import { getAuthInstance } from './firebase';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -191,7 +191,7 @@ export function setTokenRefreshCallback(callback: () => Promise<void>) {
 }
 
 async function getIdToken(): Promise<string | null> {
-  const user = auth.currentUser;
+  const user = getAuthInstance().currentUser;
   if (!user) return null;
 
   try {

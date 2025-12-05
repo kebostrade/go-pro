@@ -27,7 +27,7 @@ import {
   inMemoryPersistence,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { getAuthInstance, getDbInstance } from '@/lib/firebase';
 import { api, BackendUser, setTokenRefreshCallback } from '@/lib/api';
 import {
   getAuthErrorMessage,
@@ -149,6 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Create or update user profile in Firestore
   const createUserProfile = async (user: User, additionalData?: Partial<UserProfile>) => {
+    const db = getDbInstance();
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
 
@@ -259,7 +260,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(passwordValidation.message || 'Invalid password');
       }
 
-      const result = await createUserWithEmailAndPassword(auth, email, password);
+      const result = await createUserWithEmailAndPassword(getAuthInstance(), email, password);
 
       if (displayName && result.user) {
         await updateProfile(result.user, { displayName });
@@ -295,7 +296,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(getAuthInstance(), email, password);
 
       // Reset rate limiter on success
       authRateLimiter.reset(email);
@@ -317,7 +318,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const provider = new GoogleAuthProvider();
       provider.addScope('profile');
       provider.addScope('email');
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(getAuthInstance(), provider);
       // Profile creation is non-blocking - don't fail login if Firestore write fails
       try {
         await createUserProfile(result.user);
@@ -342,7 +343,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const provider = new GithubAuthProvider();
       provider.addScope('read:user');
       provider.addScope('user:email');
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(getAuthInstance(), provider);
       // Profile creation is non-blocking - don't fail login if Firestore write fails
       try {
         await createUserProfile(result.user);
@@ -436,7 +437,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         [SessionPersistence.SESSION]: browserSessionPersistence,
         [SessionPersistence.NONE]: inMemoryPersistence,
       };
-      await setPersistence(auth, persistenceMap[persistence]);
+      await setPersistence(getAuthInstance(), persistenceMap[persistence]);
     } catch (err: any) {
       const errorMessage = getAuthErrorMessage(err);
       setError(errorMessage);
@@ -448,7 +449,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async (): Promise<void> => {
     try {
       setError(null);
-      await firebaseSignOut(auth);
+      await firebaseSignOut(getAuthInstance());
       setUserProfile(null);
       setBackendUser(null);
     } catch (err: any) {
@@ -463,6 +464,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setError(null);
+      const db = getDbInstance();
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
         ...data,
@@ -518,7 +520,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const sendPasswordReset = async (email: string): Promise<void> => {
     try {
       setError(null);
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(getAuthInstance(), email);
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -604,7 +606,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Auth state listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(getAuthInstance(), async (user) => {
       setUser(user);
       if (user) {
         await loadUserProfile(user);

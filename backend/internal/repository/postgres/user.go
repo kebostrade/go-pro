@@ -334,6 +334,31 @@ func (r *UserRepository) UpdateLastLogin(ctx context.Context, userID string) err
 	return nil
 }
 
+// UpdateLastActivity updates the last activity time for a user.
+func (r *UserRepository) UpdateLastActivity(ctx context.Context, userID string) error {
+	query := `
+		UPDATE gopro.users
+		SET updated_at = $1
+		WHERE id = $2
+	`
+
+	now := time.Now()
+	result, err := r.db.ExecContext(ctx, query, now, userID)
+	if err != nil {
+		return fmt.Errorf("failed to update last activity: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rowsAffected == 0 {
+		return errors.NewNotFoundError(fmt.Sprintf("user with id %s not found", userID))
+	}
+
+	return nil
+}
+
 // Delete deletes a user from the database.
 func (r *UserRepository) Delete(ctx context.Context, id string) error {
 	query := "DELETE FROM gopro.users WHERE id = $1"

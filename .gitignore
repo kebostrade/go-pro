@@ -112,3 +112,5 @@ firebase-admin-sdk.json
 *-firebase-adminsdk-*.json
 config/firebase-admin-sdk.json
 .firebase
+agent-os
+.claude

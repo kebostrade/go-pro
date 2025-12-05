@@ -237,6 +237,14 @@ resource "google_container_cluster" "primary" {
     services_secondary_range_name = "services"
   }
 
+  # Private cluster configuration - nodes have only private IPs
+  # Security: Both private nodes and private endpoint enabled for maximum security
+  private_cluster_config {
+    enable_private_nodes    = true
+    enable_private_endpoint = true
+    master_ipv4_cidr_block  = "172.16.0.0/28"
+  }
+
   # Disable legacy client certificate authentication for security
   # Client certificate auth is deprecated and increases attack surface
   master_auth {
@@ -249,21 +257,30 @@ resource "google_container_cluster" "primary" {
   logging_service    = "logging.googleapis.com/kubernetes"
   monitoring_service = "monitoring.googleapis.com/kubernetes"
 
-  # Network security: restrict API access
-  # Development: 0.0.0.0/0 (open). Production: restrict to specific IPs
-  # Security Note: In production, replace with specific CIDR blocks (e.g., corporate VPN ranges)
-  master_authorized_networks_config {
-    cidr_blocks {
-      cidr_block   = "0.0.0.0/0"
-      display_name = "All (development only - RESTRICT IN PRODUCTION)"
+  # Network policy for pod-to-pod communication control
+  network_policy {
+    enabled = true
+  }
+
+  # Enable workload identity for secure pod authentication
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
+  }
+
+  # Security: Enable binary authorization
+  binary_authorization {
+    evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+  }
+
+  # Addons configuration
+  addons_config {
+    network_policy_config {
+      disabled = false
     }
   }
 
-  # Network policy for pod-to-pod communication control
-  network_policy {
-    enabled  = true
-    provider = "PROVIDER_UNSPECIFIED"
-  }
+  # Enable Shielded Nodes for additional security
+  enable_shielded_nodes = true
 
   # Required for GKE - set to false for dev environments
   deletion_protection = false

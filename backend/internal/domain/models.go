@@ -215,6 +215,7 @@ type User struct {
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`
 	LastLoginAt  *time.Time `json:"last_login_at,omitempty"`
+	LastActivityDate *time.Time `json:"last_activity_date,omitempty"` // For streak tracking
 }
 
 // UserRole represents user roles in the system.
@@ -460,4 +461,26 @@ type LessonExercise struct {
 	Requirements []string `json:"requirements"`
 	InitialCode  string   `json:"initial_code"`
 	Solution     string   `json:"solution"`
+}
+
+// Streak represents user streak tracking data.
+type Streak struct {
+	UserID           string     `json:"user_id" validate:"required"`
+	CurrentStreak    int        `json:"current_streak" validate:"min=0"`
+	LongestStreak    int        `json:"longest_streak" validate:"min=0"`
+	LastActivityDate *time.Time `json:"last_activity_date,omitempty"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
+}
+
+// UpdateStreakRequest represents a request to update streak data.
+type UpdateStreakRequest struct {
+	LastActivityDate *time.Time `json:"last_activity_date,omitempty"`
+}
+
+// StreakResponse represents streak data in API responses.
+type StreakResponse struct {
+	CurrentStreak int        `json:"current_streak"`
+	LongestStreak int        `json:"longest_streak"`
+	LastActivityDate *time.Time `json:"last_activity_date,omitempty"`
 }

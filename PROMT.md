@@ -117,3 +117,34 @@ Make Makefiles Tutorial Simplify and automate your workflow
 Make Data Structures in Golang Tutoriaal - Hash Tables
 
 Graph data structure and graph representation in Golang
+
+# System Design with Golang
+Design scalable systems using Go 
+# Building RESTful APIs with Go
+Create robust RESTful APIs using Go and best practices.
+# Building CLI Applications with Go
+Develop command-line tools and applications using Go.
+# Testing and Debugging in Go
+Learn effective testing and debugging techniques in Go.
+# Building Web Applications with Go and Gin
+Create web applications using the Gin framework in Go.
+# Building Microservices with Go and Docker
+Develop microservices using Go and containerize them with Docker.
+# Building Real-time Applications with Go and WebSockets
+Create real-time applications using Go and WebSockets.
+# Building Distributed Systems with Go and gRPC
+Design and implement distributed systems using Go and gRPC.
+# Building Cloud-Native Applications with Go and Kubernetes
+Develop cloud-native applications using Go and deploy them with Kubernetes.
+# Building Event-Driven Applications with Go and NATS
+Create event-driven applications using Go and NATS messaging system.
+# Building Machine Learning Applications with Go and Gorgonia
+Develop machine learning applications using Go and the Gorgonia library.
+# Building Blockchain Applications with Go and Ethereum
+Create blockchain applications using Go and the Ethereum platform.
+# Building IoT Applications with Go and MQTT
+Develop IoT applications using Go and the MQTT protocol.
+# Building Serverless Applications with Go and AWS Lambda
+Create serverless applications using Go and deploy them on AWS Lambda.
+# Building GraphQL APIs with Go and gqlgen
+Develop GraphQL APIs using Go and the gqlgen library.			

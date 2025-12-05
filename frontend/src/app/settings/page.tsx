@@ -40,7 +40,7 @@ import {
   deleteUser,
 } from 'firebase/auth';
 import { doc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDbInstance } from '@/lib/firebase';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -135,7 +135,7 @@ export default function SettingsPage() {
 
     try {
       // Delete user document from Firestore
-      const userRef = doc(db, 'users', user.uid);
+      const userRef = doc(getDbInstance(), 'users', user.uid);
       await deleteDoc(userRef);
 
       // Delete user from Firebase Auth
