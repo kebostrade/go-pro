@@ -1,7 +1,12 @@
 // API client for GO-PRO backend
-import { auth } from './firebase';
+import { getAuthInstance } from './firebase';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+
+// Check if backend is configured
+const isBackendConfigured = (): boolean => {
+  return !!API_BASE_URL && API_BASE_URL !== '';
+};
 
 interface APIResponse<T> {
   success: boolean;
@@ -186,7 +191,7 @@ export function setTokenRefreshCallback(callback: () => Promise<void>) {
 }
 
 async function getIdToken(): Promise<string | null> {
-  const user = auth.currentUser;
+  const user = getAuthInstance().currentUser;
   if (!user) return null;
 
   try {
@@ -207,6 +212,11 @@ async function apiRequest<T>(
   options: RequestInit = {},
   requiresAuth = false
 ): Promise<T> {
+  // Skip API calls if backend is not configured (production without backend)
+  if (!isBackendConfigured()) {
+    throw new APIError('Backend not configured', 0, 'backend_not_configured');
+  }
+
   const url = `${API_BASE_URL}${endpoint}`;
 
   const defaultHeaders = {

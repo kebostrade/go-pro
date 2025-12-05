@@ -13,12 +13,12 @@ Variables that store memory addresses of other variables
 
 # Constants
 Immutable values defined at compile time
-
 # Data Types and Structures
+- Basic Types: int, float64, string, bool
 - Arrays: Fixed-size sequences
 - Slices: Dynamic, flexible view into arrays
 - Maps: Hash table implementation, key-value pairs
-- Structs: Custom data types grouping related fields
+- Structs: Collection of custom data types grouping related fields
 - Custom Types: Define new types based on existing ones
 - Type Embedding: Composition mechanism for types
 - Interfaces: Define behavior through method signatures
@@ -26,11 +26,11 @@ Immutable values defined at compile time
 
 # Concurrency Primitives
 - Goroutines: Lightweight threads for concurrent execution
-- Channels: Communication pipes between goroutines
+- Channels: Communication pipes between goroutines. Use when you want to transfer data between goroutines safely.
 - Mutexes: Mutual exclusion for shared resource access
 - WaitGroups: Synchronization for multiple goroutines
 - Select: Multi-way concurrent control structure
-- Context: Cancellation, deadlines, and request-scoped values
+- Context: Cancellation, deadlines, and request-scoped values 
 
 # Memory and Safety
 - Memory Management: Automatic memory allocation
@@ -66,7 +66,7 @@ Immutable values defined at compile time
 package main
 
 import (
-	"fmt"
+	"fmt" // Imports formatted IO
 	"sync"
 	"time"
 )
@@ -112,7 +112,7 @@ func demoSlices() {
 
 // demoMaps demonstrates map usage
 func demoMaps() {
-	vertices := make(map[string]int)
+	vertices := make(map[string]int) // Declared empty map
 	vertices["a"] = 1
 	vertices["b"] = 2
 	vertices["c"] = 3

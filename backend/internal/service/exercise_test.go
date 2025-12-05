@@ -244,15 +244,15 @@ func TestGetExerciseByID(t *testing.T) {
 // SubmitExercise tests
 func TestSubmitExercise(t *testing.T) {
 	tests := []struct {
-		name          string
-		exerciseID    string
-		request       *domain.SubmitExerciseRequest
-		mockExercise  *domain.Exercise
+		name           string
+		exerciseID     string
+		request        *domain.SubmitExerciseRequest
+		mockExercise   *domain.Exercise
 		mockExecResult *ExecuteResult
-		mockExecError error
-		wantError     bool
-		expectedScore int
-		expectedPass  bool
+		mockExecError  error
+		wantError      bool
+		expectedScore  int
+		expectedPass   bool
 	}{
 		{
 			name:       "success - all tests passed",

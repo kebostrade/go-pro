@@ -1,0 +1,50 @@
+# Snyk (https://snyk.io) policy file
+# Note: Snyk Code scanning does not honor .snyk policy files - only Snyk Open Source does.
+# This file documents the security posture for auditors and future maintainers.
+
+version: v1.25.0
+
+# ============================================================================
+# DOCUMENTED FALSE POSITIVES - Educational Security Scanner
+# ============================================================================
+#
+# This is an EDUCATIONAL web vulnerability scanner for security training.
+# It intentionally performs HTTP requests to user-provided URLs - that's its purpose.
+#
+# SSRF PROTECTION IMPLEMENTED:
+# - ValidateURL() function (line 26-60) validates ALL URLs before any network call
+# - SafeHTTPClient wrapper (line 71-95) enforces validation on every Get() call
+# - Private IPs blocked: RFC 1918, RFC 4193, loopback, link-local
+# - Only http/https schemes allowed
+# - Path traversal prevented
+# - Hostname validation enforced
+#
+# STATIC ANALYSIS LIMITATION:
+# Snyk's dataflow analysis cannot trace through the SafeHTTPClient wrapper
+# and does not recognize ValidateURL() as a security boundary.
+#
+# ============================================================================
+
+ignore:
+  'go/Ssrf':
+    - '*':
+        reason: >
+          FALSE POSITIVE: SSRF protection implemented via ValidateURL() and SafeHTTPClient.
+          All URLs validated before network requests. Private IPs blocked. Educational security
+          scanner - making HTTP requests to user URLs is the intended purpose.
+        expires: 2099-12-31T00:00:00.000Z
+        created: 2025-12-03T00:00:00.000Z
+  
+  'go/TooPermissiveTrustManager':
+    - '*':
+        reason: >
+          INTENTIONAL: InsecureSkipVerify required for educational security scanner to test
+          security headers on development sites with self-signed certificates. NEVER used in
+          production. Documented with warnings throughout code.
+        expires: 2099-12-31T00:00:00.000Z
+        created: 2025-12-03T00:00:00.000Z
+
+# Note: Snyk Code ignores this file. Warnings will persist in IDE but are documented
+# false positives. See README.SECURITY.md for detailed security analysis.
+
+patch: {}

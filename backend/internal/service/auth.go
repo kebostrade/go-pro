@@ -66,8 +66,13 @@ func (s *firebaseAuthService) Initialize(ctx context.Context) error {
 	s.initOnce.Do(func() {
 		projectID := os.Getenv("FIREBASE_PROJECT_ID")
 		credentialsPath := os.Getenv("FIREBASE_CREDENTIALS_PATH")
+		devMode := os.Getenv("DEV_MODE") == "true"
 
 		if projectID == "" {
+			if devMode {
+				s.config.Logger.Warn(ctx, "Firebase not configured (DEV_MODE=true), skipping Firebase initialization")
+				return
+			}
 			s.initErr = fmt.Errorf("FIREBASE_PROJECT_ID not set")
 			return
 		}
@@ -107,10 +112,33 @@ func (s *firebaseAuthService) Initialize(ctx context.Context) error {
 
 // VerifyToken verifies a Firebase ID token and returns the claims.
 func (s *firebaseAuthService) VerifyToken(ctx context.Context, idToken string) (*domain.FirebaseClaims, error) {
+	devMode := os.Getenv("DEV_MODE") == "true"
+
 	if s.firebaseAuth == nil {
 		if err := s.Initialize(ctx); err != nil {
+			if devMode && os.Getenv("FIREBASE_PROJECT_ID") == "" {
+				// In dev mode without Firebase, create a mock token response
+				s.config.Logger.Warn(ctx, "DEV_MODE: Using mock token verification")
+				return &domain.FirebaseClaims{
+					UserID:    "dev-user-id",
+					Email:     "developer@local.dev",
+					DisplayName: "Developer",
+					Picture:    "",
+				}, nil
+			}
 			return nil, apierrors.NewInternalError("Firebase not initialized", err)
 		}
+	}
+
+	// Skip Firebase verification in dev mode if Firebase is not initialized
+	if s.firebaseAuth == nil && devMode {
+		s.config.Logger.Warn(ctx, "DEV_MODE: Using mock token verification")
+		return &domain.FirebaseClaims{
+			UserID:    "dev-user-id",
+			Email:     "developer@local.dev",
+			DisplayName: "Developer",
+			Picture:    "",
+		}, nil
 	}
 
 	// Verify the ID token

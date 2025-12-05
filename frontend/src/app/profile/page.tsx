@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { User, Mail, Calendar, Shield, Camera, Loader2, AlertCircle } from 'lucide-react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDbInstance } from '@/lib/firebase';
 import { updateProfile } from 'firebase/auth';
 
 export default function ProfilePage() {
@@ -54,7 +54,7 @@ export default function ProfilePage() {
       });
 
       // Update Firestore user document
-      const userRef = doc(db, 'users', user.uid);
+      const userRef = doc(getDbInstance(), 'users', user.uid);
       await updateDoc(userRef, {
         displayName: displayName || null,
         photoURL: photoURL || null,

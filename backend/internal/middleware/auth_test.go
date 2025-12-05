@@ -85,6 +85,10 @@ func (m *MockUserRepository) Update(ctx context.Context, user *domain.User) erro
 	return nil
 }
 
+func (m *MockUserRepository) UpdateLastActivity(ctx context.Context, userID string) error {
+	return nil
+}
+
 func (m *MockUserRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }

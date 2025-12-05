@@ -46,14 +46,14 @@ func (s *curriculumService) GetCurriculum(ctx context.Context) (*domain.Curricul
 	// In a real implementation, this would come from a database or file system.
 	// For now, we'll return the curriculum based on the syllabus.md structure.
 	curriculum := &domain.Curriculum{
-		ID:          "go-pro-curriculum",
-		Title:       "GO-PRO: Complete Go Programming Mastery",
+		ID:    "go-pro-curriculum",
+		Title: "GO-PRO: Complete Go Programming Mastery",
 		Description: "Master Go programming from basics to advanced production systems. " +
 			"Learn Go's syntax, concurrency patterns, web development, testing, " +
 			"performance optimization, security, and best practices through hands-on exercises and real-world projects.",
-		Duration:    "16 weeks",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		Duration:  "16 weeks",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 		Phases: []domain.CurriculumPhase{
 			{
 				ID:          "foundations",

@@ -1,7 +1,6 @@
 package exercises
 
 import (
-	"errors"
 	"strings"
 	"testing"
 )

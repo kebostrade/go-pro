@@ -45,11 +45,11 @@ var (
 
 // DockerExecutor implements ExecutorService using Docker containers.
 type DockerExecutor struct {
-	image      string
-	timeout    time.Duration
-	memory     string
-	cpuLimit   string
-	tmpfsSize  string
+	image     string
+	timeout   time.Duration
+	memory    string
+	cpuLimit  string
+	tmpfsSize string
 }
 
 // NewDockerExecutor creates a new Docker-based code executor.
@@ -199,17 +199,17 @@ func (e *DockerExecutor) runContainer(ctx context.Context, codeDir string, input
 	// Build docker run command with security constraints
 	args := []string{
 		"run",
-		"--rm",                                // Remove container after execution
-		"--memory=" + e.memory,                // Memory limit
-		"--cpus=" + e.cpuLimit,                // CPU limit
-		"--network=none",                      // No network access
-		"--read-only",                         // Read-only filesystem
+		"--rm",                 // Remove container after execution
+		"--memory=" + e.memory, // Memory limit
+		"--cpus=" + e.cpuLimit, // CPU limit
+		"--network=none",       // No network access
+		"--read-only",          // Read-only filesystem
 		"--tmpfs=/tmp:rw,noexec,nosuid,size=" + e.tmpfsSize, // Temporary filesystem
-		"--user=" + containerUser,             // Non-root user
-		"-v", codeDir + ":/code:ro",           // Mount code directory as read-only
-		"-w", "/code",                         // Working directory
-		e.image,                               // Docker image
-		"sh", "-c",                            // Shell command
+		"--user=" + containerUser,                           // Non-root user
+		"-v", codeDir + ":/code:ro",                         // Mount code directory as read-only
+		"-w", "/code", // Working directory
+		e.image,    // Docker image
+		"sh", "-c", // Shell command
 	}
 
 	// Build execution command
@@ -267,15 +267,15 @@ func (e *DockerExecutor) extractErrorMessage(stderr string) string {
 
 		// Compilation errors
 		if strings.Contains(line, "syntax error") ||
-		   strings.Contains(line, "undefined:") ||
-		   strings.Contains(line, "cannot use") ||
-		   strings.Contains(line, "not enough arguments") {
+			strings.Contains(line, "undefined:") ||
+			strings.Contains(line, "cannot use") ||
+			strings.Contains(line, "not enough arguments") {
 			errorLines = append(errorLines, line)
 		}
 
 		// Runtime errors
 		if strings.Contains(line, "panic:") ||
-		   strings.Contains(line, "runtime error:") {
+			strings.Contains(line, "runtime error:") {
 			errorLines = append(errorLines, line)
 		}
 	}

@@ -111,3 +111,6 @@ go-pro-platform-firebase-adminsdk-fbsvc-27abf2a7fa.json
 firebase-admin-sdk.json
 *-firebase-adminsdk-*.json
 config/firebase-admin-sdk.json
+.firebase
+agent-os
+.claude

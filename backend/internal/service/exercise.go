@@ -23,17 +23,17 @@ import (
 )
 
 const (
-	exerciseCacheKeyFmt           = "exercise:%s"
-	exerciseIDRequiredMsg         = "exercise ID is required"
-	failedToGetExerciseFmt        = "failed to get exercise: %w"
-	failedToUpdateExerciseFmt     = "failed to update exercise: %w"
-	failedToDeleteExerciseFmt     = "failed to delete exercise: %w"
-	failedToCreateExerciseFmt     = "failed to create exercise: %w"
-	invalidDifficultyMsg          = "invalid difficulty level"
-	codeTooLongMsg                = "code exceeds maximum length of 50KB"
-	failedToExecuteCodeMsg        = "code execution failed"
-	failedToGetExerciseForUpdateMsg = "failed to get exercise for update"
-	failedToGetExerciseForDeleteMsg = "failed to get exercise for deletion"
+	exerciseCacheKeyFmt                 = "exercise:%s"
+	exerciseIDRequiredMsg               = "exercise ID is required"
+	failedToGetExerciseFmt              = "failed to get exercise: %w"
+	failedToUpdateExerciseFmt           = "failed to update exercise: %w"
+	failedToDeleteExerciseFmt           = "failed to delete exercise: %w"
+	failedToCreateExerciseFmt           = "failed to create exercise: %w"
+	invalidDifficultyMsg                = "invalid difficulty level"
+	codeTooLongMsg                      = "code exceeds maximum length of 50KB"
+	failedToExecuteCodeMsg              = "code execution failed"
+	failedToGetExerciseForUpdateMsg     = "failed to get exercise for update"
+	failedToGetExerciseForDeleteMsg     = "failed to get exercise for deletion"
 	failedToGetExerciseForSubmissionMsg = "failed to get exercise for submission"
 )
 

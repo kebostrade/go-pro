@@ -6,17 +6,20 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
+    "site": "go-pro-platform",
     "public": "frontend/out",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "cleanUrls": true,
+    "trailingSlashBehavior": "REMOVE",
     "rewrites": [
       {
         "source": "**",
         "destination": "/index.html"
       }
+    ],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
     ]
   }
 }

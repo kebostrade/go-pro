@@ -129,9 +129,9 @@ func (r *MemoryCourseRepository) Delete(ctx context.Context, id string) error {
 
 // MemoryUserRepository implements UserRepository using in-memory storage.
 type MemoryUserRepository struct {
-	users           map[string]*domain.User            // Keyed by user ID
-	usersByFirebase map[string]*domain.User            // Keyed by Firebase UID
-	usersByEmail    map[string]*domain.User            // Keyed by email
+	users           map[string]*domain.User // Keyed by user ID
+	usersByFirebase map[string]*domain.User // Keyed by Firebase UID
+	usersByEmail    map[string]*domain.User // Keyed by email
 	mu              sync.RWMutex
 }
 
@@ -290,6 +290,21 @@ func (r *MemoryUserRepository) UpdateLastLogin(ctx context.Context, userID strin
 	now := time.Now()
 	user.LastLoginAt = &now
 	user.UpdatedAt = now
+
+	return nil
+}
+
+// UpdateLastActivity implements UserRepository.UpdateLastActivity.
+func (r *MemoryUserRepository) UpdateLastActivity(ctx context.Context, userID string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	user, exists := r.users[userID]
+	if !exists {
+		return errors.NewNotFoundError(fmt.Sprintf("user with id %s not found", userID))
+	}
+
+	user.UpdatedAt = time.Now()
 
 	return nil
 }

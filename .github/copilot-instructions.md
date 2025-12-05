@@ -44,8 +44,12 @@ cd basic && go run examples/fun/binary_search.go  # Examples
 
 ### Backend Development Cycle
 ```bash
-# Development with hot reload
-cd backend && air -c .air.toml        # Uses Air for file watching
+# Development with hot reload (from backend/ directory)
+cd backend && air -c .air.toml        # Air watches .go files, excludes *_test.go
+
+# Or use Make targets (from root)
+make dev                              # Runs air in backend/
+cd backend && make dev                # Alternative from backend/
 
 # Quick test + lint + security
 make test lint security vuln-check
@@ -53,6 +57,12 @@ make test lint security vuln-check
 # Full quality gate (what CI runs)
 make quality  # deps → lint → vet → security → test
 ```
+
+**Air Configuration** (`backend/.air.toml`):
+- Excludes: `tmp/`, `vendor/`, `testdata/`, `*_test.go`
+- Watches: `.go`, `.tpl`, `.tmpl`, `.html` files
+- Builds to: `./tmp/main` (binary is auto-restarted on changes)
+- 1 second delay before rebuild to batch file changes
 
 ### Frontend Development
 ```bash
@@ -62,9 +72,20 @@ npm run dev          # Starts at http://localhost:3000
 
 ### Full Stack Development (with Docker)
 ```bash
-make docker-dev      # Starts backend, frontend, PostgreSQL, Redis, Grafana
-# Services: Backend (8080), Frontend (3000), Adminer (8081), Prometheus (9090)
+make docker-dev      # Uses docker/docker-compose.dev.yml
+# Services: Backend (8080), Frontend (3000), PostgreSQL (5432), 
+#           Redis (6379), Adminer (8081), Redis Commander (8082)
+
+# Alternative compose files:
+docker compose -f docker/docker-compose.dev.yml up       # Development
+docker compose -f docker/docker-compose.prod.yml up      # Production
+docker compose -f docker-compose.kafka.yml up            # Kafka messaging
 ```
+
+**Docker Compose Strategy**:
+- `docker/docker-compose.dev.yml` - Hot reload, mounts source code as volumes
+- `docker/docker-compose.prod.yml` - Optimized builds, multi-stage Dockerfiles
+- Service health checks ensure dependency readiness before startup
 
 ## Project-Specific Patterns
 
@@ -81,18 +102,38 @@ make docker-dev      # Starts backend, frontend, PostgreSQL, Redis, Grafana
 
 ### Code Executor Component
 Backend includes a **Docker-based code executor** (`internal/executor/docker_executor.go`):
-- Executes untrusted student Go code safely
-- Validates: `package main` and `func main()` required
-- Returns stdout/stderr to API
-- See `executor_test.go` for validation patterns
+- Executes untrusted student Go code safely in isolated containers
+- **Security validations**: Blocks dangerous imports (`os`, `net`, `syscall`, `unsafe`)
+- **Resource limits**: 128MB memory, 0.5 CPU, 5s timeout, 64KB max code size
+- **Container isolation**: Runs as non-root user (1000:1000) with tmpfs mounts
+- Returns stdout/stderr and test results to API
+- See `executor_test.go` for validation patterns and test case execution
 
 ### Handler Pattern
 Handlers receive dependency-injected services, use context for cancellation:
 ```go
-func (h *CourseHandler) CreateCourse(w http.ResponseWriter, r *http.Request) {
-    ctx := r.Context()  // Use request context
-    var req CreateCourseRequest
-    // Decode → validate → call service → respond with errors
+// Handler initialization with DI
+type AuthHandler struct {
+    services  *service.Services
+    logger    logger.Logger
+    validator validator.Validator
+}
+
+// Request handling pattern
+func (h *AuthHandler) handleVerifyToken(w http.ResponseWriter, r *http.Request) {
+    var req domain.VerifyTokenRequest
+    if err := h.validator.ValidateJSON(r, &req); err != nil {
+        h.writeErrorResponse(w, r, err)
+        return
+    }
+    
+    response, err := h.services.Auth.VerifyAndSyncUser(r.Context(), req.IDToken)
+    if err != nil {
+        h.writeErrorResponse(w, r, err)
+        return
+    }
+    
+    h.writeSuccessResponse(w, r, response, "token verified successfully")
 }
 ```
 
@@ -169,12 +210,14 @@ make ci-build         # CI build: quality → build → docker-build
 5. **Go version**: All modules require Go 1.23+ (check with `go version`)
 
 ## Directory Reference
-- **Backend API**: `backend/cmd/server/main.go` (DI container at `internal/container.go`)
+- **Backend API**: `backend/cmd/server/main.go` (DI container at `internal/container/container.go`)
 - **Key Interfaces**: `backend/internal/repository/interfaces.go`
 - **Domain Models**: `backend/internal/domain/`
 - **Frontend API Client**: `frontend/src/lib/api.ts`
 - **Makefile Commands**: Root `Makefile` for build automation
-- **Docker Setup**: `docker-compose.dev.yml` (dev) and `docker-compose.prod.yml` (prod)
+- **Docker Setup**: `docker/docker-compose.dev.yml` (dev) and `docker/docker-compose.prod.yml` (prod)
+- **Air Config**: `backend/.air.toml` (hot reload settings)
+- **Security Tools**: `backend/security/` (gosec config, vulnerability checks)
 
 ## When to Ask for Context
 This codebase has:

@@ -240,7 +240,7 @@ jobs:
     needs: [build, integration-test]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     environment:
-      name: development
+      name: dev
       url: https://dev-api.gopro.com
     steps:
       - name: Checkout code
@@ -249,8 +249,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_DEV_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_DEV_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
       - name: Update kubeconfig
@@ -260,7 +260,7 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/backend backend=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:develop -n gopro-dev
-          kubectl rollout status deployment/backend -n gopro-dev
+          kubectl rollout status deployment/backend -n gopro-dev --timeout=5m
 
       - name: Run smoke tests
         run: |
@@ -273,7 +273,7 @@ jobs:
     needs: [build, integration-test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
-      name: production
+      name: Production
       url: https://api.gopro.com
     steps:
       - name: Checkout code
@@ -282,8 +282,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_PROD_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_PROD_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
       - name: Update kubeconfig
@@ -294,7 +294,7 @@ jobs:
         run: |
           # Deploy to green environment
           kubectl set image deployment/backend-green backend=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:main -n gopro-prod
-          kubectl rollout status deployment/backend-green -n gopro-prod
+          kubectl rollout status deployment/backend-green -n gopro-prod --timeout=5m
           
           # Run smoke tests on green
           kubectl port-forward deployment/backend-green 8080:8080 -n gopro-prod &
@@ -309,10 +309,22 @@ jobs:
           curl -f https://api.gopro.com/health || exit 1
 
       - name: Notify deployment
-        uses: 8398a7/action-slack@v3
+        uses: slackapi/slack-github-action@v1.24.0
         with:
-          status: ${{ job.status }}
-          text: 'Backend deployed to production'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          payload: |
+            {
+              "text": "Backend deployment to production ${{ job.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Backend deployed to production: ${{ job.status }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: always()
 

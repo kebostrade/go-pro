@@ -161,7 +161,7 @@ export function LearningDashboard({ userId = "demo-user" }: LearningDashboardPro
         <TabsContent value="overview" className="space-y-6 animate-in fade-in duration-500">
           {/* Enhanced Quick Stats with Gradients */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="group relative overflow-hidden border-blue-200/50 dark:border-blue-800/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1">
+            <Card suppressHydrationWarning className="group relative overflow-hidden border-blue-200/50 dark:border-blue-800/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent" />
               <CardContent className="relative p-6">
                 <div className="flex items-center justify-between mb-3">
@@ -175,7 +175,7 @@ export function LearningDashboard({ userId = "demo-user" }: LearningDashboardPro
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden border-green-200/50 dark:border-green-800/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300 hover:-translate-y-1">
+            <Card suppressHydrationWarning className="group relative overflow-hidden border-green-200/50 dark:border-green-800/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent" />
               <CardContent className="relative p-6">
                 <div className="flex items-center justify-between mb-3">
@@ -189,7 +189,7 @@ export function LearningDashboard({ userId = "demo-user" }: LearningDashboardPro
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden border-yellow-200/50 dark:border-yellow-800/50 hover:shadow-lg hover:shadow-yellow-500/10 transition-all duration-300 hover:-translate-y-1">
+            <Card suppressHydrationWarning className="group relative overflow-hidden border-yellow-200/50 dark:border-yellow-800/50 hover:shadow-lg hover:shadow-yellow-500/10 transition-all duration-300 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 via-transparent to-transparent" />
               <CardContent className="relative p-6">
                 <div className="flex items-center justify-between mb-3">
@@ -203,7 +203,7 @@ export function LearningDashboard({ userId = "demo-user" }: LearningDashboardPro
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden border-orange-200/50 dark:border-orange-800/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 hover:-translate-y-1">
+            <Card suppressHydrationWarning className="group relative overflow-hidden border-orange-200/50 dark:border-orange-800/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-transparent" />
               <CardContent className="relative p-6">
                 <div className="flex items-center justify-between mb-3">
@@ -219,7 +219,7 @@ export function LearningDashboard({ userId = "demo-user" }: LearningDashboardPro
           </div>
 
           {/* Enhanced Weekly Goal */}
-          <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
+          <Card suppressHydrationWarning className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl -z-10" />
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -255,19 +255,21 @@ export function LearningDashboard({ userId = "demo-user" }: LearningDashboardPro
                   </span>
                 </div>
               </div>
-              {weeklyGoal.completed >= weeklyGoal.target * 0.6 && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                  <Award className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                    Great progress! You're on track to meet your goal! 🎉
-                  </span>
-                </div>
-              )}
+              <div className={`flex items-center gap-2 p-3 rounded-lg border transition-all duration-300 overflow-hidden ${
+                weeklyGoal.completed >= weeklyGoal.target * 0.6
+                  ? 'bg-green-500/10 border-green-500/20 max-h-20'
+                  : 'max-h-0 bg-transparent border-transparent p-0'
+              }`}>
+                <Award className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
+                <span className="text-sm font-medium text-green-700 dark:text-green-300 whitespace-nowrap">
+                  Great progress! You're on track to meet your goal! 🎉
+                </span>
+              </div>
             </CardContent>
           </Card>
 
           {/* Enhanced Continue Learning */}
-          <Card className="border-primary/10">
+          <Card suppressHydrationWarning className="border-primary/10">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -370,7 +372,7 @@ export function LearningDashboard({ userId = "demo-user" }: LearningDashboardPro
 
         {/* Enhanced Activity Tab */}
         <TabsContent value="activity" className="space-y-6 animate-in fade-in duration-500">
-          <Card className="border-primary/10">
+          <Card suppressHydrationWarning className="border-primary/10">
             <CardHeader>
               <CardTitle className="flex items-center text-xl">
                 <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 mr-3">
@@ -389,7 +391,6 @@ export function LearningDashboard({ userId = "demo-user" }: LearningDashboardPro
                   <div
                     key={activity.id}
                     className="relative flex items-start space-x-4 p-4 rounded-xl bg-gradient-to-br from-muted/50 to-background border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 group"
-                    style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <div className="relative z-10">
                       <div className={`p-3 rounded-xl bg-gradient-to-br ${
