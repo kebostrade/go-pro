@@ -363,7 +363,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Setup reCAPTCHA for phone auth
   const setupRecaptcha = (containerId: string): RecaptchaVerifier => {
-    const recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+    const recaptchaVerifier = new RecaptchaVerifier(getAuthInstance(), containerId, {
       size: 'invisible',
       callback: () => {
         console.log('reCAPTCHA solved');
@@ -399,7 +399,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
+      const confirmationResult = await signInWithPhoneNumber(getAuthInstance(), phoneNumber, recaptchaVerifier);
       return confirmationResult;
     } catch (err: any) {
       const errorMessage = getAuthErrorMessage(err);

@@ -31,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCheck } from "lucide-react";
 
 const Header = () => {
   const { user, backendUser, signOut, loading } = useAuth();
@@ -137,6 +138,12 @@ const Header = () => {
       href: "/community",
       description: "Connect with other Go developers",
       icon: Users,
+    },
+    {
+      title: "Customers",
+      href: "/customers",
+      description: "Manage your customers",
+      icon: UserCheck,
     },
   ];
 
