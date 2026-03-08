@@ -258,17 +258,17 @@ All components are fully responsive:
 
 ### Component Tests
 ```bash
-npm run test
+bun run test
 ```
 
 ### E2E Tests
 ```bash
-npm run test:e2e
+bun run test:e2e
 ```
 
 ### Type Checking
 ```bash
-npm run type-check
+bun run type-check
 ```
 
 ## 📦 Dependencies
@@ -283,10 +283,10 @@ npm run type-check
 
 ```bash
 # Build for production
-npm run build
+bun run build
 
 # Start production server
-npm start
+bun start
 ```
 
 ## 📝 Notes

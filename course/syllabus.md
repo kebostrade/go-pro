@@ -330,6 +330,55 @@ Upon completion of this course, students will be able to:
 - **Lessons 11-15**: 2 weeks
 - **Projects**: 3 weeks
 
+## Phase 6: Advanced Topics (Weeks 15-26)
+
+After completing the core curriculum, specialize with advanced tracks:
+
+### TIER 1: Core Development
+| Topic | Duration | Difficulty |
+|-------|----------|------------|
+| [AT-01: RESTful APIs](advanced-topics/AT-01-rest-apis/README.md) | 8-10h | Intermediate |
+| [AT-02: CLI Applications](advanced-topics/AT-02-cli-apps/README.md) | 6-8h | Intermediate |
+| [AT-03: Testing & Debugging](advanced-topics/AT-03-testing-debugging/README.md) | 8-10h | Intermediate |
+
+### TIER 2: Framework & Architecture
+| Topic | Duration | Difficulty |
+|-------|----------|------------|
+| [AT-04: Gin Framework](advanced-topics/AT-04-gin-framework/README.md) | 8-10h | Intermediate |
+| [AT-05: Microservices + Docker](advanced-topics/AT-05-microservices-docker/README.md) | 12-15h | Advanced |
+
+### TIER 3: Communication Patterns
+| Topic | Duration | Difficulty |
+|-------|----------|------------|
+| [AT-06: WebSockets Real-time](advanced-topics/AT-06-websockets/README.md) | 8-10h | Advanced |
+| [AT-07: gRPC Distributed](advanced-topics/AT-07-grpc-distributed/README.md) | 10-12h | Advanced |
+| [AT-08: NATS Event-Driven](advanced-topics/AT-08-nats-event-driven/README.md) | 8-10h | Advanced |
+
+### TIER 4: Cloud & Infrastructure
+| Topic | Duration | Difficulty |
+|-------|----------|------------|
+| [AT-09: Kubernetes Cloud-Native](advanced-topics/AT-09-kubernetes-cloud/README.md) | 12-15h | Expert |
+| [AT-10: AWS Lambda Serverless](advanced-topics/AT-10-serverless-lambda/README.md) | 8-10h | Advanced |
+
+### TIER 5: Specialized Domains
+| Topic | Duration | Difficulty |
+|-------|----------|------------|
+| [AT-11: ML with Gorgonia](advanced-topics/AT-11-ml-gorgonia/README.md) | 10-12h | Expert |
+| [AT-12: Blockchain Ethereum](advanced-topics/AT-12-blockchain-ethereum/README.md) | 12-15h | Expert |
+| [AT-13: IoT with MQTT](advanced-topics/AT-13-iot-mqtt/README.md) | 8-10h | Advanced |
+
+### TIER 6: API Design
+| Topic | Duration | Difficulty |
+|-------|----------|------------|
+| [AT-14: GraphQL gqlgen](advanced-topics/AT-14-graphql-gqlgen/README.md) | 10-12h | Advanced |
+
+### CROSS-CUTTING
+| Topic | Duration | Difficulty |
+|-------|----------|------------|
+| [AT-00: System Design](advanced-topics/AT-00-system-design/README.md) | 10-12h | Expert |
+
+See [ADVANCED_TOPICS.md](ADVANCED_TOPICS.md) for complete learning paths.
+
 ## 🎯 Success Tips
 
 1. **Practice Daily**: Write Go code every day, even if just for 30 minutes

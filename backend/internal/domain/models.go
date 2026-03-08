@@ -484,3 +484,456 @@ type StreakResponse struct {
 	LongestStreak int        `json:"longest_streak"`
 	LastActivityDate *time.Time `json:"last_activity_date,omitempty"`
 }
+
+// Assessment represents an assessment (quiz, coding exercise, or project).
+type Assessment struct {
+	ID             string                 `json:"id"`
+	LessonID       string                 `json:"lesson_id" validate:"required,slug"`
+	Type           AssessmentType         `json:"type" validate:"required"`
+	Title          string                 `json:"title" validate:"required,min=3,max=200"`
+	Description    string                 `json:"description" validate:"required,min=10,max=5000"`
+	Config         map[string]interface{} `json:"config" validate:"required"` // Flexible config per type
+	PassingScore   int                    `json:"passing_score" validate:"min=0,max=100"`
+	TimeLimitMinutes *int                  `json:"time_limit_minutes,omitempty" validate:"omitempty,min=1,max=180"`
+	OrderIndex     int                    `json:"order_index" validate:"required,min=1"`
+	CreatedAt      time.Time              `json:"created_at"`
+	UpdatedAt      time.Time              `json:"updated_at"`
+}
+
+// AssessmentType represents the type of assessment.
+type AssessmentType string
+
+const (
+	AssessmentTypeQuiz           AssessmentType = "quiz"
+	AssessmentTypeCodingExercise AssessmentType = "coding_exercise"
+	AssessmentTypeProject        AssessmentType = "project"
+)
+
+// IsValid checks if the assessment type is valid.
+func (a AssessmentType) IsValid() bool {
+	switch a {
+	case AssessmentTypeQuiz, AssessmentTypeCodingExercise, AssessmentTypeProject:
+		return true
+	default:
+		return false
+	}
+}
+
+// String returns the string representation of the assessment type.
+func (a AssessmentType) String() string {
+	return string(a)
+}
+
+// Submission represents a student assessment submission.
+type Submission struct {
+	ID           string             `json:"id"`
+	AssessmentID string             `json:"assessment_id" validate:"required"`
+	UserID       string             `json:"user_id" validate:"required"`
+	Content      map[string]interface{} `json:"content" validate:"required"` // Flexible content
+	Score        *int               `json:"score,omitempty" validate:"omitempty,min=0,max=100"`
+	Feedback     string             `json:"feedback,omitempty"`
+	GradedBy     *string            `json:"graded_by,omitempty"` // User ID of grader
+	GradedAt     *time.Time         `json:"graded_at,omitempty"`
+	SubmittedAt  time.Time          `json:"submitted_at"`
+	Status       SubmissionStatus   `json:"status" validate:"required"`
+}
+
+// SubmissionStatus represents the status of a submission.
+type SubmissionStatus string
+
+const (
+	SubmissionStatusSubmitted SubmissionStatus = "submitted"
+	SubmissionStatusGraded    SubmissionStatus = "graded"
+	SubmissionStatusReturned  SubmissionStatus = "returned"
+)
+
+// IsValid checks if the submission status is valid.
+func (s SubmissionStatus) IsValid() bool {
+	switch s {
+	case SubmissionStatusSubmitted, SubmissionStatusGraded, SubmissionStatusReturned:
+		return true
+	default:
+		return false
+	}
+}
+
+// String returns the string representation of the submission status.
+func (s SubmissionStatus) String() string {
+	return string(s)
+}
+
+// SubmissionComment represents an inline comment on a submission.
+type SubmissionComment struct {
+	ID           string    `json:"id"`
+	SubmissionID string    `json:"submission_id" validate:"required"`
+	AuthorID     string    `json:"author_id" validate:"required"`
+	CommentText  string    `json:"comment_text" validate:"required,min=1,max=1000"`
+	LineNumber   *int      `json:"line_number,omitempty" validate:"omitempty,min=1"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+// QuizSubmission represents quiz-specific submission content.
+type QuizSubmission struct {
+	Answers  map[string]interface{} `json:"answers"`  // Question ID -> answer
+	Score    int                    `json:"score"`
+	Attempts int                    `json:"attempts"`
+}
+
+// CodeSubmission represents code exercise submission content.
+type CodeSubmission struct {
+	Code       string `json:"code" validate:"required"`
+	Language   string `json:"language" validate:"required"`
+	TestPassed bool   `json:"test_passed"`
+	Output     string `json:"output,omitempty"`
+	Error      string `json:"error,omitempty"`
+}
+
+// ProjectSubmission represents project submission content.
+type ProjectSubmission struct {
+	SubmissionFormat string `json:"submission_format" validate:"required,oneof=repo_link zip_upload text"`
+	RepoLink         string `json:"repo_link,omitempty" validate:"omitempty,url"`
+	FileURL          string `json:"file_url,omitempty" validate:"omitempty,url"`
+	TextContent      string `json:"text_content,omitempty"`
+}
+
+// Question represents a quiz question.
+type Question struct {
+	ID             string       `json:"id" validate:"required"`
+	AssessmentID   string       `json:"assessment_id" validate:"required"`
+	QuestionType   QuestionType `json:"question_type" validate:"required"`
+	QuestionText   string       `json:"question_text" validate:"required,min=10,max=1000"`
+	Options        []string     `json:"options,omitempty"` // For multiple choice
+	CorrectAnswer  string       `json:"correct_answer" validate:"required"`
+	Explanation    *string      `json:"explanation,omitempty"`
+	Points         int          `json:"points" validate:"required,min=1,max=100"`
+	OrderIndex     int          `json:"order_index" validate:"required,min=1"`
+	Tags           []string     `json:"tags,omitempty"` // For question bank reuse
+	Hints          []string     `json:"hints,omitempty"` // Progressive hints
+	HintThreshold  int          `json:"hint_threshold,omitempty"` // Show after N failed attempts
+	CreatedAt      time.Time    `json:"created_at"`
+	UpdatedAt      time.Time    `json:"updated_at"`
+}
+
+// QuestionType represents quiz question types.
+type QuestionType string
+
+const (
+	QuestionTypeMultipleChoice QuestionType = "multiple_choice"
+	QuestionTypeTrueFalse     QuestionType = "true_false"
+	QuestionTypeShortAnswer    QuestionType = "short_answer"
+	QuestionTypeCodeCompletion QuestionType = "code_completion"
+)
+
+// IsValid checks if the question type is valid.
+func (q QuestionType) IsValid() bool {
+	switch q {
+	case QuestionTypeMultipleChoice, QuestionTypeTrueFalse, QuestionTypeShortAnswer, QuestionTypeCodeCompletion:
+		return true
+	default:
+		return false
+	}
+}
+
+// String returns the string representation of question type.
+func (q QuestionType) String() string {
+	return string(q)
+}
+
+// QuizConfig represents quiz-specific configuration.
+type QuizConfig struct {
+	Questions []Question   `json:"questions" validate:"required,min=1"`
+	Settings  QuizSettings `json:"settings" validate:"required"`
+}
+
+// QuizSettings represents quiz settings.
+type QuizSettings struct {
+	MaxAttempts      int  `json:"max_attempts" validate:"min=1,max=10"`
+	ShuffleQuestions bool `json:"shuffle_questions"`
+	ShowExplanations  bool `json:"show_explanations"`
+}
+
+// CodingExerciseConfig represents coding exercise configuration.
+type CodingExerciseConfig struct {
+	StarterCode   string          `json:"starter_code" validate:"required"`
+	TestCases     []TestCase      `json:"test_cases" validate:"required,min=1"`
+	Limits        ExecutionLimits `json:"limits" validate:"required"`
+	Hints         []string        `json:"hints,omitempty"`
+	SolutionCode  string          `json:"solution_code,omitempty"` // Instructor's solution
+}
+
+// TestCase represents a test case for coding exercises.
+type TestCase struct {
+	ID             string    `json:"id" validate:"required"`
+	AssessmentID   string    `json:"assessment_id" validate:"required"`
+	Input          string    `json:"input" validate:"required"`
+	ExpectedOutput string    `json:"expected_output" validate:"required"`
+	IsVisible      bool      `json:"is_visible"` // Visible to students
+	Points         int       `json:"points" validate:"required,min=1,max=100"`
+	CreatedAt      time.Time `json:"created_at"`
+}
+
+// ExecutionLimits represents execution limits for code.
+type ExecutionLimits struct {
+	TimeLimitSeconds int `json:"time_limit_seconds" validate:"min=1,max=30"`
+	MemoryLimitMB     int `json:"memory_limit_mb" validate:"min=64,max=256"`
+}
+
+// ProjectAssignmentConfig represents project assignment configuration.
+type ProjectAssignmentConfig struct {
+	Deliverables     []string          `json:"deliverables" validate:"required,min=1"`
+	SubmissionFormat SubmissionFormat  `json:"submission_format" validate:"required"`
+	StarterCodeURL   *string           `json:"starter_code_url,omitempty" validate:"omitempty,url"`
+	Rubric           []RubricCriterion `json:"rubric" validate:"required,min=1"`
+	RequirePeerReview bool             `json:"require_peer_review"`
+	PeerReviewCount  int               `json:"peer_review_count,omitempty" validate:"min=1,max=5"`
+}
+
+// SubmissionFormat represents project submission formats.
+type SubmissionFormat string
+
+const (
+	SubmissionFormatRepoLink  SubmissionFormat = "repo_link"
+	SubmissionFormatZipUpload SubmissionFormat = "zip_upload"
+	SubmissionFormatText      SubmissionFormat = "text"
+)
+
+// IsValid checks if the submission format is valid.
+func (s SubmissionFormat) IsValid() bool {
+	switch s {
+	case SubmissionFormatRepoLink, SubmissionFormatZipUpload, SubmissionFormatText:
+		return true
+	default:
+		return false
+	}
+}
+
+// String returns the string representation of submission format.
+func (s SubmissionFormat) String() string {
+	return string(s)
+}
+
+// RubricCriterion represents a grading rubric criterion.
+type RubricCriterion struct {
+	ID                string             `json:"id" validate:"required"`
+	AssessmentID      string             `json:"assessment_id" validate:"required"`
+	Description       string             `json:"description" validate:"required,min=10,max=500"`
+	MaxPoints         int                `json:"max_points" validate:"required,min=1,max=100"`
+	PerformanceLevels []PerformanceLevel `json:"performance_levels" validate:"required,min=2,max=5"`
+	OrderIndex        int                `json:"order_index" validate:"required,min=1"`
+}
+
+// PerformanceLevel represents a rubric performance level.
+type PerformanceLevel struct {
+	Name        string `json:"name" validate:"required,min=1,max=50"`
+	Description string `json:"description" validate:"required,min=10,max=500"`
+	Points      int    `json:"points" validate:"required,min=0"`
+}
+
+// GradebookEntry represents a single gradebook entry.
+type GradebookEntry struct {
+	StudentID       string           `json:"student_id"`
+	StudentName     string           `json:"student_name"`
+	StudentEmail    string           `json:"student_email"`
+	AssessmentID    string           `json:"assessment_id"`
+	AssessmentTitle string           `json:"assessment_title"`
+	Score           *int             `json:"score,omitempty"`
+	SubmittedAt     *time.Time       `json:"submitted_at,omitempty"`
+	GradedAt        *time.Time       `json:"graded_at,omitempty"`
+	Status          SubmissionStatus `json:"status"`
+}
+
+// CreateAssessmentRequest represents a request to create an assessment.
+type CreateAssessmentRequest struct {
+	LessonID        string   `json:"lesson_id" validate:"required,slug"`
+	Type            AssessmentType `json:"type" validate:"required"`
+	Title           string   `json:"title" validate:"required,min=3,max=200"`
+	Description     string   `json:"description" validate:"required,min=10,max=5000"`
+	Config          map[string]interface{} `json:"config" validate:"required"`
+	PassingScore    int      `json:"passing_score" validate:"min=0,max=100"`
+	TimeLimitMinutes *int     `json:"time_limit_minutes,omitempty" validate:"omitempty,min=1,max=180"`
+	OrderIndex      int      `json:"order_index" validate:"required,min=1"`
+}
+
+// UpdateAssessmentRequest represents a request to update an assessment.
+type UpdateAssessmentRequest struct {
+	Title           *string  `json:"title,omitempty" validate:"omitempty,min=3,max=200"`
+	Description     *string  `json:"description,omitempty" validate:"omitempty,min=10,max=5000"`
+	Config          *map[string]interface{} `json:"config,omitempty"`
+	PassingScore    *int     `json:"passing_score,omitempty" validate:"omitempty,min=0,max=100"`
+	TimeLimitMinutes *int     `json:"time_limit_minutes,omitempty" validate:"omitempty,min=1,max=180"`
+	OrderIndex      *int     `json:"order_index,omitempty" validate:"omitempty,min=1"`
+}
+
+// CreateSubmissionRequest represents a request to create a submission.
+type CreateSubmissionRequest struct {
+	AssessmentID string                 `json:"assessment_id" validate:"required"`
+	Content      map[string]interface{} `json:"content" validate:"required"`
+}
+
+// GradeSubmissionRequest represents a request to grade a submission.
+type GradeSubmissionRequest struct {
+	Score            *int                       `json:"score,omitempty" validate:"omitempty,min=0,max=100"`
+	Feedback         *string                    `json:"feedback,omitempty" validate:"omitempty,max=5000"`
+	RubricScores     map[string]int             `json:"rubric_scores,omitempty"` // Criterion ID -> score
+	ReleaseImmediately bool                    `json:"release_immediately"`
+}
+
+// CreateSubmissionCommentRequest represents a request to add a comment to a submission.
+type CreateSubmissionCommentRequest struct {
+	CommentText string `json:"comment_text" validate:"required,min=1,max=1000"`
+	LineNumber  *int   `json:"line_number,omitempty" validate:"omitempty,min=1"`
+}
+
+// ContentVersion represents a version of content in the CMS.
+type ContentVersion struct {
+	ID             int64      `json:"id"`
+	ContentType    string     `json:"content_type" validate:"required,oneof=lesson exercise"` // lesson or exercise
+	ContentID      string     `json:"content_id" validate:"required"`
+	VersionNumber  int        `json:"version_number" validate:"required,min=1"`
+	Title          string     `json:"title,omitempty"`
+	Content        string     `json:"content,omitempty"`
+	Difficulty     Difficulty `json:"difficulty,omitempty"`
+	Objectives     []string   `json:"objectives,omitempty"`
+	Theory         string     `json:"theory,omitempty"`
+	CodeExample    string     `json:"code_example,omitempty"`
+	Solution       string     `json:"solution,omitempty"`
+	Exercises      []string   `json:"exercises,omitempty"`
+	ChangeSummary  string     `json:"change_summary,omitempty"`
+	ChangedBy      string     `json:"changed_by" validate:"required"`
+	IsMajorRevision bool      `json:"is_major_revision"`
+	IsPublished    bool       `json:"is_published"`
+	CreatedAt      time.Time  `json:"created_at"`
+}
+
+// ContentVersionRequest represents a request to create a content version.
+type ContentVersionRequest struct {
+	ContentType    string     `json:"content_type" validate:"required,oneof=lesson exercise"`
+	ContentID      string     `json:"content_id" validate:"required"`
+	ChangeSummary  string     `json:"change_summary" validate:"required,min=5,max=500"`
+	IsMajorRevision bool     `json:"is_major_revision"`
+}
+
+// ContentVersionHistory represents the version history of content.
+type ContentVersionHistory struct {
+	ContentID      string            `json:"content_id"`
+	ContentType    string            `json:"content_type"`
+	TotalVersions  int               `json:"total_versions"`
+	Versions       []ContentVersion  `json:"versions"`
+}
+
+// PublishContentRequest represents a request to publish a content version.
+type PublishContentRequest struct {
+	ContentType   string `json:"content_type" validate:"required,oneof=lesson exercise"`
+	ContentID     string `json:"content_id" validate:"required"`
+	VersionNumber int    `json:"version_number" validate:"required,min=1"`
+}
+
+// PeerReview represents a peer review assignment.
+type PeerReview struct {
+	ID             string         `json:"id"`
+	SubmissionID   string         `json:"submission_id" validate:"required"`
+	ReviewerID     string         `json:"reviewer_id" validate:"required"`
+	RubricScores   map[string]int `json:"rubric_scores" validate:"required"` // Criterion ID -> Score
+	Feedback       string         `json:"feedback" validate:"required,min=1,max=5000"`
+	InlineComments []InlineComment `json:"inline_comments"`
+	IsAnonymous    bool           `json:"is_anonymous"`
+	KarmaPoints    int            `json:"karma_points" validate:"min=0,max=5"`
+	Status         PeerReviewStatus `json:"status" validate:"required"`
+	SubmittedAt    *time.Time     `json:"submitted_at,omitempty"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+	Deadline       *time.Time     `json:"deadline,omitempty"`
+}
+
+// PeerReviewStatus represents the status of a peer review.
+type PeerReviewStatus string
+
+const (
+	PeerReviewStatusPending   PeerReviewStatus = "pending"
+	PeerReviewStatusCompleted PeerReviewStatus = "completed"
+	PeerReviewStatusLate      PeerReviewStatus = "late"
+)
+
+// IsValid checks if the peer review status is valid.
+func (p PeerReviewStatus) IsValid() bool {
+	switch p {
+	case PeerReviewStatusPending, PeerReviewStatusCompleted, PeerReviewStatusLate:
+		return true
+	default:
+		return false
+	}
+}
+
+// String returns the string representation of peer review status.
+func (p PeerReviewStatus) String() string {
+	return string(p)
+}
+
+// InlineComment represents an inline comment on code.
+type InlineComment struct {
+	LineNumber  int    `json:"line_number" validate:"required,min=1"`
+	CommentText string `json:"comment_text" validate:"required,min=1,max=1000"`
+	FilePath    string `json:"file_path,omitempty"`
+}
+
+// CreatePeerReviewRequest represents a request to create a peer review.
+type CreatePeerReviewRequest struct {
+	SubmissionID string         `json:"submission_id" validate:"required"`
+	ReviewerID   string         `json:"reviewer_id" validate:"required"`
+	Deadline     *time.Time     `json:"deadline,omitempty"`
+}
+
+// UpdatePeerReviewRequest represents a request to update a peer review.
+type UpdatePeerReviewRequest struct {
+	RubricScores   *map[string]int  `json:"rubric_scores,omitempty" validate:"omitempty,min=1"`
+	Feedback       *string          `json:"feedback,omitempty" validate:"omitempty,min=1,max=5000"`
+	InlineComments *[]InlineComment `json:"inline_comments,omitempty"`
+	IsAnonymous    *bool            `json:"is_anonymous,omitempty"`
+}
+
+// CompletePeerReviewRequest represents a request to complete a peer review.
+type CompletePeerReviewRequest struct {
+	RubricScores   map[string]int  `json:"rubric_scores" validate:"required,min=1"`
+	Feedback       string          `json:"feedback" validate:"required,min=1,max=5000"`
+	InlineComments []InlineComment `json:"inline_comments"`
+	IsAnonymous    bool            `json:"is_anonymous"`
+}
+
+// AwardKarmaRequest represents a request to award karma points.
+type AwardKarmaRequest struct {
+	KarmaPoints int `json:"karma_points" validate:"required,min=1,max=5"`
+}
+
+// PeerReviewAssignmentConfig represents configuration for auto-assignment.
+type PeerReviewAssignmentConfig struct {
+	ReviewersPerAssignment int        `json:"reviewers_per_assignment" validate:"required,min=1,max=5"`
+	AssignmentMethod        string     `json:"assignment_method" validate:"required,oneof=round_robin random"`
+	DeadlineHours          int        `json:"deadline_hours" validate:"required,min=24,max=168"`
+	RemindersEnabled       bool       `json:"reminders_enabled"`
+	ReminderHours          []int      `json:"reminder_hours" validate:"omitempty,min=1,dive,min=1"`
+	LatePenaltyPerDay      float64    `json:"late_penalty_per_day" validate:"required,min=0,max=0.3"`
+	MaxLatePenalty         float64    `json:"max_late_penalty" validate:"required,min=0,max=0.5"`
+}
+
+// PeerReviewSummary represents a summary of peer reviews for a submission.
+type PeerReviewSummary struct {
+	SubmissionID        string             `json:"submission_id"`
+	TotalReviews        int                `json:"total_reviews"`
+	CompletedReviews    int                `json:"completed_reviews"`
+	AverageScore        float64            `json:"average_score"`
+	ReviewCount         int                `json:"review_count"`
+	RubricAverageScores map[string]float64 `json:"rubric_average_scores,omitempty"`
+	Reviews             []*PeerReview      `json:"reviews,omitempty"`
+}
+
+// ReviewerStats represents statistics for a reviewer.
+type ReviewerStats struct {
+	ReviewerID        string    `json:"reviewer_id"`
+	TotalAssigned     int       `json:"total_assigned"`
+	TotalCompleted    int       `json:"total_completed"`
+	TotalPending      int       `json:"total_pending"`
+	AverageKarma      float64   `json:"average_karma"`
+	OnTimeRate        float64   `json:"on_time_rate"`
+	AverageReviewTime float64   `json:"average_review_time_hours"`
+	LastReviewDate    *time.Time `json:"last_review_date,omitempty"`
+}

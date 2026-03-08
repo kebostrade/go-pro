@@ -62,8 +62,8 @@ go run ./cmd/server
 ### Terminal 2 - Frontend
 ```bash
 cd frontend
-npm install  # First time only
-npm run dev
+bun install  # First time only
+bun run dev
 ```
 
 ## 🎯 Using Make Commands
@@ -140,9 +140,9 @@ go build ./cmd/server
 ### Frontend Not Starting
 ```bash
 cd frontend
-rm -rf node_modules package-lock.json
-npm install
-npm run dev
+rm -rf node_modules
+bun install
+bun run dev
 ```
 
 ### CORS Errors

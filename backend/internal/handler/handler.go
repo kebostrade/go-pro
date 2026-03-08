@@ -11,7 +11,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 
 	"go-pro-backend/internal/domain"
 	"go-pro-backend/internal/middleware"
@@ -816,4 +819,22 @@ func calculateProgressStats(items interface{}) map[string]interface{} {
 	stats["total_time_spent"] = completedCount * 30
 
 	return stats
+}
+
+// getPaginationParams extracts pagination params from gin context.
+func getPaginationParams(c *gin.Context) (int, int) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+
+	return page, pageSize
 }

@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"go-pro-backend/internal/domain"
-	"go-pro-backend/internal/repository/postgres"
 	"go-pro-backend/pkg/logger"
 
 	"github.com/stretchr/testify/assert"
@@ -25,28 +24,23 @@ const descriptionFormat = "Description for %s"
 
 // TestDB represents a test database connection.
 type TestDB struct {
-	*postgres.DB
+	*sql.DB
 	t *testing.T
 }
 
 // NewTestDB creates a new test database connection.
 func NewTestDB(t *testing.T) *TestDB {
 	t.Helper()
-	config := &postgres.Config{
-		Host: GetEnv("TEST_DB_HOST", "localhost"),
-		Port: GetEnvAsInt("TEST_DB_PORT", 5432),
-		User: GetEnv("TEST_DB_USER", "gopro_test"),
-		// #nosec G101: Test environment password - uses env var with safe default
-		Password:        GetEnv("TEST_DB_PASSWORD", "gopro_test"),
-		Database:        GetEnv("TEST_DB_NAME", "gopro_test"),
-		SSLMode:         "disable",
-		MaxOpenConns:    5,
-		MaxIdleConns:    2,
-		ConnMaxLifetime: 5 * time.Minute,
-		ConnMaxIdleTime: 5 * time.Minute,
-	}
+	host := GetEnv("TEST_DB_HOST", "localhost")
+	port := GetEnvAsInt("TEST_DB_PORT", 5432)
+	user := GetEnv("TEST_DB_USER", "gopro_test")
+	password := GetEnv("TEST_DB_PASSWORD", "gopro_test")
+	dbname := GetEnv("TEST_DB_NAME", "gopro_test")
 
-	db, err := postgres.NewConnection(config)
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", dsn)
 	require.NoError(t, err, "Failed to connect to test database")
 
 	return &TestDB{

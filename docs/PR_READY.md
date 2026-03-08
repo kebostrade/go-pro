@@ -130,7 +130,7 @@ Implemented a production-ready learning platform with 20 complete lessons, secur
 cd backend && go test -short ./...
 
 # Frontend
-cd frontend && npm test
+cd frontend && bun test
 ```
 
 ---
@@ -174,15 +174,15 @@ cd frontend && npm test
 
 ### **Frontend Prerequisites**
 - [x] Node.js 18+ installed
-- [ ] Install dependencies: `cd frontend && npm install`
+- [ ] Install dependencies: `cd frontend && bun install`
 - [ ] Configure `.env.local` with `NEXT_PUBLIC_API_URL`
-- [ ] Build: `npm run build`
-- [ ] Start: `npm run dev` or `npm start`
+- [ ] Build: `bun run build`
+- [ ] Start: `bun run dev` or `bun start`
 - [ ] Verify: http://localhost:3000
 
 ### **Testing**
 - [ ] Backend tests: `cd backend && go test -short ./...`
-- [ ] Frontend tests: `cd frontend && npm test`
+- [ ] Frontend tests: `cd frontend && bun test`
 - [ ] Manual verification:
   - [ ] Curriculum page loads
   - [ ] Lesson detail page displays
@@ -216,7 +216,7 @@ New packages added to `package.json`:
 - `react-markdown: ^9.0.1`
 - `remark-gfm: ^4.0.0`
 
-Run `npm install` to install.
+Run `bun install` to install.
 
 ---
 

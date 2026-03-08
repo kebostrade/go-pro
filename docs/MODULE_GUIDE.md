@@ -508,26 +508,26 @@ logger.Info("Message")
 cd frontend
 
 # Install dependencies
-npm install
+bun install
 
 # Development server
-npm run dev
+bun run dev
 # Open: http://localhost:3000
 
 # Build for production
-npm run build
+bun run build
 
 # Production server
-npm start
+bun start
 
 # Testing
-npm test
+bun test
 
 # Linting
-npm run lint
+bun run lint
 
 # Type checking
-npm run type-check
+bun run type-check
 ```
 
 ### Environment Setup
@@ -555,7 +555,7 @@ cd course && go test ./...
 cd basic && go test ./...
 
 # Frontend tests
-cd frontend && npm test
+cd frontend && bun test
 ```
 
 ### Update Dependencies
@@ -568,7 +568,7 @@ go mod tidy
 
 # Frontend
 cd frontend
-npm update
+bun pm update
 ```
 
 ### Build for Production
@@ -578,7 +578,7 @@ npm update
 cd backend && go build -o bin/go-pro-api ./cmd/server
 
 # Frontend
-cd frontend && npm run build
+cd frontend && bun run build
 
 # AI Platform
 cd services/ai-agent-platform && go build

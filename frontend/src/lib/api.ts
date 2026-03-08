@@ -464,6 +464,206 @@ export const api = {
       true
     );
   },
+
+  // ========== CMS API METHODS ==========
+  // Content Management System endpoints (instructor-only)
+
+  // Lesson CRUD
+  async createLesson(data: {
+    title: string;
+    description: string;
+    difficulty: 'beginner' | 'intermediate' | 'advanced';
+    phase: string;
+    orderIndex: number;
+    tags: string[];
+    completionMethod: any;
+    content: { sections: any[] };
+    changeDescription: string;
+  }): Promise<any> {
+    return apiRequest('/api/cms/lessons', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, true);
+  },
+
+  async getLessons(params?: {
+    page?: number;
+    pageSize?: number;
+    status?: 'draft' | 'published' | 'archived';
+    phase?: string;
+    difficulty?: string;
+    search?: string;
+  }): Promise<any> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.phase) queryParams.append('phase', params.phase);
+    if (params?.difficulty) queryParams.append('difficulty', params.difficulty);
+    if (params?.search) queryParams.append('search', params.search);
+
+    const queryString = queryParams.toString();
+    return apiRequest(`/api/cms/lessons${queryString ? `?${queryString}` : ''}`, {}, true);
+  },
+
+  async getLesson(lessonId: string): Promise<any> {
+    return apiRequest(`/api/cms/lessons/${lessonId}`, {}, true);
+  },
+
+  async updateLesson(lessonId: string, data: {
+    title?: string;
+    description?: string;
+    difficulty?: string;
+    phase?: string;
+    orderIndex?: number;
+    tags?: string[];
+    completionMethod?: any;
+    content?: { sections: any[] };
+    changeDescription: string;
+  }): Promise<any> {
+    return apiRequest(`/api/cms/lessons/${lessonId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, true);
+  },
+
+  async deleteLesson(lessonId: string): Promise<void> {
+    return apiRequest(`/api/cms/lessons/${lessonId}`, {
+      method: 'DELETE',
+    }, true);
+  },
+
+  // Version Control
+  async publishLesson(lessonId: string, changeDescription: string): Promise<any> {
+    return apiRequest(`/api/cms/lessons/${lessonId}/publish`, {
+      method: 'POST',
+      body: JSON.stringify({ changeDescription }),
+    }, true);
+  },
+
+  async getLessonVersions(lessonId: string): Promise<any[]> {
+    return apiRequest(`/api/cms/lessons/${lessonId}/versions`, {}, true);
+  },
+
+  async rollbackLesson(lessonId: string, toVersionNumber: number, changeDescription: string): Promise<any> {
+    return apiRequest(`/api/cms/lessons/${lessonId}/rollback`, {
+      method: 'POST',
+      body: JSON.stringify({ toVersionNumber, changeDescription }),
+    }, true);
+  },
+
+  // Media Management
+  async uploadMedia(file: File): Promise<{ url: string; filename: string; filesize: number }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/api/cms/media/upload`, {
+      method: 'POST',
+      headers: await getAuthHeaders(),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new APIError(error.error?.message || 'Upload failed', response.status);
+    }
+
+    return response.json();
+  },
+
+  async getMediaLibrary(): Promise<any[]> {
+    return apiRequest('/api/cms/media', {}, true);
+  },
+
+  async deleteMedia(mediaId: string): Promise<void> {
+    return apiRequest(`/api/cms/media/${mediaId}`, {
+      method: 'DELETE',
+    }, true);
+  },
+
+  // ========== WORKSPACE API METHODS ==========
+  // Code Runner & Workspace endpoints
+
+  // Workspace CRUD
+  async createWorkspace(data: {
+    name: string;
+    lessonId?: string;
+    files?: Array<{ path: string; content: string; language: string }>;
+  }): Promise<any> {
+    return apiRequest('/api/workspaces', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, true);
+  },
+
+  async getWorkspaces(params?: {
+    page?: number;
+    pageSize?: number;
+    lessonId?: string;
+  }): Promise<{ items: any[]; pagination: any }> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+    if (params?.lessonId) queryParams.append('lessonId', params.lessonId);
+
+    const queryString = queryParams.toString();
+    return apiRequest(`/api/workspaces${queryString ? `?${queryString}` : ''}`, {}, true);
+  },
+
+  async getWorkspace(workspaceId: string): Promise<any> {
+    return apiRequest(`/api/workspaces/${workspaceId}`, {}, true);
+  },
+
+  async updateWorkspace(
+    workspaceId: string,
+    data: {
+      name?: string;
+      files?: Array<{ path: string; content: string; language: string }>;
+    }
+  ): Promise<any> {
+    return apiRequest(`/api/workspaces/${workspaceId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, true);
+  },
+
+  async deleteWorkspace(workspaceId: string): Promise<void> {
+    return apiRequest(`/api/workspaces/${workspaceId}`, {
+      method: 'DELETE',
+    }, true);
+  },
+
+  // Code Execution
+  async executeCode(workspaceId: string, code: string): Promise<{
+    output: string;
+    error?: string;
+    executionTimeMs: number;
+    executedAt: string;
+  }> {
+    return apiRequest(`/api/workspaces/${workspaceId}/execute`, {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }, true);
+  },
+
+  async getExecutionHistory(workspaceId: string): Promise<any[]> {
+    return apiRequest(`/api/workspaces/${workspaceId}/executions`, {}, true);
+  },
+
+  // Workspace Sharing
+  async shareWorkspace(
+    workspaceId: string,
+    permissions: 'read_only' | 'editable'
+  ): Promise<{ token: string; shareUrl: string; expiresAt: string }> {
+    return apiRequest(`/api/workspaces/${workspaceId}/share`, {
+      method: 'POST',
+      body: JSON.stringify({ permissions }),
+    }, true);
+  },
+
+  async getSharedWorkspace(token: string): Promise<any> {
+    return apiRequest(`/api/workspaces/shared/${token}`, {}, false);
+  },
 };
 
 export type {

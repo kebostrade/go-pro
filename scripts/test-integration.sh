@@ -99,7 +99,7 @@ echo -e "${YELLOW}[2/5] Checking Frontend Server...${NC}"
 if ! curl -s "${FRONTEND_URL}" > /dev/null; then
     echo -e "${RED}✗ Frontend is not running at ${FRONTEND_URL}${NC}"
     echo "Please start the frontend server first:"
-    echo "  cd frontend && npm run dev"
+    echo "  cd frontend && bun run dev"
     exit 1
 fi
 echo -e "${GREEN}✓ Frontend is running${NC}"

@@ -111,7 +111,7 @@ make dev
 **Terminal 2 - Frontend:**
 ```bash
 cd frontend
-npm run dev
+bun run dev
 # Frontend runs on http://localhost:3000
 ```
 
@@ -171,7 +171,7 @@ Error responses:
 
 3. **Start the frontend:**
    ```bash
-   cd frontend && npm run dev
+   cd frontend && bun run dev
    ```
 
 4. **Access the application:**

@@ -67,7 +67,7 @@ make quality  # deps → lint → vet → security → test
 ### Frontend Development
 ```bash
 cd frontend
-npm run dev          # Starts at http://localhost:3000
+bun run dev          # Starts at http://localhost:3000
 ```
 
 ### Full Stack Development (with Docker)
@@ -153,7 +153,7 @@ type CourseRepository interface {
 ### Quick Development
 ```bash
 make dev              # Hot reload backend
-cd frontend && npm run dev   # Frontend dev
+cd frontend && bun run dev   # Frontend dev
 make docker-dev       # Full stack with services
 ```
 

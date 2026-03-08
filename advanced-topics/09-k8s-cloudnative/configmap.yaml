@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  labels:
+    app: k8s-go-sample
+data:
+  # Application environment
+  APP_ENV: "production"
+
+  # Logging configuration
+  LOG_LEVEL: "info"
+
+  # Feature flags
+  FEATURE_NEW_UI: "true"
+  FEATURE_CACHE: "true"
+
+  # Configuration file example
+  app.conf: |
+    server.port=8080
+    server.timeout=30s
+    cache.enabled=true
+    cache.ttl=3600

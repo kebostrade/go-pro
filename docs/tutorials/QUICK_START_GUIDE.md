@@ -309,8 +309,8 @@ go run main.go
 
 ```bash
 cd frontend
-npm install
-npm run dev
+bun install
+bun run dev
 # Dashboard available at http://localhost:3000
 ```
 

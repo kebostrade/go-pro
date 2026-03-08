@@ -53,7 +53,7 @@ go run ./cmd/server
 You should see logs indicating Firebase initialized successfully.
 
 ### 8. Test Google Sign-In
-1. Start frontend: `cd frontend && npm run dev`
+1. Start frontend: `cd frontend && bun run dev`
 2. Go to http://localhost:3000/signin
 3. Click "Google" button
 4. Sign in with your Google account

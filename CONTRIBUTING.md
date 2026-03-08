@@ -35,7 +35,7 @@ git remote add upstream https://github.com/DimaJoyti/go-pro.git
 
 # Or manually:
 cd backend && go mod download && cd ..
-cd frontend && npm install && cd ..
+cd frontend && bun install && cd ..
 ```
 
 ### 3. Create a Branch
@@ -78,7 +78,7 @@ make lint-fix
 
 ```bash
 cd frontend
-npm run lint
+bun run lint
 ```
 
 ### Testing
@@ -101,7 +101,7 @@ go test -v ./internal/handlers/...
 #### Frontend Tests
 ```bash
 cd frontend
-npm test
+bun test
 ```
 
 ### Commit Messages

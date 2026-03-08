@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package order;
+
+option go_package = "./proto";
+
+// Order service for demonstrating multiple services and load balancing
+service OrderService {
+  // Create an order
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+
+  // Get order by ID
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+
+  // List orders for a user
+  rpc ListOrders(ListOrdersRequest) returns (stream Order);
+
+  // Cancel an order
+  rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
+}
+
+// Order message
+message Order {
+  string id = 1;
+  string user_id = 2;
+  repeated OrderItem items = 3;
+  double total = 4;
+  OrderStatus status = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+}
+
+// Order item
+message OrderItem {
+  string product_id = 1;
+  string name = 2;
+  int32 quantity = 3;
+  double price = 4;
+}
+
+// Order status enum
+enum OrderStatus {
+  UNKNOWN = 0;
+  PENDING = 1;
+  CONFIRMED = 2;
+  SHIPPED = 3;
+  DELIVERED = 4;
+  CANCELLED = 5;
+}
+
+// CreateOrder request and response
+message CreateOrderRequest {
+  string user_id = 1;
+  repeated OrderItem items = 2;
+}
+
+message CreateOrderResponse {
+  Order order = 1;
+  string message = 2;
+}
+
+// GetOrder request and response
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message GetOrderResponse {
+  Order order = 1;
+}
+
+// ListOrders request
+message ListOrdersRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+
+// CancelOrder request and response
+message CancelOrderRequest {
+  string order_id = 1;
+  string user_id = 2;
+}
+
+message CancelOrderResponse {
+  bool success = 1;
+  string message = 2;
+  Order order = 3;
+}

@@ -36,8 +36,8 @@ go run ./cmd/server
 
 # Terminal 2: Start Frontend
 cd frontend
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ## Project Structure Overview
@@ -96,16 +96,16 @@ make fmt
 cd frontend
 
 # Development server
-npm run dev
+bun run dev
 
 # Build for production
-npm run build
+bun run build
 
 # Run production build
-npm start
+bun start
 
 # Linting
-npm run lint
+bun run lint
 ```
 
 ### Working with Course Content
@@ -151,12 +151,12 @@ NEXT_PUBLIC_ENV=development
 |------|---------|
 | Start full stack | `./scripts/start-dev.sh` |
 | Run backend tests | `cd backend && go test ./...` |
-| Run frontend tests | `cd frontend && npm test` |
+| Run frontend tests | `cd frontend && bun test` |
 | Build backend | `cd backend && go build ./cmd/server` |
-| Build frontend | `cd frontend && npm run build` |
+| Build frontend | `cd frontend && bun run build` |
 | Run linting | `cd backend && make lint` |
 | Format code | `cd backend && make fmt` |
-| Check types | `cd frontend && npm run type-check` |
+| Check types | `cd frontend && bun run type-check` |
 
 ## Troubleshooting
 
@@ -177,12 +177,12 @@ cd backend && go mod tidy && go mod verify
 # Check Node version
 node --version  # Should be 18+
 
-# Clear npm cache
-npm cache clean --force
+# Clear bun cache
+bun pm cache rm
 
 # Reinstall dependencies
-rm -rf node_modules package-lock.json
-npm install
+rm -rf node_modules
+bun install
 ```
 
 ### API connection errors
@@ -226,7 +226,7 @@ make help  # Show all available commands
 go test -v ./...
 
 # Frontend with debug logging
-NEXT_DEBUG=* npm run dev
+NEXT_DEBUG=* bun run dev
 ```
 
 ### Hot Reload Backend

@@ -45,12 +45,12 @@ check_prerequisites() {
     fi
     echo -e "${GREEN}✅ Node.js $(node --version) found${NC}"
     
-    # Check npm
-    if ! command -v npm &> /dev/null; then
-        echo -e "${RED}❌ npm is not installed${NC}"
+    # Check bun
+    if ! command -v bun &> /dev/null; then
+        echo -e "${RED}❌ bun is not installed${NC}"
         exit 1
     fi
-    echo -e "${GREEN}✅ npm $(npm --version) found${NC}"
+    echo -e "${GREEN}✅ bun $(bun --version) found${NC}"
     
     echo ""
 }
@@ -79,8 +79,8 @@ setup_frontend() {
     cd frontend
     
     if [ ! -d "node_modules" ]; then
-        echo -e "${BLUE}Installing npm dependencies...${NC}"
-        npm install
+        echo -e "${BLUE}Installing bun dependencies...${NC}"
+        bun install
     else
         echo -e "${BLUE}Dependencies already installed${NC}"
     fi
@@ -108,7 +108,7 @@ start_frontend() {
     echo -e "${YELLOW}Starting frontend server...${NC}"
     cd frontend
     echo -e "${CYAN}Frontend dashboard will be available at: ${GREEN}http://localhost:3000${NC}"
-    npm run dev &
+    bun run dev &
     FRONTEND_PID=$!
     cd ..
     sleep 2

@@ -159,7 +159,7 @@ dev: ## Start backend + frontend dev servers (parallel)
 	@printf "$(BLUE)└─$(NC) $(YELLOW)Press Ctrl+C to stop$(NC)\n\n"
 	@trap 'kill 0' INT; \
 		(cd backend && go run ./cmd/server) & \
-		(cd frontend && npm run dev) & \
+		(cd frontend && bun run dev) & \
 		wait
 
 dev-backend: ## Start backend only with hot reload

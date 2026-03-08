@@ -71,12 +71,71 @@ type StreakRepository interface {
 	UpdateStreak(ctx context.Context, userID string, lastActivityDate *time.Time) error
 }
 
+// AssessmentRepository defines the interface for assessment data operations.
+type AssessmentRepository interface {
+	Create(ctx context.Context, assessment *domain.Assessment) error
+	GetByID(ctx context.Context, id string) (*domain.Assessment, error)
+	GetByLessonID(ctx context.Context, lessonID string, pagination *domain.PaginationRequest) ([]*domain.Assessment, int64, error)
+	GetByType(ctx context.Context, assessmentType domain.AssessmentType, pagination *domain.PaginationRequest) ([]*domain.Assessment, int64, error)
+	GetAll(ctx context.Context, pagination *domain.PaginationRequest) ([]*domain.Assessment, int64, error)
+	Update(ctx context.Context, assessment *domain.Assessment) error
+	Delete(ctx context.Context, id string) error
+}
+
+// QuestionRepository defines the interface for quiz question data operations.
+type QuestionRepository interface {
+	Create(ctx context.Context, question *domain.Question) error
+	GetByID(ctx context.Context, id string) (*domain.Question, error)
+	GetByAssessmentID(ctx context.Context, assessmentID string) ([]*domain.Question, error)
+	GetByTag(ctx context.Context, tag string, pagination *domain.PaginationRequest) ([]*domain.Question, int64, error)
+	Update(ctx context.Context, question *domain.Question) error
+	Delete(ctx context.Context, id string) error
+}
+
+// SubmissionRepository defines the interface for submission data operations.
+type SubmissionRepository interface {
+	Create(ctx context.Context, submission *domain.Submission) error
+	GetByID(ctx context.Context, id string) (*domain.Submission, error)
+	GetByUserID(ctx context.Context, userID string, pagination *domain.PaginationRequest) ([]*domain.Submission, int64, error)
+	GetByAssessmentID(ctx context.Context, assessmentID string, pagination *domain.PaginationRequest) ([]*domain.Submission, int64, error)
+	GetByUserAndAssessment(ctx context.Context, userID, assessmentID string) (*domain.Submission, error)
+	GetAll(ctx context.Context, filters map[string]interface{}, pagination *domain.PaginationRequest) ([]*domain.Submission, int64, error)
+	Update(ctx context.Context, submission *domain.Submission) error
+	Delete(ctx context.Context, id string) error
+}
+
+// SubmissionCommentRepository defines the interface for submission comment data operations.
+type SubmissionCommentRepository interface {
+	Create(ctx context.Context, comment *domain.SubmissionComment) error
+	GetBySubmissionID(ctx context.Context, submissionID string) ([]*domain.SubmissionComment, error)
+	GetByID(ctx context.Context, id string) (*domain.SubmissionComment, error)
+	Update(ctx context.Context, comment *domain.SubmissionComment) error
+	Delete(ctx context.Context, id string) error
+}
+
+// PeerReviewRepository defines the interface for peer review data operations.
+type PeerReviewRepository interface {
+	Create(ctx context.Context, review *domain.PeerReview) error
+	GetByID(ctx context.Context, id string) (*domain.PeerReview, error)
+	GetBySubmissionID(ctx context.Context, submissionID string) ([]*domain.PeerReview, error)
+	GetByReviewerID(ctx context.Context, reviewerID string, filters map[string]interface{}, pagination *domain.PaginationRequest) ([]*domain.PeerReview, int64, error)
+	Update(ctx context.Context, review *domain.PeerReview) error
+	AssignReviewers(ctx context.Context, submissionID string, reviewerIDs []string, deadline *time.Time) error
+	GetPendingReviews(ctx context.Context, reviewerID string, beforeDeadline time.Time) ([]*domain.PeerReview, error)
+	Delete(ctx context.Context, id string) error
+}
+
 // Repositories aggregates all repository interfaces.
 type Repositories struct {
-	Course   CourseRepository
-	Lesson   LessonRepository
-	Exercise ExerciseRepository
-	Progress ProgressRepository
-	User     UserRepository
-	Streak   StreakRepository
+	Course             CourseRepository
+	Lesson             LessonRepository
+	Exercise           ExerciseRepository
+	Progress           ProgressRepository
+	User               UserRepository
+	Streak             StreakRepository
+	Assessment         AssessmentRepository
+	Question           QuestionRepository
+	Submission         SubmissionRepository
+	SubmissionComment  SubmissionCommentRepository
+	PeerReview         PeerReviewRepository
 }

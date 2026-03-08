@@ -70,8 +70,8 @@ go test ./...
 
 ```
 cd frontend
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 What you get:
@@ -79,8 +79,8 @@ What you get:
 
 Optional Cloudflare preview/deploy (requires configuration in `wrangler.jsonc`):
 ```
-npm run preview   # build + preview via OpenNext Cloudflare
-npm run deploy    # build + deploy via OpenNext Cloudflare
+bun run preview   # build + preview via OpenNext Cloudflare
+bun run deploy    # build + deploy via OpenNext Cloudflare
 ```
 
 ---

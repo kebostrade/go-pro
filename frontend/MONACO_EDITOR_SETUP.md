@@ -311,21 +311,21 @@ if (typeof window !== 'undefined' && window.localStorage) {
 
 ```bash
 cd frontend
-npm run dev
+bun run dev
 # Visit http://localhost:3000/exercises/1
 ```
 
 ### Production Build
 
 ```bash
-npm run build
-npm start
+bun run build
+bun start
 ```
 
 ### Type Checking
 
 ```bash
-npm run type-check
+bun run type-check
 ```
 
 ## Next Steps
