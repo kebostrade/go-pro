@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { TestCaseBuilder } from '@/components/assessments/test-case-builder';
-import { MonacoCodeEditor } from '@/components/learning/monaco-code-editor';
+import MonacoCodeEditor from '@/components/learning/monaco-code-editor';
 import { CreateCodingExerciseRequest, ExecutionLimits, TestCase } from '@/types/assessment';
 import { ArrowLeft, Save, Eye, Plus } from 'lucide-react';
 import Link from 'next/link';

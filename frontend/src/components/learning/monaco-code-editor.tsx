@@ -36,7 +36,7 @@ interface MonacoCodeEditorProps {
   language?: 'go' | 'javascript' | 'python';
   height?: string;
   readOnly?: boolean;
-  onSubmit?: (code: string) => Promise<ExerciseResult>;
+  onSubmit?: (code: string) => Promise<ExerciseResult | void;
   testCases?: TestCase[];
 }
 

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -195,6 +194,6 @@ func printConnectionStatus(nc *nats.Conn) {
 	fmt.Printf("Connected: %v\n", nc.IsConnected())
 	fmt.Printf("Servers: %v\n", nc.Servers())
 	stats := nc.Stats()
-	fmt.Printf("Messages Sent: %d\n", stats.MsgsSent)
-	fmt.Printf("Messages Received: %d\n", stats.MsgsReceived)
+	fmt.Printf("Messages Sent: %d\n", stats.OutMsgs)
+	fmt.Printf("Messages Received: %d\n", stats.InMsgs)
 }

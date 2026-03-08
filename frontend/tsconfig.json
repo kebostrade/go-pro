@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
     "target": "ES2015",
     "lib": [
       "dom",
@@ -18,7 +20,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "downlevelIteration": true,
     "paths": {
       "@/*": [
         "./src/*"
