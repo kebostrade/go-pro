@@ -206,7 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Create or update user profile
   const createUserProfile = async (user: User, additionalData?: Partial<UserProfile>) => {
-    const userRef = doc(db, 'users', user.uid);
+    const userRef = doc(getDbInstance(), 'users', user.uid);
     const userSnap = await getDoc(userRef);
 
     const securitySettings: SecuritySettings = {
@@ -272,7 +272,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     method: 'email' | 'google' | 'github' | 'phone'
   ) => {
     try {
-      const activityRef = collection(db, 'users', userId, 'loginHistory');
+      const activityRef = collection(doc(getDbInstance(), 'users', userId), 'loginHistory');
       await addDoc(activityRef, {
         timestamp: serverTimestamp(),
         userAgent: navigator.userAgent,
@@ -301,7 +301,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Load login history
   const loadLoginHistory = async (userId: string, historyLimit: number = 10) => {
     try {
-      const historyRef = collection(db, 'users', userId, 'loginHistory');
+      const historyRef = collection(getDbInstance(), 'users', userId, 'loginHistory');
       const q = query(historyRef, orderBy('timestamp', 'desc'), firestoreLimit(historyLimit));
       const snapshot = await getDocs(q);
 
@@ -323,7 +323,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, displayName?: string): Promise<UserCredential> => {
     try {
       setError(null);
-      const result = await createUserWithEmailAndPassword(auth, email, password);
+      const result = await createUserWithEmailAndPassword(getAuthInstance(), email, password);
 
       if (displayName && result.user) {
         await updateProfile(result.user, { displayName });
@@ -344,7 +344,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string): Promise<UserCredential> => {
     try {
       setError(null);
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(getAuthInstance(), email, password);
       await logLoginActivity(result.user.uid, true, 'email');
       return result;
     } catch (err: any) {
@@ -363,7 +363,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const provider = new GoogleAuthProvider();
       provider.addScope('profile');
       provider.addScope('email');
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(getAuthInstance(), provider);
       await createUserProfile(result.user);
       await logLoginActivity(result.user.uid, true, 'google');
       return result;
@@ -380,7 +380,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const provider = new GithubAuthProvider();
       provider.addScope('read:user');
       provider.addScope('user:email');
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(getAuthInstance(), provider);
       await createUserProfile(result.user);
       await logLoginActivity(result.user.uid, true, 'github');
       return result;
@@ -394,7 +394,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithPhone = async (phoneNumber: string, verifier: ApplicationVerifier) => {
     try {
       setError(null);
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
+      const confirmationResult = await signInWithPhoneNumber(getAuthInstance(), phoneNumber, verifier);
       return confirmationResult;
     } catch (err: any) {
       setError(err.message);
@@ -416,7 +416,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const linkPhoneNumber = async (phoneNumber: string, verifier: ApplicationVerifier) => {
     if (!user) throw new Error('No user logged in');
     try {
-      const provider = new PhoneAuthProvider(auth);
+      const provider = new PhoneAuthProvider(getAuthInstance());
       const verificationId = await provider.verifyPhoneNumber(phoneNumber, verifier);
       return verificationId;
     } catch (err: any) {
@@ -430,7 +430,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error('No user logged in');
     try {
       const session = await multiFactor(user).getSession();
-      const phoneAuthProvider = new PhoneAuthProvider(auth);
+      const phoneAuthProvider = new PhoneAuthProvider(getAuthInstance());
       const verificationId = await phoneAuthProvider.verifyPhoneNumber(
         { phoneNumber, session },
         verifier
@@ -540,7 +540,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const revokeAllSessions = async (): Promise<void> => {
     if (!user) throw new Error('No user logged in');
     // This would sign out from all devices
-    await firebaseSignOut(auth);
+    await firebaseSignOut(getAuthInstance());
     setSessions([]);
   };
 
@@ -554,7 +554,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logActivity = async (activity: string, metadata?: any): Promise<void> => {
     if (!user) throw new Error('No user logged in');
     try {
-      const activityRef = collection(db, 'users', user.uid, 'activity');
+      const activityRef = collection(getDbInstance(), 'users', user.uid, 'activity');
       await addDoc(activityRef, {
         activity,
         metadata,
@@ -605,7 +605,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async (): Promise<void> => {
     try {
       setError(null);
-      await firebaseSignOut(auth);
+      await firebaseSignOut(getAuthInstance());
       setUserProfile(null);
       setSessions([]);
       setLoginHistory([]);
@@ -621,7 +621,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setError(null);
-      const userRef = doc(db, 'users', user.uid);
+      const userRef = doc(getDbInstance(), 'users', user.uid);
       await updateDoc(userRef, {
         ...data,
         updatedAt: serverTimestamp(),
@@ -683,7 +683,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const sendPasswordReset = async (email: string): Promise<void> => {
     try {
       setError(null);
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(getAuthInstance(), email);
     } catch (err: any) {
       setError(err.message);
       throw err;
@@ -760,7 +760,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const usersRef = collection(db, 'users');
+      const usersRef = collection(getDbInstance(), 'users');
       const snapshot = await getDocs(usersRef);
       return snapshot.docs.map((doc) => doc.data() as UserProfile);
     } catch (err: any) {
@@ -778,7 +778,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(getDbInstance(), 'users', userId);
       await updateDoc(userRef, { role, updatedAt: serverTimestamp() });
     } catch (err: any) {
       setError(err.message);
@@ -792,7 +792,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(getDbInstance(), 'users', userId);
       await updateDoc(userRef, {
         'security.accountLockout': true,
         updatedAt: serverTimestamp(),
@@ -814,7 +814,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Auth state listener
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(getAuthInstance(), async (user) => {
       setUser(user);
       if (user) {
         await loadUserProfile(user);

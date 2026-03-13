@@ -10,7 +10,8 @@ const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || ""
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || ""
 };
 
 let app: FirebaseApp | null = null;
@@ -23,7 +24,7 @@ function initializeFirebaseApp(): FirebaseApp | null {
   if (initError) {
     throw initError;
   }
-  
+
   if (app) {
     return app;
   }
@@ -138,8 +139,11 @@ export const storage: FirebaseStorage = new Proxy({} as FirebaseStorage, {
   }
 }) as any;
 
-// Initialize Analytics (only in browser) - lazy
-export const analytics = typeof window !== 'undefined' && firebaseConfig.apiKey
+// Initialize Analytics (only in browser, if enabled and valid config)
+const isValidApiKey = (key: string) => key && !key.startsWith('your-') && key.length > 10;
+export const analytics = typeof window !== 'undefined' &&
+  process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true' &&
+  isValidApiKey(firebaseConfig.apiKey)
   ? isSupported().then(yes => yes ? getAnalytics(getFirebaseApp()) : null).catch(() => null)
   : Promise.resolve(null);
 

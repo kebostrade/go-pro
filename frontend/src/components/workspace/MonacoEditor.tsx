@@ -103,30 +103,30 @@ export default function MonacoEditor({
         // Go standard library suggestions
         const suggestions = [
           // Common packages
-          { label: 'fmt', kind: monaco.languages.CompletionItemKind.Module, insertText: 'fmt', detail: 'Format package' },
-          { label: 'os', kind: monaco.languages.CompletionItemKind.Module, insertText: 'os', detail: 'OS package' },
-          { label: 'io', kind: monaco.languages.CompletionItemKind.Module, insertText: 'io', detail: 'IO package' },
-          { label: 'strings', kind: monaco.languages.CompletionItemKind.Module, insertText: 'strings', detail: 'Strings package' },
-          { label: 'strconv', kind: monaco.languages.CompletionItemKind.Module, insertText: 'strconv', detail: 'String conversion package' },
-          { label: 'net/http', kind: monaco.languages.CompletionItemKind.Module, insertText: 'net/http', detail: 'HTTP package' },
-          { label: 'encoding/json', kind: monaco.languages.CompletionItemKind.Module, insertText: 'encoding/json', detail: 'JSON package' },
+          { label: 'fmt', kind: monaco.languages.CompletionItemKind.Module, insertText: 'fmt', detail: 'Format package', range },
+          { label: 'os', kind: monaco.languages.CompletionItemKind.Module, insertText: 'os', detail: 'OS package', range },
+          { label: 'io', kind: monaco.languages.CompletionItemKind.Module, insertText: 'io', detail: 'IO package', range },
+          { label: 'strings', kind: monaco.languages.CompletionItemKind.Module, insertText: 'strings', detail: 'Strings package', range },
+          { label: 'strconv', kind: monaco.languages.CompletionItemKind.Module, insertText: 'strconv', detail: 'String conversion package', range },
+          { label: 'net/http', kind: monaco.languages.CompletionItemKind.Module, insertText: 'net/http', detail: 'HTTP package', range },
+          { label: 'encoding/json', kind: monaco.languages.CompletionItemKind.Module, insertText: 'encoding/json', detail: 'JSON package', range },
 
           // Common functions
-          { label: 'main', kind: monaco.languages.CompletionItemKind.Function, insertText: 'main()', detail: 'Main function' },
-          { label: 'init', kind: monaco.languages.CompletionItemKind.Function, insertText: 'init()', detail: 'Init function' },
-          { label: 'func', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'func ', detail: 'Function keyword' },
-          { label: 'var', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'var ', detail: 'Variable declaration' },
-          { label: 'const', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'const ', detail: 'Constant declaration' },
-          { label: 'type', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'type ', detail: 'Type declaration' },
-          { label: 'struct', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'struct', detail: 'Struct keyword' },
-          { label: 'interface', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'interface', detail: 'Interface keyword' },
-          { label: 'map', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'map[]', detail: 'Map keyword' },
+          { label: 'main', kind: monaco.languages.CompletionItemKind.Function, insertText: 'main()', detail: 'Main function', range },
+          { label: 'init', kind: monaco.languages.CompletionItemKind.Function, insertText: 'init()', detail: 'Init function', range },
+          { label: 'func', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'func ', detail: 'Function keyword', range },
+          { label: 'var', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'var ', detail: 'Variable declaration', range },
+          { label: 'const', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'const ', detail: 'Constant declaration', range },
+          { label: 'type', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'type ', detail: 'Type declaration', range },
+          { label: 'struct', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'struct', detail: 'Struct keyword', range },
+          { label: 'interface', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'interface', detail: 'Interface keyword', range },
+          { label: 'map', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'map[]', detail: 'Map keyword', range },
 
           // Common fmt functions
-          { label: 'fmt.Println', kind: monaco.languages.CompletionItemKind.Function, insertText: 'fmt.Println(', detail: 'Print to stdout' },
-          { label: 'fmt.Printf', kind: monaco.languages.CompletionItemKind.Function, insertText: 'fmt.Printf(', detail: 'Formatted print' },
-          { label: 'fmt.Sprintf', kind: monaco.languages.CompletionItemKind.Function, insertText: 'fmt.Sprintf(', detail: 'Formatted string' },
-          { label: 'fmt.Scanln', kind: monaco.languages.CompletionItemKind.Function, insertText: 'fmt.Scanln(', detail: 'Scan from stdin' },
+          { label: 'fmt.Println', kind: monaco.languages.CompletionItemKind.Function, insertText: 'fmt.Println(', detail: 'Print to stdout', range },
+          { label: 'fmt.Printf', kind: monaco.languages.CompletionItemKind.Function, insertText: 'fmt.Printf(', detail: 'Formatted print', range },
+          { label: 'fmt.Sprintf', kind: monaco.languages.CompletionItemKind.Function, insertText: 'fmt.Sprintf(', detail: 'Formatted string', range },
+          { label: 'fmt.Scanln', kind: monaco.languages.CompletionItemKind.Function, insertText: 'fmt.Scanln(', detail: 'Scan from stdin', range },
         ];
 
         return { suggestions };
@@ -136,8 +136,9 @@ export default function MonacoEditor({
     // Enable error navigation
     if (onError) {
       editor.onMouseDown((e) => {
-        if (e.event.target === 'contentWidgets') {
-          const position = e.target.position;
+        const target = e.target;
+        if (target && 'position' in target) {
+          const position = (target as { position: { lineNumber: number } | null }).position;
           if (position) {
             const model = editor.getModel();
             if (model) {

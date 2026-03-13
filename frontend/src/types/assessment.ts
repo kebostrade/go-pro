@@ -36,6 +36,7 @@ export interface Question {
   orderIndex: number;
   hints?: string[];
   tags?: string[];
+  readonly?: boolean; // Prevent editing when true
 }
 
 export interface QuizSettings {

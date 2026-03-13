@@ -238,7 +238,7 @@ const MonacoCodeEditor: React.FC<MonacoCodeEditorProps> = ({
 
     try {
       const result = await onSubmit(code);
-      setResults(result);
+      if (result) setResults(result);
     } catch (error) {
       console.error('Error running code:', error);
       setResults({
@@ -263,11 +263,12 @@ const MonacoCodeEditor: React.FC<MonacoCodeEditorProps> = ({
 
     try {
       const result = await onSubmit(code);
-      setResults(result);
-
-      // Clear localStorage on successful submission
-      if (result.passed) {
-        localStorage.removeItem(storageKey);
+      if (result) {
+        setResults(result);
+        // Clear localStorage on successful submission
+        if (result.passed) {
+          localStorage.removeItem(storageKey);
+        }
       }
     } catch (error) {
       console.error('Error submitting code:', error);

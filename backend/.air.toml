@@ -1,5 +1,5 @@
 # Air configuration for hot reload development
-# See https://github.com/cosmtrek/air for more information
+# Optimized for fast rebuilds
 
 root = "."
 testdata_dir = "testdata"
@@ -7,10 +7,10 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./tmp/main"
-  cmd = "go build -o ./tmp/main ."
-  delay = 1000
-  exclude_dir = ["tmp", "vendor", "testdata", "scripts", "docs"]
+  entrypoint = "./tmp/main"
+  cmd = "go build -o ./tmp/main ./cmd/server"
+  delay = 300
+  exclude_dir = ["tmp", "vendor", "testdata", "scripts", "docs", "migrations"]
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
@@ -24,8 +24,8 @@ tmp_dir = "tmp"
   poll = false
   poll_interval = 0
   rerun = false
-  rerun_delay = 500
-  send_interrupt = false
+  rerun_delay = 200
+  send_interrupt = true
   stop_on_root = false
 
 [color]
@@ -38,6 +38,7 @@ tmp_dir = "tmp"
 [log]
   main_only = false
   time = false
+  silent = true
 
 [misc]
   clean_on_exit = false
