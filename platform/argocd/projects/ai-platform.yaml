@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ai-platform
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: AI Agent Platform Project
+
+  sourceRepos:
+    - '*'
+
+  destinations:
+    - namespace: 'ai-platform*'
+      server: https://kubernetes.default.svc
+    - namespace: 'argocd'
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRole
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRoleBinding
+    - group: 'apiextensions.k8s.io'
+      kind: CustomResourceDefinition
+
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  roles:
+    - name: developer
+      description: Developer access to ai-platform
+      policies:
+        - p, proj:ai-platform:developer, applications, get, ai-platform/*, allow
+        - p, proj:ai-platform:developer, applications, sync, ai-platform/*, allow
+      groups:
+        - ai-platform-developers
+
+  syncWindows:
+    - kind: allow
+      schedule: '10 1 * * *'
+      duration: 1h
+      applications:
+        - '*-prod*'

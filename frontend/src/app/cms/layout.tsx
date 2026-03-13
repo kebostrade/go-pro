@@ -88,6 +88,7 @@ export default function CMSLayout({
   };
 
   const isActive = (href: string) => {
+    if (!pathname) return false;
     if (href === '/cms') {
       return pathname === '/cms';
     }
@@ -226,7 +227,7 @@ export default function CMSLayout({
                     CMS
                   </Link>
                 </li>
-                {pathname !== '/cms' && (
+                {pathname !== '/cms' && pathname && (
                   <>
                     <span className="text-gray-300">/</span>
                     <li className="text-sm text-gray-700">

@@ -19,6 +19,7 @@ import {
   LogOut,
   Settings,
   UserCircle,
+  Brain,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
@@ -120,11 +121,17 @@ const Header = () => {
       icon: Code2,
     },
     {
+      title: "Interviews",
+      href: "/interviews",
+      description: "Master coding interviews with patterns and tips",
+      icon: Brain,
+      badge: "New",
+    },
+    {
       title: "Tutorials",
       href: "/tutorials",
       description: "19 comprehensive tutorials from basics to advanced",
       icon: GraduationCap,
-      badge: "19 Tutorials",
     },
     {
       title: "Projects",
@@ -150,38 +157,38 @@ const Header = () => {
       )}
       role="banner"
     >
-      <div className="container flex h-14 sm:h-16 lg:h-18 max-w-screen-2xl items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8">
+      <div className="container flex h-14 sm:h-16 lg:h-18 xl:h-20 2xl:h-22 max-w-screen-2xl items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16">
         {/* Enhanced Logo - Fully Responsive */}
-        <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group shrink-0 min-w-0">
-          <div className="flex h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80 shadow-lg group-hover:shadow-xl group-hover:shadow-primary/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shrink-0">
-            <span className="text-sm sm:text-lg lg:text-xl font-bold text-primary-foreground">G</span>
+        <Link href="/" className="flex items-center space-x-2 sm:space-x-3 lg:space-x-3 xl:space-x-4 2xl:space-x-5 group shrink-0 min-w-0">
+          <div className="flex h-7 w-7 sm:h-8 sm:w-8 lg:h-9 lg:w-9 xl:h-10 xl:w-10 2xl:h-12 2xl:w-12 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80 shadow-lg group-hover:shadow-xl group-hover:shadow-primary/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shrink-0">
+            <span className="text-sm sm:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl font-bold text-primary-foreground">G</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-base sm:text-lg lg:text-xl font-bold go-gradient-text group-hover:scale-105 transition-transform duration-300 whitespace-nowrap">GO-PRO</span>
-            <span className="hidden sm:block text-xs lg:text-sm text-muted-foreground -mt-1 group-hover:text-foreground/80 transition-colors whitespace-nowrap">Learn Go Programming</span>
+            <span className="text-base sm:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl font-bold go-gradient-text group-hover:scale-105 transition-transform duration-300 whitespace-nowrap">GO-PRO</span>
+            <span className="hidden sm:block text-xs lg:text-sm xl:text-base 2xl:text-lg text-muted-foreground -mt-1 group-hover:text-foreground/80 transition-colors whitespace-nowrap">Learn Go Programming</span>
           </div>
         </Link>
 
         {/* Desktop Navigation - Clean and modern */}
-        <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
+        <nav className="hidden lg:flex items-center gap-1 xl:gap-2 2xl:gap-3" aria-label="Main navigation">
           {navigationItems.map((item) => (
             <Link
               key={item.title}
               href={item.href}
               className={cn(
-                "group relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                "group relative flex items-center gap-2 xl:gap-2.5 2xl:gap-3 px-4 py-2 xl:px-5 xl:py-2.5 2xl:px-6 2xl:py-3 rounded-lg text-sm xl:text-base 2xl:text-lg font-medium transition-all duration-200",
                 "hover:bg-accent hover:text-accent-foreground",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               )}
             >
-              <item.icon className="h-4 w-4 transition-transform group-hover:scale-110" />
+              <item.icon className="h-4 w-4 xl:h-5 xl:w-5 2xl:h-6 2xl:w-6 transition-transform group-hover:scale-110" />
               <span>{item.title}</span>
               {item.badge && (
-                <Badge variant="secondary" className="text-xs ml-1 px-1.5 py-0">
+                <Badge variant="secondary" className="text-xs xl:text-sm ml-1 px-1.5 py-0 xl:px-2 xl:py-0.5">
                   New
                 </Badge>
               )}
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-blue-600 to-cyan-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 xl:h-1 bg-linear-to-r from-blue-600 to-cyan-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
             </Link>
           ))}
         </nav>
@@ -202,14 +209,13 @@ const Header = () => {
         </nav>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2 md:gap-3 ml-auto">
-          {/* Theme Toggle - Enhanced */}
+        <div className="flex items-center gap-2 md:gap-3 xl:gap-4 2xl:gap-5 ml-auto">
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
             className={cn(
-              "h-9 w-9 md:h-10 md:w-10 rounded-lg relative overflow-hidden",
+              "h-9 w-9 md:h-10 md:w-10 xl:h-11 xl:w-11 2xl:h-12 2xl:w-12 rounded-lg relative overflow-hidden",
               "hover:bg-accent transition-all duration-300"
             )}
             aria-label="Toggle theme"
@@ -217,31 +223,31 @@ const Header = () => {
           >
             <div className="absolute inset-0 bg-linear-to-br from-yellow-400/20 to-orange-400/20 dark:from-blue-400/20 dark:to-purple-400/20 opacity-0 hover:opacity-100 transition-opacity" />
             {mounted && isDark ? (
-              <Sun className="h-5 w-5 text-yellow-500 hover:rotate-90 transition-transform duration-500 relative z-10" />
+              <Sun className="h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7 text-yellow-500 hover:rotate-90 transition-transform duration-500 relative z-10" />
             ) : (
-              <Moon className="h-5 w-5 text-blue-600 dark:text-blue-400 hover:-rotate-12 transition-transform duration-500 relative z-10" />
+              <Moon className="h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7 text-blue-600 dark:text-blue-400 hover:-rotate-12 transition-transform duration-500 relative z-10" />
             )}
           </Button>
 
           {/* Auth Section - Responsive */}
           {mounted && !loading && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 xl:gap-3">
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="relative h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-full"
+                      className="relative h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 xl:h-11 xl:w-11 2xl:h-12 2xl:w-12 rounded-full"
                     >
-                      <Avatar className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9">
+                      <Avatar className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 xl:h-10 xl:w-10 2xl:h-11 2xl:w-11">
                         <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
-                        <AvatarFallback className="bg-linear-to-br from-primary to-primary/80 text-xs sm:text-sm">
+                        <AvatarFallback className="bg-linear-to-br from-primary to-primary/80 text-xs sm:text-sm xl:text-base 2xl:text-lg">
                           {user.displayName?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-52 sm:w-56" align="end" forceMount>
+                  <DropdownMenuContent className="w-52 sm:w-56 xl:w-64" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none truncate">
@@ -286,13 +292,13 @@ const Header = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 px-3 sm:h-9 sm:px-4 md:h-10 md:px-6 text-xs sm:text-sm lg:text-base"
+                      className="h-8 px-3 sm:h-9 sm:px-4 md:h-10 md:px-6 xl:h-11 xl:px-8 2xl:h-12 2xl:px-10 text-xs sm:text-sm lg:text-base xl:text-lg 2xl:text-xl"
                     >
-                      <LogIn className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
+                      <LogIn className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-5 lg:w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7" />
                       <span>Sign in</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-44 sm:w-48" align="end">
+                  <DropdownMenuContent className="w-44 sm:w-48 xl:w-56" align="end">
                     <DropdownMenuItem asChild>
                       <Link href="/signin" className="cursor-pointer">
                         <LogIn className="mr-2 h-4 w-4" />

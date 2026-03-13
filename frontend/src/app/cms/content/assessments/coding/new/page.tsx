@@ -241,10 +241,11 @@ export default function NewCodingExercisePage() {
             <h2 className="text-xl font-semibold mb-4">Starter Code</h2>
             <div className="border rounded-lg overflow-hidden">
               <MonacoCodeEditor
-                code={starterCode}
+                initialCode={starterCode}
                 onChange={setStarterCode}
                 language="go"
                 height="400px"
+                exerciseId="cms-new"
               />
             </div>
           </Card>

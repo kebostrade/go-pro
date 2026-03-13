@@ -22,23 +22,27 @@ export function QuestionBuilder({ questions, onChange, readonly = false }: Quest
   const [selectedType, setSelectedType] = useState<QuestionType>('multiple_choice');
 
   const addQuestion = () => {
+    let correctAnswer: string | number | boolean = '';
+    
+    switch (selectedType) {
+      case 'multiple_choice':
+        correctAnswer = 0;
+        break;
+      case 'true_false':
+        correctAnswer = false;
+        break;
+      default:
+        correctAnswer = '';
+    }
+    
     const newQuestion: Omit<Question, 'id'> = {
       type: selectedType,
       questionText: '',
       points: 1,
       orderIndex: questions.length,
+      correctAnswer,
       ...(selectedType === 'multiple_choice' && {
         options: ['', '', '', ''],
-        correctAnswer: 0,
-      }),
-      ...(selectedType === 'true_false' && {
-        correctAnswer: false,
-      }),
-      ...(selectedType === 'short_answer' && {
-        correctAnswer: '',
-      }),
-      ...(selectedType === 'code_completion' && {
-        correctAnswer: '',
       }),
     };
     onChange([...questions, newQuestion]);

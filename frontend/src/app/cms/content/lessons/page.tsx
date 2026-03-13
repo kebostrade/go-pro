@@ -14,6 +14,7 @@ import {
   Trash2,
   GitBranch,
   Clock,
+  FileEdit,
 } from 'lucide-react';
 
 interface Lesson {

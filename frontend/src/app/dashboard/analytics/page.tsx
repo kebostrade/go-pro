@@ -269,7 +269,7 @@ export default function StudentAnalyticsPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ topic, hours }) => `${topic}: ${hours}h`}
+                  label={(entry: any) => `${entry.topic}: ${entry.hours}h`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="hours"

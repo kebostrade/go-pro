@@ -36,7 +36,8 @@ interface MonacoCodeEditorProps {
   language?: 'go' | 'javascript' | 'python';
   height?: string;
   readOnly?: boolean;
-  onSubmit?: (code: string) => Promise<ExerciseResult | void;
+  onChange?: (code: string) => void;
+  onSubmit?: (code: string) => Promise<ExerciseResult | void>;
   testCases?: TestCase[];
 }
 
@@ -133,6 +134,7 @@ const MonacoCodeEditor: React.FC<MonacoCodeEditorProps> = ({
   language = 'go',
   height = '500px',
   readOnly = false,
+  onChange,
   onSubmit,
   testCases,
 }) => {
@@ -185,6 +187,7 @@ const MonacoCodeEditor: React.FC<MonacoCodeEditorProps> = ({
   const handleCodeChange = (value: string | undefined) => {
     if (value !== undefined) {
       setCode(value);
+      onChange?.(value);
     }
   };
 
