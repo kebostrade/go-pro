@@ -2,12 +2,12 @@ name: Microservices CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, dev]
     paths:
       - 'services/**'
       - '.github/workflows/microservices-ci.yml'
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, dev]
     paths:
       - 'services/**'
       - '.github/workflows/microservices-ci.yml'

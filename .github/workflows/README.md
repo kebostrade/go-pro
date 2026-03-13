@@ -123,8 +123,7 @@ The CI/CD pipeline is designed to:
    - Environment-specific plans
    - Plan artifacts
 
-5. **Apply Dev/Prod** - Infrastructure deployment
-   - Auto-approve on main/develop
+5. **Apply Dev/Prod** - Infrastructure deployment   - Auto-approve on main/dev
    - Output artifacts
    - Slack notifications
 
@@ -342,7 +341,7 @@ REDIS_PASSWORD
 3. Push to GitHub
 4. CI runs automatically
 5. Review required
-6. Merge to develop
+6. Merge to dev
 7. Auto-deploy to dev
 8. Test in dev
 9. Merge to main

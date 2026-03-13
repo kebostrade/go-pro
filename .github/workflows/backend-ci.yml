@@ -2,12 +2,12 @@ name: Backend CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, dev]
     paths:
       - 'backend/**'
       - '.github/workflows/backend-ci.yml'
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, dev]
     paths:
       - 'backend/**'
       - '.github/workflows/backend-ci.yml'
@@ -238,10 +238,10 @@ jobs:
     name: Deploy to Development
     runs-on: ubuntu-latest
     needs: [build, integration-test]
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-    environment:
-      name: dev
-      url: https://dev-api.gopro.com
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/dev')
+    # environment:
+    #   name: dev
+    #   url: https://dev-api.gopro.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -259,7 +259,8 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl set image deployment/backend backend=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:develop -n gopro-dev
+          TAG=${GITHUB_REF##*/}
+          kubectl set image deployment/backend backend=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${TAG} -n gopro-dev
           kubectl rollout status deployment/backend -n gopro-dev --timeout=5m
 
       - name: Run smoke tests
@@ -272,9 +273,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, integration-test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment:
-      name: Production
-      url: https://api.gopro.com
+    # environment:
+    #   name: Production
+    #   url: https://api.gopro.com
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

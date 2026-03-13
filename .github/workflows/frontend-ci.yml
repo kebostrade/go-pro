@@ -2,12 +2,12 @@ name: Frontend CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, dev]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, dev]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
@@ -209,8 +209,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
+          context: ./docker
+          file: ./docker/frontend/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -219,63 +219,95 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.API_URL }}
 
-  # Deploy to Vercel (Development)
-  deploy-vercel-dev:
-    name: Deploy to Vercel (Dev)
+  # Deploy to Firebase (Development)
+  deploy-firebase-dev:
+    name: Deploy to Firebase (Dev)
     runs-on: ubuntu-latest
     needs: [build, e2e]
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-    environment:
-      name: development
-      url: https://dev.gopro.com
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/dev'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./frontend
-          vercel-args: '--prod'
+          bun-version: ${{ env.BUN_VERSION }}
 
-  # Deploy to Vercel (Production)
-  deploy-vercel-prod:
-    name: Deploy to Vercel (Prod)
+      - name: Install dependencies
+        run: |
+          cd frontend
+          bun install
+
+      - name: Build application
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
+        run: |
+          cd frontend
+          bun run build
+
+      - name: Deploy to Firebase
+        run: |
+          cd frontend
+          firebase deploy --only hosting --project gopro-425a7 --token ${{ secrets.FIREBASE_TOKEN }}
+
+  # Deploy to Firebase (Production)
+  deploy-firebase-prod:
+    name: Deploy to Firebase (Prod)
     runs-on: ubuntu-latest
     needs: [build, e2e]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment:
-      name: production
-      url: https://gopro.com
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./frontend
-          vercel-args: '--prod'
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          bun install
+
+      - name: Build application
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.API_URL }}
+        run: |
+          cd frontend
+          bun run build
+
+      - name: Deploy to Firebase
+        run: |
+          cd frontend
+          firebase deploy --only hosting --project gopro-425a7 --token ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v10
         with:
           urls: |
-            https://gopro.com
+            https://gopro-425a7.web.app
           uploadArtifacts: true
 
       - name: Notify deployment
-        uses: 8398a7/action-slack@v3
+        uses: slackapi/slack-github-action@v1.24.0
         with:
-          status: ${{ job.status }}
-          text: 'Frontend deployed to production'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          payload: |
+            {
+              "text": "Frontend deployment to Firebase ${{ job.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Frontend deployed to Firebase: ${{ job.status }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: always()
 
   # Performance monitoring
