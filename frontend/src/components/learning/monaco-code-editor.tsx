@@ -36,7 +36,8 @@ interface MonacoCodeEditorProps {
   language?: 'go' | 'javascript' | 'python';
   height?: string;
   readOnly?: boolean;
-  onSubmit?: (code: string) => Promise<ExerciseResult>;
+  onChange?: (code: string) => void;
+  onSubmit?: (code: string) => Promise<ExerciseResult | void>;
   testCases?: TestCase[];
 }
 
@@ -133,6 +134,7 @@ const MonacoCodeEditor: React.FC<MonacoCodeEditorProps> = ({
   language = 'go',
   height = '500px',
   readOnly = false,
+  onChange,
   onSubmit,
   testCases,
 }) => {
@@ -185,6 +187,7 @@ const MonacoCodeEditor: React.FC<MonacoCodeEditorProps> = ({
   const handleCodeChange = (value: string | undefined) => {
     if (value !== undefined) {
       setCode(value);
+      onChange?.(value);
     }
   };
 
@@ -235,7 +238,7 @@ const MonacoCodeEditor: React.FC<MonacoCodeEditorProps> = ({
 
     try {
       const result = await onSubmit(code);
-      setResults(result);
+      if (result) setResults(result);
     } catch (error) {
       console.error('Error running code:', error);
       setResults({
@@ -260,11 +263,12 @@ const MonacoCodeEditor: React.FC<MonacoCodeEditorProps> = ({
 
     try {
       const result = await onSubmit(code);
-      setResults(result);
-
-      // Clear localStorage on successful submission
-      if (result.passed) {
-        localStorage.removeItem(storageKey);
+      if (result) {
+        setResults(result);
+        // Clear localStorage on successful submission
+        if (result.passed) {
+          localStorage.removeItem(storageKey);
+        }
       }
     } catch (error) {
       console.error('Error submitting code:', error);

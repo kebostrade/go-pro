@@ -53,7 +53,7 @@ case $choice in
     2)
         echo -e "${YELLOW}Building frontend...${NC}"
         cd frontend
-        npm run build
+        bun run build
         cd ..
 
         echo -e "${YELLOW}Deploying to Firebase...${NC}"

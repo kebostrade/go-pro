@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ai-platform-dev
+
+resources:
+  - ../../base
+
+nameSuffix: -dev
+
+commonLabels:
+  environment: development
+
+images:
+  - name: ai-agent-platform
+    newTag: dev
+
+configMapGenerator:
+  - name: ai-agent-config
+    behavior: merge
+    literals:
+      - LOG_LEVEL=debug
+      - LOG_FORMAT=text
+
+patchesStrategicMerge:
+  - deployment-patch.yaml

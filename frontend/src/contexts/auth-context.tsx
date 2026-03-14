@@ -27,7 +27,7 @@ import {
   inMemoryPersistence,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { getAuthInstance, getDbInstance } from '@/lib/firebase';
+import { getAuthInstance, getDbInstance, isFirebaseReady } from '@/lib/firebase';
 import { api, BackendUser, setTokenRefreshCallback } from '@/lib/api';
 import {
   getAuthErrorMessage,
@@ -120,6 +120,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Auth state listener with HMR protection
+  useEffect(() => {
+    let isMounted = true;
+    
+    async function initAuth() {
+      try {
+        if (!isFirebaseReady()) {
+          console.warn('Firebase not configured - auth features disabled');
+          if (isMounted) setLoading(false);
+          return;
+        }
+
+        const auth = getAuthInstance();
+        
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+          if (!isMounted) return;
+          
+          setUser(user);
+          if (user) {
+            await loadUserProfile(user);
+          } else {
+            setUserProfile(null);
+            setBackendUser(null);
+          }
+          if (isMounted) setLoading(false);
+        });
+
+        return unsubscribe;
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+        if (isMounted) {
+          setLoading(false);
+          setError('Authentication service unavailable');
+        }
+      }
+    }
+
+    const unsubscribePromise = initAuth();
+
+    return () => {
+      isMounted = false;
+      unsubscribePromise.then(unsubscribe => unsubscribe?.());
+    };
+  }, []);
+
   // Backend sync function
   const syncWithBackend = async () => {
     if (!user) return;
@@ -140,12 +185,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Set up token refresh callback
   useEffect(() => {
+    if (!user) return;
     setTokenRefreshCallback(async () => {
       if (user) {
-        await user.getIdToken(true); // Force token refresh
+        await user.getIdToken(true);
       }
     });
   }, [user]);
+
+  // Check if Firebase is ready before any auth operation
+  const ensureFirebase = () => {
+    if (!isFirebaseReady()) {
+      throw new Error('Firebase not configured. Please add Firebase config to .env.local');
+    }
+  };
 
   // Create or update user profile in Firestore
   const createUserProfile = async (user: User, additionalData?: Partial<UserProfile>) => {
@@ -236,6 +289,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, displayName?: string): Promise<UserCredential> => {
     try {
       setError(null);
+      ensureFirebase();
 
       // Rate limiting check
       const rateLimitCheck = authRateLimiter.check(email);
@@ -286,6 +340,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string): Promise<UserCredential> => {
     try {
       setError(null);
+      ensureFirebase();
 
       // Rate limiting check
       const rateLimitCheck = authRateLimiter.check(email);
@@ -315,6 +370,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async (): Promise<UserCredential> => {
     try {
       setError(null);
+      ensureFirebase();
       const provider = new GoogleAuthProvider();
       provider.addScope('profile');
       provider.addScope('email');
@@ -340,6 +396,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGithub = async (): Promise<UserCredential> => {
     try {
       setError(null);
+      ensureFirebase();
       const provider = new GithubAuthProvider();
       provider.addScope('read:user');
       provider.addScope('user:email');
@@ -363,7 +420,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Setup reCAPTCHA for phone auth
   const setupRecaptcha = (containerId: string): RecaptchaVerifier => {
-    const recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+    ensureFirebase();
+    const recaptchaVerifier = new RecaptchaVerifier(getAuthInstance(), containerId, {
       size: 'invisible',
       callback: () => {
         console.log('reCAPTCHA solved');
@@ -382,6 +440,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ): Promise<ConfirmationResult> => {
     try {
       setError(null);
+      ensureFirebase();
 
       // Validate phone number
       if (!PhoneValidator.isValid(phoneNumber)) {
@@ -399,7 +458,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
+      const confirmationResult = await signInWithPhoneNumber(getAuthInstance(), phoneNumber, recaptchaVerifier);
       return confirmationResult;
     } catch (err: any) {
       const errorMessage = getAuthErrorMessage(err);
@@ -416,6 +475,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ): Promise<UserCredential> => {
     try {
       setError(null);
+      ensureFirebase();
       const result = await confirmationResult.confirm(code);
       await createUserProfile(result.user);
       AuthAnalytics.trackSignIn('phone');
@@ -432,6 +492,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setSessionPersistence = async (persistence: SessionPersistence): Promise<void> => {
     try {
       setError(null);
+      ensureFirebase();
       const persistenceMap = {
         [SessionPersistence.LOCAL]: browserLocalPersistence,
         [SessionPersistence.SESSION]: browserSessionPersistence,
@@ -449,6 +510,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async (): Promise<void> => {
     try {
       setError(null);
+      ensureFirebase();
       await firebaseSignOut(getAuthInstance());
       setUserProfile(null);
       setBackendUser(null);
@@ -491,6 +553,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setError(null);
+      ensureFirebase();
       const credential = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, credential);
       await updateEmail(user, newEmail);
@@ -507,6 +570,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setError(null);
+      ensureFirebase();
       const credential = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, newPassword);
@@ -520,6 +584,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const sendPasswordReset = async (email: string): Promise<void> => {
     try {
       setError(null);
+      ensureFirebase();
       await sendPasswordResetEmail(getAuthInstance(), email);
     } catch (err: any) {
       setError(err.message);
@@ -603,22 +668,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw err;
     }
   };
-
-  // Auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(getAuthInstance(), async (user) => {
-      setUser(user);
-      if (user) {
-        await loadUserProfile(user);
-      } else {
-        setUserProfile(null);
-        setBackendUser(null);
-      }
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
 
   // Periodic backend sync (every 5 minutes)
   useEffect(() => {

@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering Coding Interviews - Complete Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #0f172a;
+            --accent: #06b6d4;
+            --bg: #fafbfc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #334155;
+            --text-light: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --code-bg: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--secondary) 0%, #1e3a5f 100%);
+            color: white;
+            padding: 5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+            animation: pulse 15s infinite;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to top, var(--bg), transparent);
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header-subtitle {
+            font-size: 1.4rem;
+            opacity: 0.9;
+            font-weight: 300;
+            margin-bottom: 2rem;
+        }
+
+        /* Prompt Engineering Section in Header */
+        .prompt-engineering-section {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(255,255,255,0.15);
+            text-align: left;
+        }
+
+        .prompt-engineering-section h3 {
+            color: var(--accent);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .prompt-engineering-section h3::before {
+            content: '✨';
+        }
+
+        .prompt-tips {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .prompt-tip {
+            background: rgba(255,255,255,0.05);
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .prompt-tip strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .prompt-tip p {
+            font-size: 0.9rem;
+            opacity: 0.85;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .header-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .header-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-badge svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Navigation */
+        .nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 600;
+            color: var(--secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-logo span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        section {
+            margin-bottom: 4rem;
+            scroll-margin-top: 100px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            color: var(--secondary);
+            margin: 2rem 0 1rem;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin: 1.5rem 0 0.75rem;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--secondary);
+            color: white;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: #e2e8f0;
+            padding: 1.25rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #f1f5f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.875em;
+            color: #0f172a;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0 1.5rem 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        li::marker {
+            color: var(--primary);
+        }
+
+        /* Checkboxes */
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .checklist li {
+            padding-left: 1.75rem;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .checklist li.checked::before {
+            content: '☑';
+            color: var(--success);
+        }
+
+        /* Boxes */
+        .box {
+            background: var(--surface);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .box-warning {
+            border-left-color: var(--warning);
+            background: #fffbeb;
+        }
+
+        .box-success {
+            border-left-color: var(--success);
+            background: #ecfdf5;
+        }
+
+        .box-info {
+            border-left-color: var(--accent);
+            background: #ecfeff;
+        }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card h4 {
+            margin-top: 0;
+            color: var(--secondary);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-critical {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .badge-important {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-nice {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        /* TOC */
+        .toc {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+        }
+
+        .toc ul {
+            list-style: none;
+            margin: 0;
+        }
+
+        .toc li {
+            margin-bottom: 0.5rem;
+        }
+
+        .toc a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .toc a:hover {
+            color: var(--primary);
+        }
+
+        /* Quote */
+        blockquote {
+            border-left: 3px solid var(--primary);
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--text-light);
+        }
+
+        /* Divider */
+        hr {
+            border: none;
+            height: 1px;
+            background: var(--border);
+            margin: 3rem 0;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(180deg, var(--secondary) 0%, #0a1628 100%);
+            color: white;
+            padding: 4rem 2rem 2rem;
+            margin-top: 4rem;
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            text-align: left;
+        }
+
+        .footer-section h4 {
+            color: var(--accent);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.25rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s, transform 0.2s;
+            display: inline-block;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .footer-section p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 3rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-bottom p {
+            opacity: 0.6;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-social a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 1.25rem;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .footer-social a:hover {
+            color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .footer-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .footer-stat {
+            text-align: center;
+        }
+
+        .footer-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .footer-stat-label {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 3rem 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .prompt-engineering-section {
+                padding: 1.5rem;
+            }
+
+            .prompt-tips {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-stats {
+                justify-content: center;
+            }
+        }
+
+        /* Large screens (1440px+) */
+        @media (min-width: 1440px) {
+            .header {
+                padding: 6rem 3rem;
+            }
+
+            .header-content {
+                max-width: 1200px;
+            }
+
+            .header h1 {
+                font-size: 4rem;
+            }
+
+            .header-subtitle {
+                font-size: 1.6rem;
+            }
+
+            .prompt-engineering-section {
+                padding: 2.5rem;
+                margin-top: 3rem;
+            }
+
+            .prompt-tips {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1.5rem;
+            }
+
+            .nav-content {
+                max-width: 1400px;
+            }
+
+            .container {
+                max-width: 1100px;
+            }
+
+            .footer-content {
+                max-width: 1400px;
+                gap: 4rem;
+            }
+
+            .footer-bottom {
+                max-width: 1400px;
+            }
+        }
+
+        /* Extra large screens (1920px+) */
+        @media (min-width: 1920px) {
+            .header {
+                padding: 8rem 4rem;
+            }
+
+            .header h1 {
+                font-size: 4.5rem;
+            }
+
+            .header-subtitle {
+                font-size: 1.8rem;
+            }
+
+            .prompt-tip {
+                padding: 1.5rem;
+            }
+
+            .prompt-tip p {
+                font-size: 1rem;
+            }
+
+            .container {
+                max-width: 1300px;
+                padding: 4rem 3rem;
+            }
+
+            section {
+                margin-bottom: 5rem;
+            }
+
+            h2 {
+                font-size: 2.25rem;
+            }
+
+            h3 {
+                font-size: 1.6rem;
+            }
+
+            .cards {
+                gap: 2rem;
+            }
+
+            .card {
+                padding: 2rem;
+            }
+        }
+
+        /* Ultra-wide screens (2560px+) */
+        @media (min-width: 2560px) {
+            body {
+                font-size: 1.125rem;
+            }
+
+            .header {
+                padding: 10rem 5rem;
+            }
+
+            .header h1 {
+                font-size: 5.5rem;
+            }
+
+            .header-subtitle {
+                font-size: 2rem;
+            }
+
+            .nav-content,
+            .container,
+            .footer-content,
+            .footer-bottom {
+                max-width: 1600px;
+            }
+
+            pre {
+                font-size: 1rem;
+                padding: 2rem;
+            }
+
+            code {
+                font-size: 1rem;
+            }
+
+            table {
+                font-size: 1rem;
+            }
+
+            th, td {
+                padding: 1.25rem 1.5rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        section {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        section:nth-child(2) { animation-delay: 0.1s; }
+        section:nth-child(3) { animation-delay: 0.2s; }
+        section:nth-child(4) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>Mastering Coding Interviews</h1>
+            <p class="header-subtitle">A comprehensive guide to landing your dream software engineering role</p>
+            
+            <div class="header-badges">
+                <span class="header-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    200+ Problems
+                </span>
+                <span class="header-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Interview Ready
+                </span>
+                <span class="header-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Self-Paced
+                </span>
+            </div>
+
+            <div class="prompt-engineering-section">
+                <h3>Prompt Engineering for Interview Success</h3>
+                <div class="prompt-tips">
+                    <div class="prompt-tip">
+                        <strong>🎯 Be Specific</strong>
+                        <p>When practicing with AI tools, specify the exact pattern: "Solve this using two pointers technique with O(n) time complexity"</p>
+                    </div>
+                    <div class="prompt-tip">
+                        <strong>🔄 Request Alternatives</strong>
+                        <p>Ask for multiple approaches: "Show me brute force, optimized, and space-efficient solutions"</p>
+                    </div>
+                    <div class="prompt-tip">
+                        <strong>💡 Understand Trade-offs</strong>
+                        <p>Always ask: "What are the time/space complexities and when would you choose each approach?"</p>
+                    </div>
+                    <div class="prompt-tip">
+                        <strong>🧪 Test Edge Cases</strong>
+                        <p>Request comprehensive testing: "Generate test cases including empty input, single element, and maximum constraints"</p>
+                    </div>
+                    <div class="prompt-tip">
+                        <strong>📝 Practice Communication</strong>
+                        <p>Simulate interviews: "Act as an interviewer and ask me clarifying questions before I solve this"</p>
+                    </div>
+                    <div class="prompt-tip">
+                        <strong>🎓 Learn Patterns</strong>
+                        <p>Focus on patterns: "Explain the sliding window pattern and give me 5 problems that use it"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="#" class="nav-logo">Code<span>Interview</span></a>
+            <ul class="nav-links">
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#data-structures">Data Structures</a></li>
+                <li><a href="#algorithms">Algorithms</a></li>
+                <li><a href="#system-design">System Design</a></li>
+                <li><a href="#practice">Practice</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#interview-format">Interview Format Overview</a></li>
+                <li><a href="#data-structures">Data Structures Mastery</a></li>
+                <li><a href="#algorithms">Algorithms & Problem-Solving</a></li>
+                <li><a href="#problem-solving">Problem-Solving Framework</a></li>
+                <li><a href="#system-design">System Design</a></li>
+                <li><a href="#behavioral">Behavioral Preparation</a></li>
+                <li><a href="#pitfalls">Common Pitfalls</a></li>
+                <li><a href="#practice-resources">Practice Resources</a></li>
+                <li><a href="#interview-day">Interview Day Tips</a></li>
+                <li><a href="#conclusion">Conclusion</a></li>
+            </ul>
+        </div>
+
+        <!-- Introduction -->
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <p>Coding interviews are the gateway to landing software engineering roles at top tech companies. This guide provides a systematic approach to preparing for and excelling in technical interviews.</p>
+            <div class="box box-info">
+                <strong>Key Insight:</strong> Most questions are variations of standard problems with a twist. Master the fundamentals first, and you'll be able to adapt to any problem.
+            </div>
+        </section>
+
+        <!-- Interview Format -->
+        <section id="interview-format">
+            <h2>Interview Format Overview</h2>
+            <h3>Typical Tech Interview Structure</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Round</th>
+                            <th>Focus</th>
+                            <th>Duration</th>
+                            <th>Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Recruiter Screen</td>
+                            <td>Background, fit</td>
+                            <td>15-30 min</td>
+                            <td>Pass/Fail</td>
+                        </tr>
+                        <tr>
+                            <td>Technical Screen</td>
+                            <td>Coding, fundamentals</td>
+                            <td>45-60 min</td>
+                            <td>30%</td>
+                        </tr>
+                        <tr>
+                            <td>Onsite - Coding</td>
+                            <td>Algorithms, data structures</td>
+                            <td>45-60 min x 3-4</td>
+                            <td>40%</td>
+                        </tr>
+                        <tr>
+                            <td>Onsite - System Design</td>
+                            <td>Architecture (senior)</td>
+                            <td>45-60 min</td>
+                            <td>20%</td>
+                        </tr>
+                        <tr>
+                            <td>Behavioral</td>
+                            <td>Culture fit</td>
+                            <td>30-45 min</td>
+                            <td>10%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Question Distribution</h3>
+            <div class="cards">
+                <div class="card">
+                    <div class="card-icon">🟢</div>
+                    <h4>Easy</h4>
+                    <p>20% of questions. Focus on fundamentals and clean code.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🟡</div>
+                    <h4>Medium</h4>
+                    <p>60% of questions. The majority - master these first.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔴</div>
+                    <h4>Hard</h4>
+                    <p>20% of questions. Often combinations of medium problems.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Structures -->
+        <section id="data-structures">
+            <h2>Data Structures Mastery</h2>
+            <p>Understanding time and space complexity is crucial. Here's your quick reference:</p>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data Structure</th>
+                            <th>Access</th>
+                            <th>Search</th>
+                            <th>Insert</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Array</td>
+                            <td><code>O(1)</code></td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(n)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Linked List</td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(1)*</code></td>
+                            <td><code>O(1)*</code></td>
+                        </tr>
+                        <tr>
+                            <td>Stack</td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(1)</code></td>
+                            <td><code>O(1)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Queue</td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(1)</code></td>
+                            <td><code>O(1)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Hash Table</td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(1)</code></td>
+                            <td><code>O(1)</code></td>
+                            <td><code>O(1)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Binary Search Tree</td>
+                            <td><code>O(log n)</code></td>
+                            <td><code>O(log n)</code></td>
+                            <td><code>O(log n)</code></td>
+                            <td><code>O(log n)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Heap</td>
+                            <td><code>O(n)</code></td>
+                            <td><code>O(log n)</code></td>
+                            <td><code>O(log n)</code></td>
+                            <td><code>O(log n)</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-light);">* At head/tail</p>
+
+            <h3>When to Use Each Structure</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Recommended Structure</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Fast lookup by key</td>
+                            <td>Hash Map/Set</td>
+                        </tr>
+                        <tr>
+                            <td>Ordered data with range queries</td>
+                            <td>BST, Segment Tree</td>
+                        </tr>
+                        <tr>
+                            <td>LIFO operations</td>
+                            <td>Stack</td>
+                        </tr>
+                        <tr>
+                            <td>FIFO operations</td>
+                            <td>Queue</td>
+                        </tr>
+                        <tr>
+                            <td>Finding min/max efficiently</td>
+                            <td>Heap</td>
+                        </tr>
+                        <tr>
+                            <td>String operations</td>
+                            <td>Trie</td>
+                        </tr>
+                        <tr>
+                            <td>Graph representation</td>
+                            <td>Adjacency List/Matrix</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Implementation Checklist</h3>
+            <ul class="checklist">
+                <li class="checked">Array (dynamic resize)</li>
+                <li class="checked">Linked List (singly, doubly)</li>
+                <li class="checked">Stack (array, linked list)</li>
+                <li class="checked">Queue (array, linked list)</li>
+                <li class="checked">Hash Map (chaining, open addressing)</li>
+                <li class="checked">Binary Search Tree</li>
+                <li class="checked">Heap (min, max)</li>
+                <li class="checked">Graph (adjacency list, matrix)</li>
+                <li class="checked">Trie</li>
+            </ul>
+        </section>
+
+        <!-- Algorithms -->
+        <section id="algorithms">
+            <h2>Algorithms & Problem-Solving</h2>
+            
+            <h3>1. Searching & Sorting</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Time (Avg)</th>
+                            <th>Time (Worst)</th>
+                            <th>Space</th>
+                            <th>Stable</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Binary Search</td>
+                            <td><code>O(log n)</code></td>
+                            <td><code>O(log n)</code></td>
+                            <td><code>O(1)</code></td>
+                            <td>N/A</td>
+                        </tr>
+                        <tr>
+                            <td>Quick Sort</td>
+                            <td><code>O(n log n)</code></td>
+                            <td><code>O(n²)</code></td>
+                            <td><code>O(log n)</code></td>
+                            <td>No</td>
+                        </tr>
+                        <tr>
+                            <td>Merge Sort</td>
+                            <td><code>O(n log n)</code></td>
+                            <td><code>O(n log n)</code></td>
+                            <td><code>O(n)</code></td>
+                            <td>Yes</td>
+                        </tr>
+                        <tr>
+                            <td>Heap Sort</td>
+                            <td><code>O(n log n)</code></td>
+                            <td><code>O(n log n)</code></td>
+                            <td><code>O(1)</code></td>
+                            <td>No</td>
+                        </tr>
+                        <tr>
+                            <td>Counting Sort</td>
+                            <td><code>O(n + k)</code></td>
+                            <td><code>O(n + k)</code></td>
+                            <td><code>O(k)</code></td>
+                            <td>Yes</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="box box-warning">
+                <strong>Key Insight:</strong> Know binary search variants: lower/upper bound, rotated sorted array, finding peak element.
+            </div>
+
+            <h3>2. Graph Algorithms</h3>
+            <div class="cards">
+                <div class="card">
+                    <h4>Traversal</h4>
+                    <ul>
+                        <li><strong>BFS:</strong> Level-order, shortest path</li>
+                        <li><strong>DFS:</strong> Topological sort, components</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Shortest Path</h4>
+                    <ul>
+                        <li><strong>Dijkstra:</strong> O((V+E) log V)</li>
+                        <li><strong>Bellman-Ford:</strong> O(VE)</li>
+                        <li><strong>Floyd-Warshall:</strong> O(V³)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>3. Dynamic Programming</h3>
+            <p><strong>Classic Problems to Master:</strong></p>
+            <ul>
+                <li>Fibonacci variants & Climbing stairs</li>
+                <li>Coin change & Knapsack</li>
+                <li>Longest Common Subsequence</li>
+                <li>Edit Distance</li>
+                <li>House Robber</li>
+                <li>Longest Increasing Subsequence</li>
+            </ul>
+
+            <h4>DP Recognition Checklist</h4>
+            <ul class="checklist">
+                <li>Can be broken into subproblems?</li>
+                <li>Optimal substructure?</li>
+                <li>Overlapping subproblems?</li>
+                <li>Can define state clearly?</li>
+            </ul>
+
+            <h4>DP Approaches</h4>
+            <ol>
+                <li><strong>Top-down:</strong> Memoization</li>
+                <li><strong>Bottom-up:</strong> Tabulation</li>
+                <li><strong>Space-optimized:</strong> Reduce memory</li>
+            </ol>
+
+            <h3>4. Two Pointers & Sliding Window</h3>
+            <div class="cards">
+                <div class="card">
+                    <h4>Two Pointers</h4>
+                    <ul>
+                        <li>Sorted array pairs</li>
+                        <li>Remove duplicates</li>
+                        <li>Container with most water</li>
+                        <li>3-sum, 4-sum variants</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Sliding Window</h4>
+                    <ul>
+                        <li>Max sum subarray (size k)</li>
+                        <li>Longest substring without repeat</li>
+                        <li>Minimum window substring</li>
+                        <li>Count anagrams</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>5. Recursion & Backtracking</h3>
+            <p><strong>Common Problems:</strong></p>
+            <ul>
+                <li>Permutations / Combinations</li>
+                <li>Subsets</li>
+                <li>N-Queens</li>
+                <li>Sudoku solver</li>
+                <li>Word search</li>
+            </ul>
+
+            <h4>Backtracking Template</h4>
+<pre><code>def backtrack(path, choices):
+    if is_goal(path):
+        result.add(path[:])
+        return
+    
+    for choice in choices:
+        if is_valid(choice):
+            path.append(choice)
+            backtrack(path, updated_choices)
+            path.pop()</code></pre>
+
+            <h3>6. Bit Manipulation</h3>
+            <div class="box box-info">
+                <strong>Common Tricks:</strong>
+                <ul style="margin-top: 0.5rem; margin-bottom: 0;">
+                    <li>Check power of 2: <code>n & (n-1) == 0</code></li>
+                    <li>Count bits: Brian Kernighan's algorithm</li>
+                    <li>Swap without temp: <code>a ^= b; b ^= a; a ^= b</code></li>
+                    <li>Find missing number: XOR all</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Problem Solving Framework -->
+        <section id="problem-solving">
+            <h2>Problem-Solving Framework</h2>
+            <h3>The S.A.F.E. Method</h3>
+            
+            <div class="cards">
+                <div class="card">
+                    <div class="card-icon">🔍</div>
+                    <h4>S - Clarify</h4>
+                    <p>Understand the problem fully. Ask clarifying questions about constraints, edge cases, and expected output.</p>
+                    <p><em>Time: 2-3 minutes</em></p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🧠</div>
+                    <h4>A - Approach</h4>
+                    <p>Formulate a plan. Start with brute force, then optimize. Consider time/space trade-offs.</p>
+                    <p><em>Time: 3-5 minutes</em></p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⌨️</div>
+                    <h4>F - Execute</h4>
+                    <p>Implement cleanly. Think out loud, use meaningful names, handle edge cases inline.</p>
+                    <p><em>Time: 15-20 minutes</em></p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">✅</div>
+                    <h4>E - Evaluate</h4>
+                    <p>Test with examples, check edge cases, analyze complexity, suggest improvements.</p>
+                    <p><em>Time: 3-5 minutes</em></p>
+                </div>
+            </div>
+
+            <h3>Algorithm Selection Guide</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Input Size</th>
+                            <th>Recommended Approach</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>n ≤ 30</td>
+                            <td>Backtracking, recursion</td>
+                        </tr>
+                        <tr>
+                            <td>n ≤ 100</td>
+                            <td>O(n²) acceptable</td>
+                        </tr>
+                        <tr>
+                            <td>n ≤ 10⁵</td>
+                            <td>O(n log n) or O(n)</td>
+                        </tr>
+                        <tr>
+                            <td>n ≤ 10⁷</td>
+                            <td>O(n), must be linear</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Questions to Ask</h3>
+            <ul>
+                <li>"Can the input array be empty?"</li>
+                <li>"What should I return for edge cases?"</li>
+                <li>"Can there be duplicates in the input?"</li>
+                <li>"What's the maximum input size?"</li>
+                <li>"Does this handle all edge cases?"</li>
+                <li>"What's the time complexity?"</li>
+            </ul>
+        </section>
+
+        <!-- System Design -->
+        <section id="system-design">
+            <h2>System Design (Senior Roles)</h2>
+            
+            <h3>Core Concepts</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Concept</th>
+                            <th>Key Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Scalability</td>
+                            <td>Horizontal vs Vertical, Load Balancing</td>
+                        </tr>
+                        <tr>
+                            <td>Caching</td>
+                            <td>LRU, CDN, Redis, Cache invalidation</td>
+                        </tr>
+                        <tr>
+                            <td>Databases</td>
+                            <td>SQL vs NoSQL, Indexing, Sharding</td>
+                        </tr>
+                        <tr>
+                            <td>Microservices</td>
+                            <td>API Gateway, Service Mesh, REST/gRPC</td>
+                        </tr>
+                        <tr>
+                            <td>CAP Theorem</td>
+                            <td>Consistency, Availability, Partition Tolerance</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Design Process</h3>
+            <ol>
+                <li><strong>Requirements Clarification (2-3 min)</strong> - What are we building? Who are users?</li>
+                <li><strong>High-Level Design (5-10 min)</strong> - Core components, data flow, API design</li>
+                <li><strong>Deep Dive (10-15 min)</strong> - Bottlenecks, scaling strategy, trade-offs</li>
+                <li><strong>Wrap-up (2-3 min)</strong> - Additional features, monitoring, error handling</li>
+            </ol>
+
+            <h3>Common Design Problems</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Problem</th>
+                            <th>Key Technologies</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>URL Shortener</td>
+                            <td>Hash functions, Database sharding</td>
+                        </tr>
+                        <tr>
+                            <td>Twitter Timeline</td>
+                            <td>Fan-out, Caching, Pagination</td>
+                        </tr>
+                        <tr>
+                            <td>YouTube/Netflix</td>
+                            <td>CDN, Video encoding, Streaming</td>
+                        </tr>
+                        <tr>
+                            <td>Rate Limiter</td>
+                            <td>Token bucket, Leaky bucket</td>
+                        </tr>
+                        <tr>
+                            <td>Search Autocomplete</td>
+                            <td>Trie, Caching, Ranking</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Behavioral -->
+        <section id="behavioral">
+            <h2>Behavioral Preparation</h2>
+            
+            <h3>The STAR Method</h3>
+            <div class="box box-success">
+                <p><strong>S</strong>ituation - Set the scene<br>
+                <strong>T</strong>ask - Describe your responsibility<br>
+                <strong>A</strong>ction - Explain what you did<br>
+                <strong>R</strong>esult - Share the outcome</p>
+            </div>
+
+            <h3>Common Questions</h3>
+            <h4>Leadership</h4>
+            <ul>
+                <li>"Tell me about a time you led a team"</li>
+                <li>"Describe a conflict with a teammate"</li>
+            </ul>
+            
+            <h4>Problem-Solving</h4>
+            <ul>
+                <li>"Tell me about a challenging bug"</li>
+                <li>"Describe a time you improved a process"</li>
+            </ul>
+            
+            <h4>Failure</h4>
+            <ul>
+                <li>"Tell me about a failure"</li>
+                <li>"What's your biggest professional mistake?"</li>
+            </ul>
+
+            <h3>Prep Strategy</h3>
+            <ol>
+                <li><strong>Write 5-7 stories</strong> covering different themes</li>
+                <li><strong>Keep each story 2-3 minutes</strong></li>
+                <li><strong>Quantify results</strong> where possible</li>
+                <li><strong>Practice out loud</strong></li>
+            </ol>
+        </section>
+
+        <!-- Pitfalls -->
+        <section id="pitfalls">
+            <h2>Common Pitfalls</h2>
+            
+            <h3>Technical Mistakes</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pitfall</th>
+                            <th>Solution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Not clarifying requirements</td>
+                            <td>Always ask questions first</td>
+                        </tr>
+                        <tr>
+                            <td>Jumping into code</td>
+                            <td>Think out loud, plan first</td>
+                        </tr>
+                        <tr>
+                            <td>Not testing edge cases</td>
+                            <td>Add test cases after coding</td>
+                        </tr>
+                        <tr>
+                            <td>Ignoring time complexity</td>
+                            <td>Analyze before writing</td>
+                        </tr>
+                        <tr>
+                            <td>Getting stuck</td>
+                            <td>Start with brute force</td>
+                        </tr>
+                        <tr>
+                            <td>Not communicating</td>
+                            <td>Think out loud continuously</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Mindset Mistakes</h3>
+            <ul class="checklist">
+                <li>Perfectionism - <strong>Done is better than perfect</strong></li>
+                <li>Panic when stuck - <strong>Start with brute force</strong></li>
+                <li>Rushing - <strong>Take time to think clearly</strong></li>
+                <li>Comparing to others - <strong>Focus on your performance</strong></li>
+            </ul>
+        </section>
+
+        <!-- Practice Resources -->
+        <section id="practice-resources">
+            <h2>Practice Resources</h2>
+            
+            <h3>Platforms</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Platform</th>
+                            <th>Focus</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>LeetCode</td>
+                            <td>Algorithms</td>
+                            <td>3000+ problems</td>
+                        </tr>
+                        <tr>
+                            <td>HackerRank</td>
+                            <td>General</td>
+                            <td>Good for beginners</td>
+                        </tr>
+                        <tr>
+                            <td>Codeforces</td>
+                            <td>Competitive</td>
+                            <td>Fast-paced</td>
+                        </tr>
+                        <tr>
+                            <td>InterviewBit</td>
+                            <td>Interview prep</td>
+                            <td>Company-specific</td>
+                        </tr>
+                        <tr>
+                            <td>Pramp</td>
+                            <td>Mock interviews</td>
+                            <td>Free peer practice</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Recommended Practice Plan</h3>
+            <div class="cards">
+                <div class="card">
+                    <h4>Beginner (4-6 weeks)</h4>
+                    <ul>
+                        <li>Complete 100 easy problems</li>
+                        <li>Focus on arrays, strings, linked lists</li>
+                        <li>Learn all data structures</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Intermediate (6-8 weeks)</h4>
+                    <ul>
+                        <li>150 medium problems</li>
+                        <li>Graph, DP, system design</li>
+                        <li>Start mock interviews</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Advanced (4+ weeks)</h4>
+                    <ul>
+                        <li>Hard problems (selectively)</li>
+                        <li>System design depth</li>
+                        <li>Real interview practice</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Problem Categories Priority</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Problems</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Arrays & Hashing</td>
+                            <td>30</td>
+                            <td><span class="badge badge-critical">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td>Two Pointers</td>
+                            <td>15</td>
+                            <td><span class="badge badge-critical">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td>Sliding Window</td>
+                            <td>15</td>
+                            <td><span class="badge badge-critical">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td>Trees & Tries</td>
+                            <td>30</td>
+                            <td><span class="badge badge-critical">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td>Graph</td>
+                            <td>25</td>
+                            <td><span class="badge badge-critical">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td>DP</td>
+                            <td>30</td>
+                            <td><span class="badge badge-critical">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td>Linked List</td>
+                            <td>20</td>
+                            <td><span class="badge badge-important">Important</span></td>
+                        </tr>
+                        <tr>
+                            <td>Heap / Priority Queue</td>
+                            <td>15</td>
+                            <td><span class="badge badge-important">Important</span></td>
+                        </tr>
+                        <tr>
+                            <td>Math & Geometry</td>
+                            <td>10</td>
+                            <td><span class="badge badge-nice">Nice to have</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Interview Day -->
+        <section id="interview-day">
+            <h2>Interview Day Tips</h2>
+            
+            <h3>Before Interview</h3>
+            <ul class="checklist">
+                <li class="checked">Get adequate sleep</li>
+                <li class="checked">Test your equipment (video, audio)</li>
+                <li class="checked">Have water nearby</li>
+                <li class="checked">Prepare your environment (quiet, clean)</li>
+                <li class="checked">Review your projects and resume</li>
+            </ul>
+
+            <h3>During Interview</h3>
+            <ol>
+                <li><strong>First 2 minutes:</strong> Clarify the problem</li>
+                <li><strong>Next 5 minutes:</strong> Plan your approach</li>
+                <li><strong>15-20 minutes:</strong> Code implementation</li>
+                <li><strong>Last 5 minutes:</strong> Test and optimize</li>
+            </ol>
+
+            <h3>Verbal Template</h3>
+            <blockquote>
+                "Let me start by understanding the problem..."<br>
+                "My approach will be..."<br>
+                "The time complexity will be..."<br>
+                "Let me test with an example..."<br>
+                "One edge case to consider is..."
+            </blockquote>
+
+            <h3>If You Get Stuck</h3>
+            <ol>
+                <li>Start with brute force (say it out loud)</li>
+                <li>Think about similar problems</li>
+                <li>Ask for a hint (it's okay)</li>
+                <li>Break the problem into smaller parts</li>
+            </ol>
+
+            <h3>Closing Strong</h3>
+            <ul>
+                <li>Summarize your solution</li>
+                <li>Mention possible improvements</li>
+                <li>Ask clarifying questions</li>
+                <li>Thank the interviewer</li>
+            </ul>
+        </section>
+
+        <!-- Quick Reference -->
+        <section id="quick-reference">
+            <h2>Quick Reference Cards</h2>
+            
+            <h3>Big-O Cheat Sheet</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Complexity</th>
+                            <th>Name</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>O(1)</code></td>
+                            <td>Constant</td>
+                            <td>Array access</td>
+                        </tr>
+                        <tr>
+                            <td><code>O(log n)</code></td>
+                            <td>Logarithmic</td>
+                            <td>Binary search</td>
+                        </tr>
+                        <tr>
+                            <td><code>O(n)</code></td>
+                            <td>Linear</td>
+                            <td>Simple loop</td>
+                        </tr>
+                        <tr>
+                            <td><code>O(n log n)</code></td>
+                            <td>Linearithmic</td>
+                            <td>Merge sort</td>
+                        </tr>
+                        <tr>
+                            <td><code>O(n²)</code></td>
+                            <td>Quadratic</td>
+                            <td>Nested loops</td>
+                        </tr>
+                        <tr>
+                            <td><code>O(2ⁿ)</code></td>
+                            <td>Exponential</td>
+                            <td>Subsets</td>
+                        </tr>
+                        <tr>
+                            <td><code>O(n!)</code></td>
+                            <td>Factorial</td>
+                            <td>Permutations</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Pattern Matching</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pattern</th>
+                            <th>Problems</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Two Pointers</td>
+                            <td>Remove duplicates, pair sum</td>
+                        </tr>
+                        <tr>
+                            <td>Sliding Window</td>
+                            <td>Max sum, substring variants</td>
+                        </tr>
+                        <tr>
+                            <td>Fast-Slow</td>
+                            <td>Cycle detection, palindrome</td>
+                        </tr>
+                        <tr>
+                            <td>Merge Intervals</td>
+                            <td>Overlapping, scheduling</td>
+                        </tr>
+                        <tr>
+                            <td>Cyclic Sort</td>
+                            <td>Missing/duplicate numbers</td>
+                        </tr>
+                        <tr>
+                            <td>In-place Reversal</td>
+                            <td>Linked list, arrays</td>
+                        </tr>
+                        <tr>
+                            <td>BFS</td>
+                            <td>Level-order, shortest path</td>
+                        </tr>
+                        <tr>
+                            <td>DFS</td>
+                            <td>Path finding, combinations</td>
+                        </tr>
+                        <tr>
+                            <td>Topological Sort</td>
+                            <td>Dependency resolution</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section id="conclusion">
+            <h2>Conclusion</h2>
+            <p>Success in coding interviews comes from:</p>
+            <ol>
+                <li><strong>Strong fundamentals</strong> - Master data structures and algorithms</li>
+                <li><strong>Pattern recognition</strong> - Learn common problem types</li>
+                <li><strong>Deliberate practice</strong> - Solve 200+ problems methodically</li>
+                <li><strong>Effective communication</strong> - Think out loud, ask questions</li>
+                <li><strong>Growth mindset</strong> - Learn from every attempt</li>
+            </ol>
+            <div class="box box-success">
+                <strong>Remember:</strong> Interview skills are learnable. With consistent practice and the right approach, anyone can master coding interviews.
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#introduction">Introduction</a></li>
+                    <li><a href="#data-structures">Data Structures</a></li>
+                    <li><a href="#algorithms">Algorithms</a></li>
+                    <li><a href="#system-design">System Design</a></li>
+                    <li><a href="#practice-resources">Practice Resources</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Study Resources</h4>
+                <ul>
+                    <li><a href="https://leetcode.com" target="_blank">LeetCode</a></li>
+                    <li><a href="https://hackerrank.com" target="_blank">HackerRank</a></li>
+                    <li><a href="https://codeforces.com" target="_blank">Codeforces</a></li>
+                    <li><a href="https://pramp.com" target="_blank">Pramp (Mock Interviews)</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>About This Guide</h4>
+                <p>A comprehensive resource for mastering coding interviews. Built with practical experience and proven strategies from successful candidates at top tech companies.</p>
+                <div class="footer-stats">
+                    <div class="footer-stat">
+                        <div class="footer-stat-value">200+</div>
+                        <div class="footer-stat-label">Problems</div>
+                    </div>
+                    <div class="footer-stat">
+                        <div class="footer-stat-value">15+</div>
+                        <div class="footer-stat-label">Patterns</div>
+                    </div>
+                    <div class="footer-stat">
+                        <div class="footer-stat-value">50+</div>
+                        <div class="footer-stat-label">Tips</div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Contributing</h4>
+                <p>PRs welcome! Help improve this guide by adding new problems, solutions, or improving explanations.</p>
+                <ul>
+                    <li><a href="#contributing">Contribution Guidelines</a></li>
+                    <li><a href="#feedback">Submit Feedback</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Last Updated: 2026 | Made with ❤️ for developers</p>
+            <div class="footer-social">
+                <a href="#" title="GitHub">📦</a>
+                <a href="#" title="Twitter">🐦</a>
+                <a href="#" title="LinkedIn">💼</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight current section in nav
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-links a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.style.color = '';
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.style.color = 'var(--primary)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

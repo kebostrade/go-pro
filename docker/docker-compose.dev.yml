@@ -2,6 +2,33 @@
 version: '3.8'
 
 services:
+  # Frontend service with bun
+  go-pro-frontend:
+    build:
+      context: ../frontend
+      dockerfile: docker/frontend/Dockerfile
+      target: builder
+    container_name: go-pro-frontend-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - bun-cache:/root/.bun
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    networks:
+      - go-pro-dev
+    depends_on:
+      - go-pro-backend
+    command: bun run dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # Backend API service
   go-pro-backend:
     build:
@@ -133,7 +160,7 @@ services:
     image: grafana/grafana:latest
     container_name: go-pro-grafana-dev
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - grafana-data:/var/lib/grafana
       - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -223,6 +250,82 @@ services:
       - go-pro-dev
     restart: unless-stopped
 
+  # Elasticsearch for log aggregation
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: go-pro-elasticsearch-dev
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_PASSWORD=elastic
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - go-pro-dev
+    restart: unless-stopped
+
+  # Kibana for Elasticsearch visualization
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: go-pro-kibana-dev
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - go-pro-dev
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # MinIO for S3-compatible object storage
+  minio:
+    image: minio/minio:latest
+    container_name: go-pro-minio-dev
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - go-pro-dev
+    restart: unless-stopped
+
+  # RabbitMQ for message queuing
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: go-pro-rabbitmq-dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - go-pro-dev
+    restart: unless-stopped
+
+  # Mailhog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: go-pro-mailhog-dev
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - go-pro-dev
+    restart: unless-stopped
+
 networks:
   go-pro-dev:
     driver: bridge
@@ -231,6 +334,8 @@ networks:
 volumes:
   go-mod-cache:
     name: go-pro-go-mod-cache
+  bun-cache:
+    name: go-pro-bun-cache
   postgres-data:
     name: go-pro-postgres-data
   redis-data:
@@ -239,3 +344,9 @@ volumes:
     name: go-pro-prometheus-data
   grafana-data:
     name: go-pro-grafana-data
+  elasticsearch-data:
+    name: go-pro-elasticsearch-data
+  minio-data:
+    name: go-pro-minio-data
+  rabbitmq-data:
+    name: go-pro-rabbitmq-data 

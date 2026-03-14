@@ -71,13 +71,13 @@ check_prerequisites() {
         missing_deps+=("node")
     fi
     
-    # Check npm
-    if command_exists npm; then
-        NPM_VERSION=$(npm --version)
-        print_status "${CHECK} npm installed: $NPM_VERSION" $GREEN
+    # Check bun
+    if command_exists bun; then
+        BUN_VERSION=$(bun --version)
+        print_status "${CHECK} bun installed: $BUN_VERSION" $GREEN
     else
-        print_status "${CROSS} npm not found" $RED
-        missing_deps+=("npm")
+        print_status "${CROSS} bun not found" $RED
+        missing_deps+=("bun")
     fi
     
     # Check optional tools
@@ -146,7 +146,7 @@ setup_frontend() {
     cd "$FRONTEND_DIR"
     
     print_status "${INFO} Installing Node.js dependencies..." $BLUE
-    npm install
+    bun install
     
     print_status "${CHECK} Frontend setup complete!" $GREEN
     cd ..
@@ -224,7 +224,7 @@ start_dev() {
     if [ -d "$FRONTEND_DIR" ]; then
         print_status "${INFO} Starting frontend server..." $BLUE
         cd "$FRONTEND_DIR"
-        npm run dev &
+        bun run dev &
         FRONTEND_PID=$!
         print_status "${CHECK} Frontend started (PID: $FRONTEND_PID)" $GREEN
         cd ..

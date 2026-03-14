@@ -41,6 +41,21 @@ cd examples/13.\ Testing/02_table_driven_tests && go test -v
 cd examples/13.\ Testing/03_benchmarks && go test -bench=. -benchmem
 ```
 
+### Run AWS Lambda Examples
+```bash
+cd 14-serverless-lambda
+sam local invoke LambdaHandler --event events/example.json
+sam local start-api
+curl http://localhost:3000/hello
+```
+
+### Run GraphQL Examples
+```bash
+cd 15-graphql-gqlgen
+go run server.go
+# Open http://localhost:8080 for GraphQL Playground
+```
+
 ### Run Practice Exercises
 ```bash
 # Basics
@@ -182,3 +197,65 @@ go vet filename.go
 - **Exercise Guide**: `exercises/README.md`
 - **Main README**: `README.md`
 
+
+## Specialized Topics
+
+### AWS Lambda Serverless (14-serverless-lambda/)
+- Lambda handler patterns
+- API Gateway integration
+- DynamoDB CRUD operations
+- S3 event processing
+- AWS SAM deployment
+
+### GraphQL with gqlgen (15-graphql-gqlgen/)
+- Schema design and definition
+- Query and mutation resolvers
+- Authentication and authorization
+- Data loading patterns
+- Real-time subscriptions
+
+## Advanced Topics Map
+
+| Want to Learn | Location |
+|---------------|----------|
+| Serverless APIs | `14-serverless-lambda/` |
+| GraphQL APIs | `15-graphql-gqlgen/` |
+| Cloud Deployment | AWS SAM template.yaml |
+| API Design | GraphQL schema.graphqls |
+| Event Processing | S3 events example |
+
+## Testing Specialized Topics
+
+### AWS Lambda
+```bash
+cd 14-serverless-lambda
+# Install dependencies
+go mod tidy
+
+# Test locally
+sam local invoke LambdaHandler --event events/example.json
+
+# Start API Gateway
+sam local start-api
+
+# Deploy to AWS
+sam deploy --guided
+```
+
+### GraphQL
+```bash
+cd 15-graphql-gqlgen
+# Install dependencies
+go mod tidy
+
+# Run server
+go run server.go
+
+# Access Playground
+open http://localhost:8080
+
+# Example queries
+curl -X POST http://localhost:8080/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ users { id username } }"}'
+```

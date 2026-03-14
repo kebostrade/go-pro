@@ -423,8 +423,8 @@ curl http://localhost:8080/api/v1/metrics
 
 ```bash
 cd frontend
-npm run build  # Production build with optimizations
-npm run start  # Serve optimized build
+bun run build  # Production build with optimizations
+bun start  # Serve optimized build
 ```
 
 ---
@@ -506,12 +506,12 @@ EOF
 cd frontend
 
 # Lighthouse CI
-npm install -g @lhci/cli
+bun add -g @lhci/cli
 lhci autorun
 
 # Bundle analysis
-npm run build
-npm run analyze
+bun run build
+bun run analyze
 ```
 
 ---

@@ -41,6 +41,9 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Custom breakpoints for big screens */
+  --breakpoint-3xl: 1920px;
 }
 
 :root {

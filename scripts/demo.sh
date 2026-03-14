@@ -114,8 +114,8 @@ cd ../frontend
 if [ -f "package.json" ]; then
     echo "Frontend is available! To start the dashboard:"
     echo "  cd frontend"
-    echo "  npm install"
-    echo "  npm run dev"
+    echo "  bun install"
+    echo "  bun run dev"
     echo "  # Visit http://localhost:3000"
 else
     echo "Frontend setup is ready for development."
@@ -138,7 +138,7 @@ echo "  1. Start learning: cd course && cat README.md"
 echo "  2. Try exercises: cd course/code/lesson-01 && go run main.go"
 echo "  3. Run tests: go test ./exercises/..."
 echo "  4. Start API: cd backend && go run main.go"
-echo "  5. Build frontend: cd frontend && npm run dev"
+echo "  5. Build frontend: cd frontend && bun run dev"
 echo
 echo "📖 Full documentation: README.md"
 echo "🌐 API docs: http://localhost:8080 (when backend is running)"

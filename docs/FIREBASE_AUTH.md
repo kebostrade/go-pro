@@ -358,7 +358,7 @@ function ProfilePage() {
 1. Build your Next.js app:
    ```bash
    cd frontend
-   npm run build
+   bun run build
    ```
 
 2. Deploy to Firebase:
@@ -406,7 +406,7 @@ firebase emulators:start
 export NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true
 
 # Run your app
-npm run dev
+bun run dev
 ```
 
 ## Troubleshooting

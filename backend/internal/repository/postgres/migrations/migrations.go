@@ -20,11 +20,16 @@ func GetAllMigrations() []postgres.MigrationV2 {
 		createExercisesTable(),
 		createProgressTable(),
 		addIndexes(),
-		extendLessonsTable(),          // Version 7: Add detailed content fields
-		seedLessonsData(),             // Version 8: Populate with 20 lessons
-		addPerformanceIndexes(),       // Version 9: Add performance optimization indexes
-		updateUsersTableForFirebase(), // Version 10: Add Firebase authentication fields
-		createStreaksTable(),           // Version 11: Create streaks table
+		extendLessonsTable(),           // Version 7: Add detailed content fields
+		seedLessonsData(),              // Version 8: Populate with 20 lessons
+		addPerformanceIndexes(),        // Version 9: Add performance optimization indexes
+		updateUsersTableForFirebase(),  // Version 10: Add Firebase authentication fields
+		createStreaksTable(),            // Version 11: Create streaks table
+		createContentVersionsTable(),   // Version 12: Create content_versions table for CMS
+		createAssessmentsTable(),       // Version 13: Create assessments table
+		createQuizQuestionsTable(),     // Version 14: Create quiz_questions table
+		createSubmissionsTable(),       // Version 15: Create submissions table
+		createSubmissionCommentsTable(), // Version 16: Create submission_comments table
 	}
 }
 
@@ -602,6 +607,329 @@ func extendLessonsTable() postgres.MigrationV2 {
 				DROP COLUMN IF EXISTS prev_lesson_id
 			`
 			_, err := tx.Exec(query)
+			return err
+		},
+	}
+}
+
+// createContentVersionsTable creates the content_versions table for version tracking.
+// Version 12: Supports content versioning and audit trail for CMS.
+func createContentVersionsTable() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     12,
+		Description: "Create content_versions table for version tracking",
+		Up: func(tx *sql.Tx) error {
+			query := `
+				CREATE TABLE IF NOT EXISTS content_versions (
+					id BIGSERIAL PRIMARY KEY,
+					content_type VARCHAR(50) NOT NULL,
+					content_id VARCHAR(255) NOT NULL,
+					version_number INTEGER NOT NULL,
+					title VARCHAR(200),
+					content TEXT,
+					difficulty VARCHAR(50),
+					objectives JSONB DEFAULT '[]'::jsonb,
+					theory TEXT,
+					code_example TEXT,
+					solution TEXT,
+					exercises JSONB DEFAULT '[]'::jsonb,
+					change_summary TEXT,
+					changed_by VARCHAR(255) NOT NULL,
+					is_major_revision BOOLEAN NOT NULL DEFAULT false,
+					is_published BOOLEAN NOT NULL DEFAULT false,
+					created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE CASCADE,
+					UNIQUE(content_type, content_id, version_number)
+				)
+			`
+			if _, err := tx.Exec(query); err != nil {
+				return err
+			}
+
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_content_versions_content ON content_versions(content_type, content_id)",
+				"CREATE INDEX IF NOT EXISTS idx_content_versions_changed_by ON content_versions(changed_by)",
+				"CREATE INDEX IF NOT EXISTS idx_content_versions_created_at ON content_versions(created_at DESC)",
+				"CREATE INDEX IF NOT EXISTS idx_content_versions_published ON content_versions(content_type, content_id, is_published) WHERE is_published = true",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			indexQueries := []string{
+				"DROP INDEX IF EXISTS idx_content_versions_content",
+				"DROP INDEX IF EXISTS idx_content_versions_changed_by",
+				"DROP INDEX IF EXISTS idx_content_versions_created_at",
+				"DROP INDEX IF EXISTS idx_content_versions_published",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			_, err := tx.Exec("DROP TABLE IF EXISTS content_versions")
+			return err
+		},
+	}
+}
+
+// createAssessmentsTable creates the assessments table for quizzes and tests.
+// Version 13: Supports assessment management in curriculum.
+func createAssessmentsTable() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     13,
+		Description: "Create assessments table for quizzes and tests",
+		Up: func(tx *sql.Tx) error {
+			query := `
+				CREATE TABLE IF NOT EXISTS assessments (
+					id VARCHAR(255) PRIMARY KEY,
+					lesson_id VARCHAR(255) NOT NULL,
+					title VARCHAR(200) NOT NULL,
+					description TEXT,
+					type VARCHAR(50) NOT NULL,
+					passing_score INTEGER NOT NULL DEFAULT 70,
+					time_limit_minutes INTEGER,
+					shuffle_questions BOOLEAN NOT NULL DEFAULT false,
+					show_results BOOLEAN NOT NULL DEFAULT true,
+					max_attempts INTEGER NOT NULL DEFAULT 3,
+					created_by VARCHAR(255) NOT NULL,
+					is_published BOOLEAN NOT NULL DEFAULT false,
+					created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE,
+					FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+				)
+			`
+			if _, err := tx.Exec(query); err != nil {
+				return err
+			}
+
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_assessments_lesson_id ON assessments(lesson_id)",
+				"CREATE INDEX IF NOT EXISTS idx_assessments_type ON assessments(type)",
+				"CREATE INDEX IF NOT EXISTS idx_assessments_created_by ON assessments(created_by)",
+				"CREATE INDEX IF NOT EXISTS idx_assessments_published ON assessments(is_published) WHERE is_published = true",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			indexQueries := []string{
+				"DROP INDEX IF EXISTS idx_assessments_lesson_id",
+				"DROP INDEX IF EXISTS idx_assessments_type",
+				"DROP INDEX IF EXISTS idx_assessments_created_by",
+				"DROP INDEX IF EXISTS idx_assessments_published",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			_, err := tx.Exec("DROP TABLE IF EXISTS assessments")
+			return err
+		},
+	}
+}
+
+// createQuizQuestionsTable creates the quiz_questions table for assessment questions.
+// Version 14: Supports quiz question management.
+func createQuizQuestionsTable() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     14,
+		Description: "Create quiz_questions table for assessment questions",
+		Up: func(tx *sql.Tx) error {
+			query := `
+				CREATE TABLE IF NOT EXISTS quiz_questions (
+					id VARCHAR(255) PRIMARY KEY,
+					assessment_id VARCHAR(255) NOT NULL,
+					question_text TEXT NOT NULL,
+					question_type VARCHAR(50) NOT NULL,
+					options JSONB NOT NULL DEFAULT '[]'::jsonb,
+					correct_answer TEXT NOT NULL,
+					points INTEGER NOT NULL DEFAULT 1,
+					order_index INTEGER NOT NULL,
+					explanation TEXT,
+					created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					FOREIGN KEY (assessment_id) REFERENCES assessments(id) ON DELETE CASCADE
+				)
+			`
+			if _, err := tx.Exec(query); err != nil {
+				return err
+			}
+
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_quiz_questions_assessment_id ON quiz_questions(assessment_id)",
+				"CREATE INDEX IF NOT EXISTS idx_quiz_questions_type ON quiz_questions(question_type)",
+				"CREATE INDEX IF NOT EXISTS idx_quiz_questions_order ON quiz_questions(assessment_id, order_index)",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			indexQueries := []string{
+				"DROP INDEX IF EXISTS idx_quiz_questions_assessment_id",
+				"DROP INDEX IF EXISTS idx_quiz_questions_type",
+				"DROP INDEX IF EXISTS idx_quiz_questions_order",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			_, err := tx.Exec("DROP TABLE IF EXISTS quiz_questions")
+			return err
+		},
+	}
+}
+
+// createSubmissionsTable creates the submissions table for assessment submissions.
+// Version 15: Supports student assessment submissions and grading.
+func createSubmissionsTable() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     15,
+		Description: "Create submissions table for assessment submissions",
+		Up: func(tx *sql.Tx) error {
+			query := `
+				CREATE TABLE IF NOT EXISTS submissions (
+					id VARCHAR(255) PRIMARY KEY,
+					assessment_id VARCHAR(255) NOT NULL,
+					user_id VARCHAR(255) NOT NULL,
+					score INTEGER NOT NULL,
+					total_score INTEGER NOT NULL,
+					passed BOOLEAN NOT NULL,
+					attempt_number INTEGER NOT NULL,
+					answers JSONB NOT NULL DEFAULT '{}'::jsonb,
+					feedback TEXT,
+					submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					graded_at TIMESTAMP,
+					graded_by VARCHAR(255),
+					FOREIGN KEY (assessment_id) REFERENCES assessments(id) ON DELETE CASCADE,
+					FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+					FOREIGN KEY (graded_by) REFERENCES users(id) ON DELETE SET NULL,
+					UNIQUE(assessment_id, user_id, attempt_number)
+				)
+			`
+			if _, err := tx.Exec(query); err != nil {
+				return err
+			}
+
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_submissions_assessment_id ON submissions(assessment_id)",
+				"CREATE INDEX IF NOT EXISTS idx_submissions_user_id ON submissions(user_id)",
+				"CREATE INDEX IF NOT EXISTS idx_submissions_passed ON submissions(passed)",
+				"CREATE INDEX IF NOT EXISTS idx_submissions_submitted_at ON submissions(submitted_at DESC)",
+				"CREATE INDEX IF NOT EXISTS idx_submissions_assessment_user ON submissions(assessment_id, user_id)",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			indexQueries := []string{
+				"DROP INDEX IF EXISTS idx_submissions_assessment_id",
+				"DROP INDEX IF EXISTS idx_submissions_user_id",
+				"DROP INDEX IF EXISTS idx_submissions_passed",
+				"DROP INDEX IF EXISTS idx_submissions_submitted_at",
+				"DROP INDEX IF EXISTS idx_submissions_assessment_user",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			_, err := tx.Exec("DROP TABLE IF EXISTS submissions")
+			return err
+		},
+	}
+}
+
+// createSubmissionCommentsTable creates the submission_comments table for instructor feedback.
+// Version 16: Supports detailed instructor feedback on submissions.
+func createSubmissionCommentsTable() postgres.MigrationV2 {
+	return postgres.MigrationV2{
+		Version:     16,
+		Description: "Create submission_comments table for instructor feedback",
+		Up: func(tx *sql.Tx) error {
+			query := `
+				CREATE TABLE IF NOT EXISTS submission_comments (
+					id BIGSERIAL PRIMARY KEY,
+					submission_id VARCHAR(255) NOT NULL,
+					author_id VARCHAR(255) NOT NULL,
+					comment_text TEXT NOT NULL,
+					comment_type VARCHAR(50) NOT NULL DEFAULT 'general',
+					question_id VARCHAR(255),
+					created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE,
+					FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+				)
+			`
+			if _, err := tx.Exec(query); err != nil {
+				return err
+			}
+
+			indexQueries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_submission_comments_submission_id ON submission_comments(submission_id)",
+				"CREATE INDEX IF NOT EXISTS idx_submission_comments_author_id ON submission_comments(author_id)",
+				"CREATE INDEX IF NOT EXISTS idx_submission_comments_type ON submission_comments(comment_type)",
+				"CREATE INDEX IF NOT EXISTS idx_submission_comments_created_at ON submission_comments(created_at DESC)",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+		Down: func(tx *sql.Tx) error {
+			indexQueries := []string{
+				"DROP INDEX IF EXISTS idx_submission_comments_submission_id",
+				"DROP INDEX IF EXISTS idx_submission_comments_author_id",
+				"DROP INDEX IF EXISTS idx_submission_comments_type",
+				"DROP INDEX IF EXISTS idx_submission_comments_created_at",
+			}
+
+			for _, indexQuery := range indexQueries {
+				if _, err := tx.Exec(indexQuery); err != nil {
+					return err
+				}
+			}
+
+			_, err := tx.Exec("DROP TABLE IF EXISTS submission_comments")
 			return err
 		},
 	}

@@ -314,10 +314,10 @@ make docker-compose-up
 
 ```bash
 cd frontend
-npm install
+bun install
 cp .env.example .env.local
 # Edit .env.local with your configuration
-npm run dev
+bun run dev
 # Frontend runs on http://localhost:3000
 ```
 

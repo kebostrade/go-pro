@@ -70,8 +70,8 @@ go run ./cmd/server
 
 # In another terminal, start the frontend
 cd frontend
-npm install
-npm run dev
+bun install
+bun run dev
 # Frontend will be available at http://localhost:3000
 ```
 
@@ -238,8 +238,8 @@ go build -o go-pro-api ./cmd/server
 ### **Frontend Dashboard**
 ```bash
 cd frontend
-npm run build
-npm start
+bun run build
+bun start
 ```
 
 ### **Docker (Coming Soon)**

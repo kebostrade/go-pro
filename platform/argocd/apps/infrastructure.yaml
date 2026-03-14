@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-platform-infra
+  namespace: argocd
+spec:
+  project: ai-platform
+  source:
+    repoURL: https://github.com/your-org/go-pro
+    targetRevision: HEAD
+    path: platform/kustomize/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ai-platform
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

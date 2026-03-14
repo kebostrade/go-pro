@@ -3,7 +3,6 @@ package solutions
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 // SimpleGreeting creates a greeting message

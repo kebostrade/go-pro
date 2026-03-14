@@ -1,0 +1,181 @@
+name: AI Platform CI/CD
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'services/ai-agent-platform/**'
+      - 'platform/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'services/ai-agent-platform/**'
+      - 'platform/**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/ai-agent-platform
+
+jobs:
+  # CI: Build, Test, Scan
+  ci:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache-dependency-path: services/ai-agent-platform/go.sum
+
+      - name: Download dependencies
+        working-directory: services/ai-agent-platform
+        run: go mod download
+
+      - name: Run tests
+        working-directory: services/ai-agent-platform
+        run: |
+          go test -v -race -coverprofile=coverage.out ./...
+          go tool cover -html=coverage.out -o coverage.html
+
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+          working-directory: services/ai-agent-platform
+
+      - name: Security scan
+        uses: securego/gosec@master
+        with:
+          args: ./...
+        working-directory: services/ai-agent-platform
+
+      - name: Set version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          elif [[ $GITHUB_REF == refs/heads/main ]]; then
+            VERSION=latest
+          else
+            VERSION=${GITHUB_SHA::7}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: services/ai-agent-platform/coverage.html
+
+  # Build container image
+  build:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=${{ needs.ci.outputs.version }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: services/ai-agent-platform
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  # CD: Update GitOps repo (triggers ArgoCD sync)
+  cd:
+    needs: [ci, build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+
+    steps:
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: your-org/gitops-config
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Update image tag
+        working-directory: gitops
+        run: |
+          VERSION=${{ needs.ci.outputs.version }}
+          # Update Helm values or Kustomize image tag
+          if [ -f "apps/ai-agent/values.yaml" ]; then
+            yq -i ".image.tag = \"${VERSION}\"" apps/ai-agent/values.yaml
+          fi
+
+          # Update Kustomize if used
+          if [ -f "apps/ai-agent/kustomization.yaml" ]; then
+            kustomize edit set image ai-agent=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }:${VERSION}
+          fi
+
+      - name: Commit and push
+        working-directory: gitops
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git commit -m "chore: update ai-agent to ${{ needs.ci.outputs.version }}" || echo "No changes"
+          git push
+
+  # Validate Kubernetes manifests
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+
+      - name: Setup Kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Lint Helm charts
+        run: |
+          helm lint platform/charts/ai-agent
+
+      - name: Template and validate
+        run: |
+          helm template test platform/charts/ai-agent \
+            --values platform/charts/ai-agent/values.yaml \
+            | kubeval -
+
+      - name: Check security policies
+        uses: stackrox/kube-linter-action@v1
+        with:
+          directory: platform/charts/ai-agent
+          config: .kube-linter.yaml

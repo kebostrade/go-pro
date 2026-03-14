@@ -10,73 +10,98 @@ const firebaseConfig = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || ""
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || ""
 };
 
-// Initialize Firebase with lazy validation
-function initializeFirebaseApp(): FirebaseApp {
-  // Check if already initialized
-  const existingApps = getApps();
-  if (existingApps.length > 0) {
-    return existingApps[0];
+let app: FirebaseApp | null = null;
+let authInstance: Auth | null = null;
+let dbInstance: Firestore | null = null;
+let storageInstance: FirebaseStorage | null = null;
+let initError: Error | null = null;
+
+function initializeFirebaseApp(): FirebaseApp | null {
+  if (initError) {
+    throw initError;
   }
 
-  // Validate config only when actually initializing
+  if (app) {
+    return app;
+  }
+
+  const existingApps = getApps();
+  if (existingApps.length > 0) {
+    app = existingApps[0];
+    return app;
+  }
+
   const hasRequiredConfig = firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId;
   if (!hasRequiredConfig) {
-    console.error('❌ Firebase configuration missing:', {
-      hasApiKey: !!firebaseConfig.apiKey,
-      hasProjectId: !!firebaseConfig.projectId,
-      hasAppId: !!firebaseConfig.appId,
-      env: process.env.NODE_ENV
-    });
-    throw new Error('Firebase not initialized - missing critical configuration (apiKey, projectId, or appId)');
+    console.warn('⚠️ Firebase configuration missing - Firebase features disabled');
+    return null;
   }
 
   try {
-    const app = initializeApp(firebaseConfig);
+    app = initializeApp(firebaseConfig);
     console.log('✅ Firebase initialized successfully');
     return app;
   } catch (error) {
+    initError = error as Error;
     console.error('❌ Firebase initialization failed:', error);
     throw error;
   }
 }
 
-// Lazy initialize Firebase
-let app: FirebaseApp | null = null;
-let authInstance: Auth | null = null;
-let dbInstance: Firestore | null = null;
-let storageInstance: FirebaseStorage | null = null;
-
 // Getter for Firebase app - initializes on first access
-function getFirebaseApp(): FirebaseApp {
-  if (!app) {
-    app = initializeFirebaseApp();
+export function getFirebaseApp(): FirebaseApp {
+  const initializedApp = initializeFirebaseApp();
+  if (!initializedApp) {
+    throw new Error('Firebase not initialized - please add Firebase config to .env.local');
   }
-  return app;
+  return initializedApp;
+}
+
+// Check if Firebase is available
+export function isFirebaseReady(): boolean {
+  try {
+    return initializeFirebaseApp() !== null;
+  } catch {
+    return false;
+  }
 }
 
 // Export auth - initialize on first access
 export function getAuthInstance(): Auth {
-  if (!authInstance) {
-    authInstance = getAuth(getFirebaseApp());
+  if (!authInstance || initError) {
+    const firebaseApp = initializeFirebaseApp();
+    if (!firebaseApp) {
+      throw new Error('Firebase auth not available - check configuration');
+    }
+    authInstance = getAuth(firebaseApp);
   }
   return authInstance;
 }
 
 // Export db - initialize on first access
 export function getDbInstance(): Firestore {
-  if (!dbInstance) {
-    dbInstance = getFirestore(getFirebaseApp());
+  if (!dbInstance || initError) {
+    const firebaseApp = initializeFirebaseApp();
+    if (!firebaseApp) {
+      throw new Error('Firebase db not available - check configuration');
+    }
+    dbInstance = getFirestore(firebaseApp);
   }
   return dbInstance;
 }
 
 // Export storage - initialize on first access
 export function getStorageInstance(): FirebaseStorage {
-  if (!storageInstance) {
-    storageInstance = getStorage(getFirebaseApp());
+  if (!storageInstance || initError) {
+    const firebaseApp = initializeFirebaseApp();
+    if (!firebaseApp) {
+      throw new Error('Firebase storage not available - check configuration');
+    }
+    storageInstance = getStorage(firebaseApp);
   }
   return storageInstance;
 }
@@ -84,27 +109,42 @@ export function getStorageInstance(): FirebaseStorage {
 // For backward compatibility, provide getters
 export const auth = {
   get currentUser() {
-    return getAuthInstance().currentUser;
+    try {
+      return getAuthInstance().currentUser;
+    } catch {
+      return null;
+    }
   }
 } as Auth;
 
 export const db: Firestore = new Proxy({} as Firestore, {
   get(_target, prop) {
-    const instance = getDbInstance();
-    return (instance as any)[prop];
+    try {
+      const instance = getDbInstance();
+      return (instance as any)[prop];
+    } catch {
+      return undefined;
+    }
   }
 }) as any;
 
 export const storage: FirebaseStorage = new Proxy({} as FirebaseStorage, {
   get(_target, prop) {
-    const instance = getStorageInstance();
-    return (instance as any)[prop];
+    try {
+      const instance = getStorageInstance();
+      return (instance as any)[prop];
+    } catch {
+      return undefined;
+    }
   }
 }) as any;
 
-// Initialize Analytics (only in browser) - lazy
-export const analytics = typeof window !== 'undefined'
-  ? isSupported().then(yes => yes ? getAnalytics(getFirebaseApp()) : null)
+// Initialize Analytics (only in browser, if enabled and valid config)
+const isValidApiKey = (key: string) => key && !key.startsWith('your-') && key.length > 10;
+export const analytics = typeof window !== 'undefined' &&
+  process.env.NEXT_PUBLIC_ENABLE_ANALYTICS === 'true' &&
+  isValidApiKey(firebaseConfig.apiKey)
+  ? isSupported().then(yes => yes ? getAnalytics(getFirebaseApp()) : null).catch(() => null)
   : Promise.resolve(null);
 
 // Connect to emulators in development - deferred

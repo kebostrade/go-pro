@@ -4,8 +4,8 @@
 
 ```bash
 cd /home/dima/Desktop/FUN/go-pro/frontend
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ## Test Checklist
@@ -208,8 +208,8 @@ npm run dev
 ## Production Build Test
 
 ```bash
-npm run build
-npm start
+bun run build
+bun start
 ```
 
 - [ ] Production build succeeds

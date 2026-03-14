@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'export',
+  distDir: '.next',
   webpack: (config, { isServer }) => {
     config.resolve.alias['@'] = require('path').resolve(__dirname, 'src');
     return config;
@@ -10,6 +11,12 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 
-// added by create cloudflare to enable calling `getCloudflareContext()` in `next dev`
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
-initOpenNextCloudflareForDev();
+// Only init OpenNext Cloudflare in development
+if (process.env.NODE_ENV === 'development') {
+  try {
+    const { initOpenNextCloudflareForDev } = require('@opennextjs/cloudflare');
+    initOpenNextCloudflareForDev();
+  } catch (e) {
+    // Ignore in production build
+  }
+}

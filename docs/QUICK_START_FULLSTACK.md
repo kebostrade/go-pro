@@ -70,7 +70,7 @@ make dev
 cd frontend
 
 # Install dependencies
-npm install
+bun install
 
 # Copy environment file
 cp .env.example .env.local
@@ -78,7 +78,7 @@ cp .env.example .env.local
 # NEXT_PUBLIC_API_URL=http://localhost:8080
 
 # Start frontend
-npm run dev
+bun run dev
 # Frontend runs on http://localhost:3000
 ```
 
@@ -154,8 +154,8 @@ go test ./...
 
 ```bash
 cd frontend
-npm run lint
-npm run build
+bun run lint
+bun run build
 ```
 
 ### Test Projects
@@ -185,9 +185,9 @@ make build        # Build binary
 
 ```bash
 cd frontend
-npm run dev       # Development server
-npm run build     # Production build
-npm run lint      # Lint code
+bun run dev       # Development server
+bun run build     # Production build
+bun run lint      # Lint code
 ```
 
 ## 📖 Learning Path
@@ -206,7 +206,7 @@ npm run lint      # Lint code
 - Check port 8080 is available
 
 ### Frontend won't start
-- Run `npm install` again
+- Run `bun install` again
 - Check `.env.local` has correct API URL
 - Verify port 3000 is available
 

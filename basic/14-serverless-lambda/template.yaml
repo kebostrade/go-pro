@@ -1,0 +1,298 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Lambda Serverless Go Examples
+
+Globals:
+  Function:
+    Runtime: go1.x
+    MemorySize: 256
+    Timeout: 30
+    Environment:
+      Variables:
+        DYNAMODB_TABLE: !Ref UsersTable
+    Tracing: Active
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Deployment stage
+
+Resources:
+
+  # ============================================
+  # Lambda Functions
+  # ============================================
+
+  # Basic Lambda Handler
+  LambdaHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-lambda-handler"
+      CodeUri: ./examples
+      Handler: lambda_handler
+      Events:
+        HelloAPI:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
+            RestApiId: !Ref ApiGateway
+
+  # API Gateway REST API
+  APIGatewayHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-api-gateway"
+      CodeUri: ./examples
+      Handler: api_gateway
+      Events:
+        UsersAPI:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: any
+            RestApiId: !Ref ApiGateway
+        UserByIDAPI:
+          Type: Api
+          Properties:
+            Path: /users/{id}
+            Method: any
+            RestApiId: !Ref ApiGateway
+        HealthAPI:
+          Type: Api
+            Properties:
+            Path: /health
+            Method: get
+            RestApiId: !Ref ApiGateway
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+
+  # DynamoDB CRUD Handler
+  DynamoDBHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-dynamodb"
+      CodeUri: ./examples
+      Handler: dynamodb
+      Events:
+        UsersAPI:
+          Type: Api
+          Properties:
+            Path: /users
+            Method: any
+            RestApiId: !Ref ApiGateway
+        UserByIDAPI:
+          Type: Api
+          Properties:
+            Path: /users/{id}
+            Method: any
+            RestApiId: !Ref ApiGateway
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref UsersTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+
+  # S3 Event Handler
+  S3Handler:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-s3-handler"
+      CodeUri: ./examples
+      Handler: s3_events
+      Events:
+        ImageUpload:
+          Type: S3
+          Properties:
+            Bucket: !Ref ImageBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3KeyRules:
+                - Name: suffix
+                  Value: jpg
+                - Name: suffix
+                  Value: png
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref ImageBucket
+        - S3WritePolicy:
+            BucketName: !Ref ImageBucket
+
+  # ============================================
+  # API Gateway
+  # ============================================
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Stage
+      EndpointConfiguration: REGIONAL
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'86400'"
+
+  # ============================================
+  # DynamoDB Table
+  # ============================================
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-users"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+
+  # ============================================
+  # S3 Buckets
+  # ============================================
+
+  ImageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-images-${AWS::AccountId}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Application
+          Value: !Ref AWS::StackName
+
+  # ============================================
+  # CloudWatch Alarms
+  # ============================================
+
+  LambdaErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-lambda-errors"
+      AlarmDescription: Alert on Lambda errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !GetAtt APIGatewayHandler.Arn
+
+  LambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-lambda-duration"
+      AlarmDescription: Alert on Lambda duration
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 25000
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !GetAtt APIGatewayHandler.Arn
+
+  # ============================================
+  # X-Ray Tracing
+  # ============================================
+
+  SamplingRule:
+    Type: AWS::XRay::SamplingRule
+    Condition: !Equals [!Ref Stage, "prod"]
+    Properties:
+      SamplingRuleName: !Sub "${AWS::StackName}-sampling"
+      RulePriority: 100
+      ReservoirSize: 1
+      FixedRate: 0.1
+      URLPath: "*"
+      ServiceType: "*"
+      Host: "*"
+      HTTPMethod: "*"
+      ServiceName: !Ref AWS::StackName
+
+# ============================================
+# Outputs
+# ============================================
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway URL
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"
+
+  LambdaHandlerArn:
+    Description: Lambda Handler ARN
+    Value: !GetAtt LambdaHandler.Arn
+
+  DynamoDBHandlerArn:
+    Description: DynamoDB Handler ARN
+    Value: !GetAtt DynamoDBHandler.Arn
+
+  S3HandlerArn:
+    Description: S3 Handler ARN
+    Value: !GetAtt S3Handler.Arn
+
+  UsersTableName:
+    Description: DynamoDB Users Table Name
+    Value: !Ref UsersTable
+
+  ImageBucketName:
+    Description: S3 Image Bucket Name
+    Value: !Ref ImageBucket
+
+# ============================================
+# Usage
+# ============================================
+
+# Build and deploy:
+#   sam build
+#   sam deploy --guided
+
+# Local testing:
+#   sam local invoke LambdaHandler --event events/example.json
+#   sam local start-api
+#   curl http://localhost:3000/hello
+
+# View logs:
+#   aws logs tail /aws/lambda/serverless-lambda-go-dev-api-gateway --follow
+
+# Cleanup:
+#   sam delete
+
+# Stack outputs:
+#   aws cloudformation describe-stacks \
+#     --stack-name serverless-lambda-go \
+#     --query 'Stacks[0].Outputs'

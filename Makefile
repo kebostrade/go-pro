@@ -131,7 +131,7 @@ install-tools: ## Install development tools
 	$(call print_step,Installing gosec...)
 	@go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
 	$(call print_step,Installing air (hot reload)...)
-	@go install github.com/cosmtrek/air@latest
+	@go install github.com/air-verse/air@latest
 	$(call print_step,Installing goimports...)
 	@go install golang.org/x/tools/cmd/goimports@latest
 	$(call print_step,Installing govulncheck...)
@@ -149,24 +149,41 @@ init-git: ## Initialize git hooks
 	$(call print_success,Git hooks configured)
 	$(call print_done)
 
-dev: ## Start backend + frontend dev servers (parallel)
+dev: ## Start backend + frontend dev servers (parallel with hot reload)
 	$(call print_header,$(ICON_ROCKET) Development Environment)
 	@printf "$(DIM)│$(NC)\n"
-	@printf "$(DIM)│$(NC)  $(BOLD)Services:$(NC)\n"
-	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) Backend   $(DIM)→$(NC) $(GREEN)http://localhost:8080$(NC)\n"
-	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) Frontend  $(DIM)→$(NC) $(GREEN)http://localhost:3000$(NC)\n"
+	@printf "$(DIM)│$(NC)  $(BOLD)Local Services:$(NC)\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Backend    $(DIM)→$(NC) http://localhost:8080 (air hot reload)\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Frontend   $(DIM)→$(NC) http://localhost:3000 (bun + turbopack)\n"
+	@printf "$(DIM)│$(NC)\n"
+	@printf "$(DIM)│$(NC)  $(BOLD)Docker Services (run 'make docker-dev'):$(NC)\n"
+	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) PostgreSQL    $(DIM)→$(NC) localhost:5432\n"
+	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) Redis        $(DIM)→$(NC) localhost:6379\n"
+	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) Prometheus   $(DIM)→$(NC) http://localhost:9090\n"
+	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) Grafana      $(DIM)→$(NC) http://localhost:3001 (admin/admin)\n"
+	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) Jaeger       $(DIM)→$(NC) http://localhost:16686\n"
+	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) Kafka       $(DIM)→$(NC) localhost:9092\n"
+	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) Adminer      $(DIM)→$(NC) http://localhost:8081\n"
+	@printf "$(DIM)│$(NC)    $(CYAN)●$(NC) Mailhog     $(DIM)→$(NC) http://localhost:8025\n"
 	@printf "$(DIM)│$(NC)\n"
 	@printf "$(BLUE)└─$(NC) $(YELLOW)Press Ctrl+C to stop$(NC)\n\n"
-	@trap 'kill 0' INT; \
-		(cd backend && go run ./cmd/server) & \
-		(cd frontend && npm run dev) & \
+
+	@AIR_BIN=$(HOME)/go/bin/air; \
+	trap 'kill 0' INT; \
+		if [ -x "$$AIR_BIN" ] || command -v air >/dev/null 2>&1; then \
+			cd backend && $$AIR_BIN -c .air.toml & \
+		else \
+			cd backend && go run ./cmd/server & \
+		fi; \
+		cd frontend && bun run dev & \
+		wait
 		wait
 
 dev-backend: ## Start backend only with hot reload
 	$(call print_header,$(ICON_ROCKET) Backend Server)
 	@printf "$(DIM)│$(NC)  $(CYAN)●$(NC) API $(DIM)→$(NC) $(GREEN)http://localhost:8080$(NC)\n"
-	@printf "$(BLUE)└─$(NC) $(YELLOW)Hot reload enabled$(NC)\n\n"
-	@cd backend && air -c .air.toml || go run ./cmd/server
+	@printf "$(BLUE)└─$(NC) $(YELLOW)Hot reload enabled (air)$(NC)\n\n"
+	@cd backend && air -c .air.toml
 
 dev-docker: ## Start development environment with Docker
 	$(call print_header,$(ICON_DOCKER) Docker Dev Environment)
@@ -342,14 +359,22 @@ docker-run: docker-build ## Run Docker container locally
 docker-dev: ## Start full development environment
 	$(call print_header,$(ICON_DOCKER) Docker Dev Environment)
 	$(call print_step,Starting containers...)
-	@docker-compose -f docker-compose.dev.yml up --build -d
+	@docker-compose -f docker/docker-compose.dev.yml up --build -d
 	@printf "$(DIM)│$(NC)\n"
 	@printf "$(DIM)│$(NC)  $(BOLD)Services:$(NC)\n"
 	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Backend API      $(DIM)→$(NC) http://localhost:8080\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Frontend        $(DIM)→$(NC) http://localhost:3000\n"
 	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Adminer          $(DIM)→$(NC) http://localhost:8081\n"
 	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Redis Commander  $(DIM)→$(NC) http://localhost:8082\n"
 	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Prometheus       $(DIM)→$(NC) http://localhost:9090\n"
-	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Grafana          $(DIM)→$(NC) http://localhost:3000\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Grafana          $(DIM)→$(NC) http://localhost:3001\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Jaeger           $(DIM)→$(NC) http://localhost:16686\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Kafka UI         $(DIM)→$(NC) http://localhost:8083\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Elasticsearch    $(DIM)→$(NC) http://localhost:9200\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Kibana           $(DIM)→$(NC) http://localhost:5601\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) MinIO            $(DIM)→$(NC) http://localhost:9000 (console:9001)\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) RabbitMQ         $(DIM)→$(NC) http://localhost:15672\n"
+	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Mailhog          $(DIM)→$(NC) http://localhost:8025\n"
 	$(call print_done)
 
 docker-prod: ## Start production environment

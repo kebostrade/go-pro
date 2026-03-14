@@ -1,4 +1,23 @@
-import { FirebaseError } from 'firebase/app';
+let firebaseErrorClass: (new (code: string, message: string) => { code: string; message: string }) | null = null;
+
+function getFirebaseErrorClass() {
+  if (!firebaseErrorClass) {
+    try {
+      const { FirebaseError: FE } = require('firebase/app');
+      firebaseErrorClass = FE;
+    } catch {
+      firebaseErrorClass = class FirebaseError {
+        code: string;
+        message: string;
+        constructor(code: string, message: string) {
+          this.code = code;
+          this.message = message;
+        }
+      };
+    }
+  }
+  return firebaseErrorClass;
+}
 
 /**
  * Enhanced Authentication Utilities
@@ -50,8 +69,13 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
  * Get user-friendly error message from Firebase error
  */
 export function getAuthErrorMessage(error: unknown): string {
-  if (error instanceof FirebaseError) {
-    return AUTH_ERROR_MESSAGES[error.code] || error.message || 'An unexpected error occurred. Please try again.';
+  const FirebaseError = getFirebaseErrorClass();
+  
+  // Check if it's a Firebase-like error by checking for 'code' property
+  // Using type guard instead of instanceof for better type narrowing
+  if (error !== null && typeof error === 'object' && 'code' in error) {
+    const firebaseError = error as { code: string; message?: string };
+    return AUTH_ERROR_MESSAGES[firebaseError.code] || firebaseError.message || 'An unexpected error occurred. Please try again.';
   }
 
   if (error instanceof Error) {

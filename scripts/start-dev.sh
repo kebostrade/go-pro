@@ -106,13 +106,13 @@ echo -e "${YELLOW}Checking frontend dependencies...${NC}"
 cd frontend
 if [ ! -d "node_modules" ]; then
     echo -e "${YELLOW}Installing frontend dependencies...${NC}"
-    npm install
+    bun install
 fi
 echo -e "${GREEN}✓ Frontend dependencies ready${NC}"
 
 # Start frontend
 echo -e "${YELLOW}Starting frontend server...${NC}"
-npm run dev > ../logs/frontend.log 2>&1 &
+bun run dev > ../logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 cd ..
 
