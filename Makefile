@@ -171,11 +171,11 @@ dev: ## Start backend + frontend dev servers (parallel with hot reload)
 	@AIR_BIN=$(HOME)/go/bin/air; \
 	trap 'kill 0' INT; \
 		if [ -x "$$AIR_BIN" ] || command -v air >/dev/null 2>&1; then \
-			cd backend && $$AIR_BIN -c .air.toml >/dev/null 2>&1 & \
+			cd backend && $$AIR_BIN -c .air.toml & \
 		else \
-			cd backend && go run ./cmd/server >/dev/null 2>&1 & \
+			cd backend && go run ./cmd/server & \
 		fi; \
-		cd frontend && bun run dev >/dev/null 2>&1 & \
+		cd frontend && bun run dev & \
 		wait
 		wait
 

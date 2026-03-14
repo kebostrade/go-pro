@@ -7,91 +7,87 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go-pro-backend/internal/config"
 	"go-pro-backend/internal/container"
 	"go-pro-backend/internal/domain"
 	"go-pro-backend/internal/handler"
 	"go-pro-backend/internal/middleware"
 	"go-pro-backend/internal/service"
-	"go-pro-backend/pkg/logger"
+	applogger "go-pro-backend/pkg/logger"
 )
 
 const version = "1.0.0"
 
 func main() {
-	// Load configuration.
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
+	}
+
 	cfg := config.Load()
 
-	// Initialize logger.
-	log := logger.New(cfg.Logger.Level, cfg.Logger.Format)
+	applog := applogger.New(cfg.Logger.Level, cfg.Logger.Format)
 
 	ctx := context.Background()
-	log.Info(ctx, "Starting GO-PRO API Server",
+	applog.Info(ctx, "Starting GO-PRO API Server",
 		"version", version,
 		"port", cfg.Server.Port,
 		"log_level", cfg.Logger.Level,
 	)
 
-	// Initialize dependency injection container.
-	containerConfig := &container.ContainerConfig{
+	appContainer, err := container.NewContainer(&container.ContainerConfig{
 		Config: cfg,
-		Logger: log,
-	}
-
-	appContainer, err := container.NewContainer(containerConfig)
+		Logger: applog,
+	})
 	if err != nil {
-		log.Error(ctx, "Failed to initialize container", "error", err)
+		applog.Error(ctx, "Failed to initialize container", "error", err)
 		os.Exit(1)
 	}
 	defer func() {
 		if shutdownErr := appContainer.Shutdown(ctx); shutdownErr != nil {
-			log.Error(ctx, "Failed to shutdown container", "error", shutdownErr)
+			applog.Error(ctx, "Failed to shutdown container", "error", shutdownErr)
 		}
 	}()
 
-	// Initialize sample data.
 	if err := initializeSampleData(ctx, appContainer.Services); err != nil {
-		log.Error(ctx, "Failed to initialize sample data", "error", err)
+		applog.Error(ctx, "Failed to initialize sample data", "error", err)
 		os.Exit(1)
 	}
 
-	// Initialize Firebase Auth Service at startup
 	if err := appContainer.Services.Auth.Initialize(ctx); err != nil {
 		devMode := os.Getenv("DEV_MODE") == "true"
 		projectID := os.Getenv("FIREBASE_PROJECT_ID")
 
 		if devMode && projectID == "" {
-			log.Warn(ctx, "Firebase not configured, continuing in mock DEV_MODE")
+			applog.Warn(ctx, "Firebase not configured, continuing in mock DEV_MODE")
 		} else {
-			log.Error(ctx, "Failed to initialize Firebase Auth service", "error", err)
+			applog.Error(ctx, "Failed to initialize Firebase Auth service", "error", err)
 			if !devMode {
 				os.Exit(1)
 			}
 		}
 	} else {
-		log.Info(ctx, "Firebase Auth service initialized successfully")
+		applog.Info(ctx, "Firebase Auth service initialized successfully")
 	}
 
-	// Initialize Firebase Auth Service adapter for middleware.
 	authServiceAdapter := &firebaseAuthAdapter{authService: appContainer.Services.Auth}
 
-	// Initialize AuthMiddleware.
 	authMiddleware := middleware.NewAuthMiddleware(
 		authServiceAdapter,
 		appContainer.Repositories.User,
-		log,
+		applog,
 	)
 
-	// Initialize HTTP handlers.
-	httpHandler := handler.New(appContainer.Services, log, appContainer.Validator)
-	authHandler := handler.NewAuthHandler(appContainer.Services, log, appContainer.Validator)
-	adminHandler := handler.NewAdminHandler(appContainer.Services, log, appContainer.Validator)
+	httpHandler := handler.New(appContainer.Services, applog, appContainer.Validator)
+	authHandler := handler.NewAuthHandler(appContainer.Services, applog, appContainer.Validator)
+	adminHandler := handler.NewAdminHandler(appContainer.Services, applog, appContainer.Validator)
 
 	// Setup routes.
 	mux := http.NewServeMux()
@@ -102,14 +98,14 @@ func main() {
 	// Setup middleware chain.
 	middlewares := []middleware.Middleware{
 		middleware.RequestID,
-		middleware.Logging(log),
-		middleware.Recovery(log),
+		middleware.Logging(applog),
+		middleware.Recovery(applog),
 		middleware.CORS(cfg.CORS.AllowedOrigins),
 		middleware.Security(),
 		middleware.ContentType("application/json"),
 		middleware.Timeout(30 * time.Second),
-		middleware.RateLimit(100, time.Minute), // 100 requests per minute
-		middleware.Pagination(10, 100),         // Default 10, max 100 per page
+		middleware.RateLimit(100, time.Minute),
+		middleware.Pagination(10, 100),
 	}
 
 	handler := middleware.Chain(mux, middlewares...)
@@ -123,37 +119,34 @@ func main() {
 		IdleTimeout:  cfg.Server.IdleTimeout,
 	}
 
-	// Start server in goroutine.
 	go func() {
-		log.Info(ctx, "GO-PRO API Server starting",
+		applog.Info(ctx, "GO-PRO API Server starting",
 			"address", "http://"+cfg.Server.Host+":"+cfg.Server.Port,
 			"documentation", "http://"+cfg.Server.Host+":"+cfg.Server.Port,
 			"health_check", "http://"+cfg.Server.Host+":"+cfg.Server.Port+"/api/v1/health",
 		)
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error(ctx, "Server failed to start", "error", err)
+			applog.Error(ctx, "Server failed to start", "error", err)
 			os.Exit(1)
 		}
 	}()
 
-	// Wait for interrupt signal for graceful shutdown.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Info(ctx, "Shutting down server...")
+	applog.Info(ctx, "Shutting down server...")
 
-	// Graceful shutdown with timeout.
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Error(ctx, "Server forced to shutdown", "error", err)
+		applog.Error(ctx, "Server forced to shutdown", "error", err)
 		os.Exit(1)
 	}
 
-	log.Info(ctx, "Server exited gracefully")
+	applog.Info(ctx, "Server exited gracefully")
 }
 
 // initializeSampleData populates the repositories with sample data.

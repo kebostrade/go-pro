@@ -8,6 +8,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -33,55 +34,41 @@ func NewCMSTestHelper(t *testing.T, db *sql.DB) *CMSTestHelper {
 
 // CreateTestContentVersion creates a test content version.
 func (h *CMSTestHelper) CreateTestContentVersion(ctx context.Context, lessonID string, version int, status string, authorID string) *domain.ContentVersion {
-	sections := []domain.ContentSection{
-		{
-			Type:    "text",
-			Content: "Test content section",
-		},
-		{
-			Type:    "code",
-			Content: "func main() { println('test') }",
-		},
-	}
+	contentStr := `{"sections": [{"type": "text", "content": "Test content section"}, {"type": "code", "content": "func main() { println('test') }"}]}`
 
-	sectionsJSON, err := json.Marshal(sections)
-	require.NoError(h.t, err, "Failed to marshal sections")
-
-	versionID := testutil.RandomString(10)
 	now := time.Now()
+	versionID := rand.Int63()
 	contentVersion := &domain.ContentVersion{
-		ID:               versionID,
-		LessonID:         lessonID,
+		ID:              versionID,
+		ContentType:     "lesson",
+		ContentID:       lessonID,
 		VersionNumber:   version,
-		Content:          sectionsJSON,
-		AuthorID:         authorID,
-		ChangeDescription: "Test version",
-		Status:           status,
-		CreatedAt:        now,
-	}
-
-	if status == "published" {
-		contentVersion.PublishedAt = &now
+		Content:         contentStr,
+		ChangedBy:       authorID,
+		ChangeSummary:   "Test version",
+		IsPublished:     status == "published",
+		IsMajorRevision: version == 1,
+		CreatedAt:       now,
 	}
 
 	query := `
-		INSERT INTO content_versions (id, lesson_id, version_number, content, author_id, change_description, status, published_at, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		INSERT INTO content_versions (id, content_type, content_id, version_number, content, changed_by, change_summary, is_major_revision, is_published, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		ON CONFLICT (id) DO UPDATE SET
 			content = EXCLUDED.content,
-			status = EXCLUDED.status,
-			published_at = EXCLUDED.published_at
+			is_published = EXCLUDED.is_published
 	`
 
-	_, err = h.db.ExecContext(ctx, query,
+	_, err := h.db.ExecContext(ctx, query,
 		contentVersion.ID,
-		contentVersion.LessonID,
+		contentVersion.ContentType,
+		contentVersion.ContentID,
 		contentVersion.VersionNumber,
 		contentVersion.Content,
-		contentVersion.AuthorID,
-		contentVersion.ChangeDescription,
-		contentVersion.Status,
-		contentVersion.PublishedAt,
+		contentVersion.ChangedBy,
+		contentVersion.ChangeSummary,
+		contentVersion.IsMajorRevision,
+		contentVersion.IsPublished,
 		contentVersion.CreatedAt,
 	)
 	require.NoError(h.t, err, "Failed to create test content version")
@@ -94,16 +81,17 @@ func (h *CMSTestHelper) CreateTestAssessment(ctx context.Context, lessonID strin
 	assessmentID := testutil.RandomString(10)
 	now := time.Now()
 	assessment := &domain.Assessment{
-		ID:           assessmentID,
-		LessonID:     lessonID,
-		Type:         assessmentType,
-		Title:        "Test Assessment",
-		Description:  "Test assessment description",
-		Config:       []byte(`{"time_limit_minutes": 30}`),
-		PassingScore: 80,
-		OrderIndex:   1,
-		CreatedAt:    now,
-		UpdatedAt:    now,
+		ID:              assessmentID,
+		LessonID:        lessonID,
+		Type:            domain.AssessmentType(assessmentType),
+		Title:           "Test Assessment",
+		Description:     "Test assessment description",
+		Config:          map[string]interface{}{"time_limit_minutes": 30},
+		PassingScore:    80,
+		TimeLimitMinutes: func() *int { t := 30; return &t }(),
+		OrderIndex:      1,
+		CreatedAt:       now,
+		UpdatedAt:       now,
 	}
 
 	query := `
@@ -112,13 +100,16 @@ func (h *CMSTestHelper) CreateTestAssessment(ctx context.Context, lessonID strin
 		ON CONFLICT (id) DO NOTHING
 	`
 
-	_, err := h.db.ExecContext(ctx, query,
+	configJSON, err := json.Marshal(assessment.Config)
+	require.NoError(h.t, err, "Failed to marshal config")
+
+	_, err = h.db.ExecContext(ctx, query,
 		assessment.ID,
 		assessment.LessonID,
 		assessment.Type,
 		assessment.Title,
 		assessment.Description,
-		assessment.Config,
+		configJSON,
 		assessment.PassingScore,
 		30, // time_limit_minutes
 		assessment.OrderIndex,
@@ -130,22 +121,24 @@ func (h *CMSTestHelper) CreateTestAssessment(ctx context.Context, lessonID strin
 	return assessment
 }
 
-// CreateTestQuizQuestion creates a test quiz question.
-func (h *CMSTestHelper) CreateTestQuizQuestion(ctx context.Context, assessmentID string, questionType string) *domain.QuizQuestion {
+// CreateTestQuestion creates a test question.
+func (h *CMSTestHelper) CreateTestQuestion(ctx context.Context, assessmentID string, questionType string) *domain.Question {
 	questionID := testutil.RandomString(10)
 	now := time.Now()
+	explanation := "2+2=4"
 
-	question := &domain.QuizQuestion{
-		ID:           questionID,
-		AssessmentID: assessmentID,
-		QuestionType: questionType,
-		QuestionText: "What is 2+2?",
-		Options:      []byte(`["1", "2", "3", "4"]`),
+	question := &domain.Question{
+		ID:            questionID,
+		AssessmentID:  assessmentID,
+		QuestionType:  domain.QuestionType(questionType),
+		QuestionText:  "What is 2+2?",
+		Options:       []string{"1", "2", "3", "4"},
 		CorrectAnswer: "4",
-		Explanation:  "2+2=4",
-		Points:       1,
-		OrderIndex:   1,
-		CreatedAt:    now,
+		Explanation:   &explanation,
+		Points:        1,
+		OrderIndex:    1,
+		CreatedAt:     now,
+		UpdatedAt:     now,
 	}
 
 	query := `
@@ -154,18 +147,21 @@ func (h *CMSTestHelper) CreateTestQuizQuestion(ctx context.Context, assessmentID
 		ON CONFLICT (id) DO NOTHING
 	`
 
-	_, err := h.db.ExecContext(ctx, query,
+	optionsJSON, err := json.Marshal(question.Options)
+	require.NoError(h.t, err, "Failed to marshal options")
+
+	_, err = h.db.ExecContext(ctx, query,
 		question.ID,
 		question.AssessmentID,
 		question.QuestionType,
 		question.QuestionText,
-		question.Options,
+		optionsJSON,
 		question.CorrectAnswer,
 		question.Explanation,
 		question.Points,
 		question.OrderIndex,
 	)
-	require.NoError(h.t, err, "Failed to create test quiz question")
+	require.NoError(h.t, err, "Failed to create test question")
 
 	return question
 }
@@ -303,16 +299,11 @@ func (h *CMSTestHelper) TruncateCMSTables(ctx context.Context) {
 // AssertContentVersionEquals asserts that two content versions are equal.
 func (h *CMSTestHelper) AssertContentVersionEquals(expected, actual *domain.ContentVersion) {
 	require.Equal(h.t, expected.ID, actual.ID, "ContentVersion ID mismatch")
-	require.Equal(h.t, expected.LessonID, actual.LessonID, "LessonID mismatch")
+	require.Equal(h.t, expected.ContentID, actual.ContentID, "ContentID mismatch")
 	require.Equal(h.t, expected.VersionNumber, actual.VersionNumber, "VersionNumber mismatch")
-	require.Equal(h.t, expected.Status, actual.Status, "Status mismatch")
-	require.Equal(h.t, expected.AuthorID, actual.AuthorID, "AuthorID mismatch")
+	require.Equal(h.t, expected.IsPublished, actual.IsPublished, "IsPublished mismatch")
+	require.Equal(h.t, expected.ChangedBy, actual.ChangedBy, "ChangedBy mismatch")
 
-	// Compare JSON content
-	var expectedContent, actualContent interface{}
-	err := json.Unmarshal(expected.Content, &expectedContent)
-	require.NoError(h.t, err, "Failed to unmarshal expected content")
-	err = json.Unmarshal(actual.Content, &actualContent)
-	require.NoError(h.t, err, "Failed to unmarshal actual content")
-	require.Equal(h.t, expectedContent, actualContent, "Content mismatch")
+	// Compare content
+	require.Equal(h.t, expected.Content, actual.Content, "Content mismatch")
 }
