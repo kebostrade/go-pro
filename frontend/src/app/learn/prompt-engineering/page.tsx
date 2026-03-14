@@ -111,7 +111,7 @@ export default function PromptEngineeringPage() {
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-              <Link href="/learn/prompt-engineering/1">
+              <Link href="/learn/prompt-engineering/PE-01">
                 <Button size="lg" className="group">
                   Start Learning
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -214,7 +214,7 @@ export default function PromptEngineeringPage() {
               <p className="text-muted-foreground mb-6">
                 Start with the foundations and work your way up to production-ready prompting techniques.
               </p>
-              <Link href="/learn/prompt-engineering/1">
+              <Link href="/learn/prompt-engineering/PE-01">
                 <Button size="lg" className="group">
                   Begin with Module 1
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

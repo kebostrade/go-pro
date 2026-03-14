@@ -384,8 +384,19 @@ export default function PromptEngineeringLessonPage() {
   const [startTime] = useState(Date.now());
 
   const lessonId = (params?.id as string) || "PE-01";
-  const currentLesson = lessons.find(l => l.id === lessonId);
-  const currentIndex = lessons.findIndex(l => l.id === lessonId);
+  
+  const getActualLessonId = (id: string): string => {
+    if (id.startsWith("PE-")) return id;
+    const num = parseInt(id, 10);
+    if (!isNaN(num) && num >= 1 && num <= 20) {
+      return `PE-${num.toString().padStart(2, "0")}`;
+    }
+    return id;
+  };
+  
+  const actualId = getActualLessonId(lessonId);
+  const currentLesson = lessons.find(l => l.id === actualId);
+  const currentIndex = lessons.findIndex(l => l.id === actualId);
   const prevLesson = currentIndex > 0 ? lessons[currentIndex - 1] : null;
   const nextLesson = currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null;
 
