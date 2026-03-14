@@ -669,22 +669,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(getAuthInstance(), async (user) => {
-      setUser(user);
-      if (user) {
-        await loadUserProfile(user);
-      } else {
-        setUserProfile(null);
-        setBackendUser(null);
-      }
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
-
   // Periodic backend sync (every 5 minutes)
   useEffect(() => {
     if (!user) return;

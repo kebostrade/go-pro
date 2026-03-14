@@ -8,6 +8,27 @@ Welcome to the GO-PRO tutorials documentation hub! This directory contains compr
 - **[Quick Start Guide](QUICK_START_GUIDE.md)** - Get up and running in 5 minutes
 - **[Tutorial System Overview](../../TUTORIALS.md)** - Complete tutorial navigation and structure
 
+### 🦞 OpenClaw AI Agent Tutorials
+
+#### [OpenClaw Full Tutorial](OPENCLAW_TUTORIALS.md) **← START HERE!**
+**Duration:** 2-3 hours | **Level:** Beginner to Intermediate
+
+Complete guide to OpenClaw—the fastest-growing open-source AI agent platform with 150K+ GitHub stars.
+
+**What You'll Learn:**
+- ✅ Installation (Homebrew, Docker, Source)
+- ✅ LLM provider configuration (OpenAI, Anthropic, Ollama)
+- ✅ Messaging channel integration (Telegram, Discord, WhatsApp)
+- ✅ Skills system and extensibility
+- ✅ Security best practices
+- ✅ Production VPS deployment
+
+**Perfect for:** Developers wanting to build self-hosted AI agents
+
+**Prerequisites:** API key (OpenAI/Anthropic), Node.js 20+, 4GB RAM
+
+---
+
 ### 🔄 Concurrency Tutorials
 
 #### ⚡ [Concurrency Crash Course](CONCURRENCY_CRASH_COURSE.md) **← START HERE!**
