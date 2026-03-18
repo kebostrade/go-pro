@@ -329,8 +329,8 @@ func (r *MemoryUserRepository) Delete(ctx context.Context, id string) error {
 // NewRepositoriesSimple creates repository instances with simple approach.
 func NewRepositoriesSimple() *Repositories {
 	return &Repositories{
-		Course: NewMemoryCourseRepository(),
-		User:   NewMemoryUserRepository(),
-		// TODO: Implement other repositories as needed.
+		Course:   NewMemoryCourseRepository(),
+		User:     NewMemoryUserRepository(),
+		Interview: NewMemoryInterviewRepository(),
 	}
 }

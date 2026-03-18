@@ -30,6 +30,10 @@ import {
   Star,
   Play,
   ArrowRight,
+  Scale,
+  ArrowRightLeft,
+  RefreshCw,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -315,11 +319,222 @@ export default function InterviewsPage() {
         </div>
       </section>
 
+      {/* AI Mock Interviews Section */}
+      <section className="container max-w-7xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 text-white">
+              <Brain className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">AI Mock Interviews</h2>
+              <p className="text-muted-foreground">Practice with AI-powered interview simulations</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Coding Interview */}
+          <Card className="relative overflow-hidden group hover:shadow-xl transition-all">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-blue-500/10">
+                  <Code2 className="h-8 w-8 text-blue-500" />
+                </div>
+                <div>
+                  <CardTitle>Coding Interview</CardTitle>
+                  <CardDescription>Algorithm & data structure problems</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Solve coding challenges with real-time AI feedback on your solutions.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Badge variant="secondary">Arrays</Badge>
+                <Badge variant="secondary">Trees</Badge>
+                <Badge variant="secondary">DP</Badge>
+                <Badge variant="secondary">Graphs</Badge>
+              </div>
+              <div className="flex gap-2">
+                <Link href="/interviews/session?type=coding&difficulty=beginner" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Beginner</Button>
+                </Link>
+                <Link href="/interviews/session?type=coding&difficulty=intermediate" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Intermediate</Button>
+                </Link>
+                <Link href="/interviews/session?type=coding&difficulty=advanced" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Advanced</Button>
+                </Link>
+              </div>
+              <Link href="/interviews/practice" className="block">
+                <Button className="w-full group-hover:bg-blue-600 transition-colors">
+                  <Play className="h-4 w-4 mr-2" />
+                  Start Practice
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Behavioral Interview */}
+          <Card className="relative overflow-hidden group hover:shadow-xl transition-all">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-purple-500/10">
+                  <MessageSquare className="h-8 w-8 text-purple-500" />
+                </div>
+                <div>
+                  <CardTitle>Behavioral Interview</CardTitle>
+                  <CardDescription>STAR method & soft skills</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Practice behavioral questions with AI analyzing your STAR responses.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Badge variant="secondary">Leadership</Badge>
+                <Badge variant="secondary">Conflict</Badge>
+                <Badge variant="secondary">Growth</Badge>
+                <Badge variant="secondary">Teamwork</Badge>
+              </div>
+              <div className="flex gap-2">
+                <Link href="/interviews/session?type=behavioral&difficulty=beginner" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Beginner</Button>
+                </Link>
+                <Link href="/interviews/session?type=behavioral&difficulty=intermediate" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Intermediate</Button>
+                </Link>
+                <Link href="/interviews/session?type=behavioral&difficulty=advanced" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Advanced</Button>
+                </Link>
+              </div>
+              <Link href="/interviews/practice" className="block">
+                <Button className="w-full group-hover:bg-purple-600 transition-colors">
+                  <Play className="h-4 w-4 mr-2" />
+                  Start Practice
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* System Design Interview */}
+          <Card className="relative overflow-hidden group hover:shadow-xl transition-all">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-red-500" />
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-orange-500/10">
+                  <Layers className="h-8 w-8 text-orange-500" />
+                </div>
+                <div>
+                  <CardTitle>System Design</CardTitle>
+                  <CardDescription>Architecture & scalability</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Design scalable systems with AI feedback on trade-offs and architecture.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Badge variant="secondary">Scalability</Badge>
+                <Badge variant="secondary">Distributed</Badge>
+                <Badge variant="secondary">Database</Badge>
+                <Badge variant="secondary">Caching</Badge>
+              </div>
+              <div className="flex gap-2">
+                <Link href="/interviews/session?type=system_design&difficulty=beginner" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Beginner</Button>
+                </Link>
+                <Link href="/interviews/session?type=system_design&difficulty=intermediate" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Intermediate</Button>
+                </Link>
+                <Link href="/interviews/session?type=system_design&difficulty=advanced" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">Advanced</Button>
+                </Link>
+              </div>
+              <Link href="/interviews/practice" className="block">
+                <Button className="w-full group-hover:bg-orange-600 transition-colors">
+                  <Play className="h-4 w-4 mr-2" />
+                  Start Practice
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Stats & Recent Sessions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-yellow-500" />
+                Your Progress
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 rounded-lg bg-muted/50">
+                  <div className="text-3xl font-bold text-blue-600">12</div>
+                  <div className="text-sm text-muted-foreground">Sessions</div>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-muted/50">
+                  <div className="text-3xl font-bold text-green-600">78%</div>
+                  <div className="text-sm text-muted-foreground">Avg Score</div>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-muted/50">
+                  <div className="text-3xl font-bold text-purple-600">5</div>
+                  <div className="text-sm text-muted-foreground">This Week</div>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-muted/50">
+                  <div className="text-3xl font-bold text-orange-600">4.2h</div>
+                  <div className="text-sm text-muted-foreground">Practice Time</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-yellow-500" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Link href="/interviews/practice">
+                <Button variant="outline" className="w-full justify-start">
+                  <Play className="h-4 w-4 mr-2" />
+                  Quick Practice
+                </Button>
+              </Link>
+              <Link href="/interviews/feedback">
+                <Button variant="outline" className="w-full justify-start">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  View Feedback
+                </Button>
+              </Link>
+              <Link href="#roadmap">
+                <Button variant="outline" className="w-full justify-start">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Study Roadmap
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Main Content */}
       <div className="container max-w-7xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-[600px]">
+          <TabsList className="grid w-full grid-cols-6 lg:w-[700px]">
             <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
+            <TabsTrigger value="system-design">System Design</TabsTrigger>
             <TabsTrigger value="patterns">Patterns</TabsTrigger>
             <TabsTrigger value="reference">Reference</TabsTrigger>
             <TabsTrigger value="behavioral">Behavioral</TabsTrigger>
@@ -372,6 +587,164 @@ export default function InterviewsPage() {
                     ))}
                 </div>
               ))}
+            </div>
+          </TabsContent>
+
+          {/* System Design Tab */}
+          <TabsContent value="system-design" className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-semibold">System Design Fundamentals</h3>
+                <p className="text-muted-foreground">Master distributed systems architecture concepts</p>
+              </div>
+              <Link href="/interviews/system-design">
+                <Button>
+                  View Full Guide
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+
+            {/* System Design Categories */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                {
+                  id: 'fundamentals',
+                  title: 'Scalability & Load Balancing',
+                  description: 'Horizontal vs vertical scaling, load balancer algorithms',
+                  icon: <Scale className="h-5 w-5" />,
+                  color: 'from-blue-500 to-cyan-500',
+                  topics: ['Scalability', 'Load Balancing', 'High Availability'],
+                },
+                {
+                  id: 'data',
+                  title: 'Data Layer',
+                  description: 'Database sharding, replication, caching strategies',
+                  icon: <Database className="h-5 w-5" />,
+                  color: 'from-green-500 to-emerald-500',
+                  topics: ['Database Sharding', 'Caching', 'CAP Theorem'],
+                },
+                {
+                  id: 'communication',
+                  title: 'Communication Patterns',
+                  description: 'API design, message queues, microservices',
+                  icon: <ArrowRightLeft className="h-5 w-5" />,
+                  color: 'from-purple-500 to-pink-500',
+                  topics: ['REST/GraphQL/gRPC', 'Message Queues', 'Microservices'],
+                },
+                {
+                  id: 'patterns',
+                  title: 'Design Patterns',
+                  description: 'CDN, rate limiting, distributed ID generation',
+                  icon: <Layers className="h-5 w-5" />,
+                  color: 'from-orange-500 to-red-500',
+                  topics: ['CDN', 'Rate Limiting', 'ID Generation'],
+                },
+                {
+                  id: 'scalability',
+                  title: 'Advanced Scalability',
+                  description: 'Consistent hashing, event sourcing, CQRS',
+                  icon: <RefreshCw className="h-5 w-5" />,
+                  color: 'from-indigo-500 to-violet-500',
+                  topics: ['Consistent Hashing', 'Event Sourcing', 'CQRS'],
+                },
+                {
+                  id: 'practice',
+                  title: 'Practice Problems',
+                  description: 'Design URL shortener, chat system, and more',
+                  icon: <Target className="h-5 w-5" />,
+                  color: 'from-yellow-500 to-orange-500',
+                  topics: ['URL Shortener', 'Chat System', 'Rate Limiter'],
+                },
+              ].map((category) => (
+                <Card key={category.id} className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group">
+                  <div className={`h-2 bg-gradient-to-r ${category.color}`} />
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg bg-gradient-to-r ${category.color} text-white`}>
+                        {category.icon}
+                      </div>
+                      <CardTitle className="text-lg">{category.title}</CardTitle>
+                    </div>
+                    <CardDescription>{category.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {category.topics.map((topic) => (
+                        <Badge key={topic} variant="secondary" className="text-xs">
+                          {topic}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Quick Reference */}
+            <Card className="border-0 shadow-lg bg-gradient-to-r from-indigo-50 to-purple-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-indigo-500" />
+                  System Design Interview Framework
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {[
+                    {
+                      step: '1',
+                      title: 'Requirements',
+                      items: ['Functional', 'Non-functional', 'Capacity', 'Constraints'],
+                    },
+                    {
+                      step: '2',
+                      title: 'High-Level',
+                      items: ['APIs', 'Data Model', 'Components', 'Data Flow'],
+                    },
+                    {
+                      step: '3',
+                      title: 'Deep Dive',
+                      items: ['Schema', 'Scaling', 'Caching', 'Load Balancing'],
+                    },
+                    {
+                      step: '4',
+                      title: 'Trade-offs',
+                      items: ['C vs A', 'Latency', 'Cost', 'Complexity'],
+                    },
+                  ].map((section) => (
+                    <div key={section.step}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                          {section.step}
+                        </div>
+                        <span className="font-semibold">{section.title}</span>
+                      </div>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        {section.items.map((item) => (
+                          <li key={item}>• {item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Start Practice CTA */}
+            <div className="flex gap-4">
+              <Link href="/interviews/system-design">
+                <Button size="lg">
+                  <BookOpen className="h-5 w-5 mr-2" />
+                  Full System Design Guide
+                </Button>
+              </Link>
+              <Link href="/interviews/session?type=system_design&difficulty=beginner">
+                <Button size="lg" variant="outline">
+                  <Play className="h-5 w-5 mr-2" />
+                  Practice System Design
+                </Button>
+              </Link>
             </div>
           </TabsContent>
 

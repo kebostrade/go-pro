@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" fill="none">
+  <defs>
+    <!-- Go Blue Gradient -->
+    <linearGradient id="goBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ADD8"/>
+      <stop offset="100%" style="stop-color:#0077B6"/>
+    </linearGradient>
+    <!-- Purple accent -->
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#A78BFA"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background (optional - remove for transparent) -->
+  <rect width="400" height="100" rx="16" fill="transparent"/>
+  
+  <!-- Icon Section -->
+  <g transform="translate(50, 50)">
+    <!-- Outer hexagon -->
+    <polygon points="0,-32 28,-16 28,16 0,32 -28,16 -28,-16" fill="none" stroke="url(#goBlueGrad)" stroke-width="3"/>
+    
+    <!-- Inner hexagon -->
+    <polygon points="0,-24 21,-12 21,12 0,24 -21,12 -21,-12" fill="url(#goBlueGrad)" opacity="0.15"/>
+    
+    <!-- Code bracket left < -->
+    <path d="M-12 -9 L-20 0 L-12 9" stroke="url(#purpleGrad)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Code bracket right > -->
+    <path d="M12 -9 L20 0 L12 9" stroke="url(#purpleGrad)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Center dot -->
+    <circle cx="0" cy="0" r="7" fill="url(#goBlueGrad)"/>
+    
+    <!-- Accent dot -->
+    <circle cx="0" cy="-28" r="3" fill="#00ADD8">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Text Section -->
+  <g transform="translate(130, 58)">
+    <!-- "go" in regular weight -->
+    <text x="0" y="28" font-family="'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif" font-size="42" font-weight="400" fill="white" letter-spacing="-1">go</text>
+    
+    <!-- "pro" in bold with gradient -->
+    <text x="72" y="28" font-family="'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif" font-size="42" font-weight="700" fill="url(#purpleGrad)" letter-spacing="-1">pro</text>
+  </g>
+  
+  <!-- Tagline -->
+  <text x="130" y="85" font-family="'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="400" fill="#64748B" letter-spacing="0.5">Learn Go Programming</text>
+</svg>

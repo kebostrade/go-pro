@@ -7,8 +7,8 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	apierrors "go-pro-backend/internal/errors"
@@ -66,9 +66,9 @@ func (h *Handler) handlePlaygroundExecute(w http.ResponseWriter, r *http.Request
 	// Execute code using the executor service
 	// For playground, we use a single "output" test case
 	result, err := h.services.Executor.ExecuteCode(ctx, &service.ExecuteRequest{
-		Code:      req.Code,
-		Language:  "go",
-		Timeout:   25 * time.Second, // Give time for compilation
+		Code:     req.Code,
+		Language: "go",
+		Timeout:  25 * time.Second, // Give time for compilation
 		TestCases: []service.TestCase{
 			{
 				Name:     "Playground Output",
@@ -93,21 +93,45 @@ func (h *Handler) handlePlaygroundExecute(w http.ResponseWriter, r *http.Request
 
 	// Build output from results
 	output := ""
-	var execErr string
-	if result.Error != nil {
-		execErr = fmt.Sprintf("Error: %v", result.Error)
-	} else if len(result.Results) > 0 {
+	if len(result.Results) > 0 {
 		// For playground, we just want the actual output
 		output = result.Results[0].Actual
-		if result.Results[0].Error != "" {
-			execErr = result.Results[0].Error
+	}
+
+	// The docker_executor returns an Error in the ExecuteResult only if there was an error in running the test (like timeout, etc.)
+	// The TestResult's Error is set for test failures (including output mismatch) but we don't care about that for playground success.
+	execErr := ""
+	if result.Error != nil {
+		execErr = result.Error.Error()
+	}
+
+	// For playground, success means the code compiled and ran without execution error (compilation/panic, timeout, etc.)
+	// We don't care about the test passing or failing (since we have no expected output).
+	// Check if any test result has an error that indicates a real execution problem (not just output mismatch)
+	hasExecutionError := false
+	if len(result.Results) > 0 {
+		for _, testResult := range result.Results {
+			if testResult.Error != "" {
+				// Ignore "Output does not match expected result" as it's not a real execution error
+				if !strings.Contains(testResult.Error, "Output does not match expected result") {
+					hasExecutionError = true
+					break
+				}
+			}
 		}
 	}
+
+	// If the only error is output mismatch, clear the error field for display purposes
+	if execErr == "Output does not match expected result" {
+		execErr = ""
+	}
+
+	success := result.Error == nil && !hasExecutionError && execErr == ""
 
 	h.writeSuccessResponse(w, r, PlaygroundExecuteResult{
 		Output:          output,
 		Error:           execErr,
 		ExecutionTimeMs: executionTimeMs,
-		Success:         result.Error == nil && execErr == "",
+		Success:         success,
 	}, "code executed successfully")
 }

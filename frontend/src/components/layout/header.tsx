@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LucideIcon } from "lucide-react";
+import { KeyboardEvent } from "react";
 
 interface NavItem {
   title: string;
@@ -42,6 +44,19 @@ interface NavItem {
   description: string;
   icon: LucideIcon;
 }
+
+// Define navigation items outside component to prevent hydration mismatch
+const navigationItems: NavItem[] = [
+  { title: "Learn", href: "/learn", description: "Interactive Go lessons and tutorials", icon: BookOpen },
+  { title: "Practice", href: "/practice", description: "Coding exercises and challenges", icon: Code2 },
+  { title: "Playground", href: "/playground", description: "Write and run Go code online", icon: Terminal },
+  { title: "Prompt Engineering", href: "/learn/prompt-engineering", description: "Master AI prompts and LLM techniques", icon: Sparkles },
+  { title: "OpenClaw", href: "/learn/openclaw", description: "Build self-hosted AI agents", icon: Bot },
+  { title: "Interviews", href: "/interviews", description: "Master coding interviews", icon: Brain },
+  { title: "Tutorials", href: "/tutorials", description: "Comprehensive tutorials", icon: GraduationCap },
+  { title: "Projects", href: "/projects", description: "Real-world Go applications", icon: Trophy },
+  { title: "Community", href: "/community", description: "Connect with Go developers", icon: Users },
+];
 
 const Header = () => {
   const { user, signOut, loading } = useAuth();
@@ -82,7 +97,7 @@ const Header = () => {
 
   // Close mobile menu on Escape key
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = (e: globalThis.KeyboardEvent) => {
       if (e.key === 'Escape' && isMobileMenuOpen) {
         setIsMobileMenuOpen(false);
       }
@@ -117,18 +132,6 @@ const Header = () => {
     }
   };
 
-  const navigationItems: NavItem[] = [
-    { title: "Learn", href: "/learn", description: "Interactive Go lessons and tutorials", icon: BookOpen },
-    { title: "Practice", href: "/practice", description: "Coding exercises and challenges", icon: Code2 },
-    { title: "Playground", href: "/playground", description: "Write and run Go code online", icon: Terminal },
-    { title: "Prompt Engineering", href: "/learn/prompt-engineering", description: "Master AI prompts and LLM techniques", icon: Sparkles },
-    { title: "OpenClaw", href: "/learn/openclaw", description: "Build self-hosted AI agents", icon: Bot },
-    { title: "Interviews", href: "/interviews", description: "Master coding interviews", icon: Brain },
-    { title: "Tutorials", href: "/tutorials", description: "Comprehensive tutorials", icon: GraduationCap },
-    { title: "Projects", href: "/projects", description: "Real-world Go applications", icon: Trophy },
-    { title: "Community", href: "/community", description: "Connect with Go developers", icon: Users },
-  ];
-
   return (
     <header
       className={cn(
@@ -141,9 +144,14 @@ const Header = () => {
     >
       <div className="mx-auto flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 max-w-[1800px] w-full">
         <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 shadow-md shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all duration-300 group-hover:scale-105">
-            <span className="text-base sm:text-lg font-bold text-white">G</span>
-          </div>
+          <Image 
+            src="/icon.svg" 
+            alt="GO-PRO Logo" 
+            width={36} 
+            height={36}
+            className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg group-hover:scale-105 transition-transform duration-300"
+            priority
+          />
           <div className="flex flex-col">
             <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent whitespace-nowrap">
               GO-PRO
@@ -278,9 +286,13 @@ const Header = () => {
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between p-3 sm:p-4 border-b">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500">
-                  <span className="text-sm font-bold text-white">G</span>
-                </div>
+                <Image 
+                  src="/icon.svg" 
+                  alt="GO-PRO Logo" 
+                  width={32} 
+                  height={32}
+                  className="h-8 w-8 rounded-lg"
+                />
                 <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                   GO-PRO
                 </span>

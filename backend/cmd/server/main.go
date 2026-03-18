@@ -96,6 +96,11 @@ func main() {
 		applog.Info(ctx, "AI-powered playground handler initialized")
 	}
 
+	// Initialize interview handler
+	interviewHandler := handler.NewInterviewHandler(appContainer.Repositories.Interview, applog, appContainer.Validator)
+	httpHandler.SetInterviewHandler(interviewHandler)
+	applog.Info(ctx, "Interview handler initialized")
+
 	// Setup routes.
 	mux := http.NewServeMux()
 	httpHandler.RegisterRoutes(mux, authMiddleware)

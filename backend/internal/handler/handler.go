@@ -36,6 +36,9 @@ type Handler struct {
 
 	// AI-powered playground handler (optional, set after initialization).
 	aiHandler *PlaygroundAIHandler
+
+	// Interview handler for mock interviews.
+	interviewHandler *InterviewHandler
 }
 
 // rateLimitState tracks submission rate limits per user.
@@ -57,6 +60,11 @@ func New(services *service.Services, logger logger.Logger, validator validator.V
 // SetAIHandler sets the AI-powered playground handler.
 func (h *Handler) SetAIHandler(aiHandler *PlaygroundAIHandler) {
 	h.aiHandler = aiHandler
+}
+
+// SetInterviewHandler sets the interview handler.
+func (h *Handler) SetInterviewHandler(interviewHandler *InterviewHandler) {
+	h.interviewHandler = interviewHandler
 }
 
 // RegisterRoutes registers all API routes.
@@ -111,6 +119,11 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, authMiddleware *middleware.
 		mux.HandleFunc("POST /api/v1/playground/sessions", h.aiHandler.HandleCreateSession)
 		mux.HandleFunc("GET /api/v1/playground/sessions/{id}", h.aiHandler.HandleGetSession)
 		mux.HandleFunc("GET /api/v1/playground/sessions/{id}/history", h.aiHandler.HandleGetHistory)
+	}
+
+	// Interview endpoints (if interview handler is available).
+	if h.interviewHandler != nil {
+		h.interviewHandler.RegisterRoutes(mux)
 	}
 
 	// API documentation.

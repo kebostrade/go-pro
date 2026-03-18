@@ -10,7 +10,6 @@
 		"start": "next start",
 		"lint": "next lint",
 		"deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-		"build:firebase": "next build && mkdir -p .next/server/app/_next && cp -r .next/static .next/server/app/_next/",
 		"deploy:firebase": "bun run build:firebase && firebase deploy --only hosting",
 		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
 		"cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
