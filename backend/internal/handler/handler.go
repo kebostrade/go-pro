@@ -33,6 +33,9 @@ type Handler struct {
 
 	// Rate limiting for exercise submissions (per-user).
 	submissionLimits map[string]*rateLimitState
+
+	// AI-powered playground handler (optional, set after initialization).
+	aiHandler *PlaygroundAIHandler
 }
 
 // rateLimitState tracks submission rate limits per user.
@@ -49,6 +52,11 @@ func New(services *service.Services, logger logger.Logger, validator validator.V
 		validator:        validator,
 		submissionLimits: make(map[string]*rateLimitState),
 	}
+}
+
+// SetAIHandler sets the AI-powered playground handler.
+func (h *Handler) SetAIHandler(aiHandler *PlaygroundAIHandler) {
+	h.aiHandler = aiHandler
 }
 
 // RegisterRoutes registers all API routes.
@@ -89,6 +97,21 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, authMiddleware *middleware.
 	// Curriculum.
 	mux.HandleFunc("GET /api/v1/curriculum", h.handleGetCurriculum)
 	mux.HandleFunc("GET /api/v1/curriculum/lesson/{id}", h.handleGetLessonDetail)
+
+	// Playground - code execution.
+	mux.HandleFunc("POST /api/v1/playground/execute", h.handlePlaygroundExecute)
+
+	// AI-powered playground endpoints (if AI handler is available).
+	if h.aiHandler != nil {
+		mux.HandleFunc("POST /api/v1/playground/analyze", h.aiHandler.HandleAnalyze)
+		mux.HandleFunc("POST /api/v1/playground/complete", h.aiHandler.HandleComplete)
+		mux.HandleFunc("POST /api/v1/playground/explain", h.aiHandler.HandleExplain)
+		mux.HandleFunc("POST /api/v1/playground/generate-tests", h.aiHandler.HandleGenerateTests)
+		mux.HandleFunc("POST /api/v1/playground/execute-ai", h.aiHandler.HandleExecuteWithAI)
+		mux.HandleFunc("POST /api/v1/playground/sessions", h.aiHandler.HandleCreateSession)
+		mux.HandleFunc("GET /api/v1/playground/sessions/{id}", h.aiHandler.HandleGetSession)
+		mux.HandleFunc("GET /api/v1/playground/sessions/{id}/history", h.aiHandler.HandleGetHistory)
+	}
 
 	// API documentation.
 	mux.HandleFunc("GET /", h.handleAPIDocumentation)

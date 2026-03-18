@@ -664,6 +664,109 @@ export const api = {
   async getSharedWorkspace(token: string): Promise<any> {
     return apiRequest(`/api/workspaces/shared/${token}`, {}, false);
   },
+
+  // ========== PLAYGROUND API METHODS ==========
+  // Code execution in playground
+
+  async executePlaygroundCode(code: string): Promise<{
+    output: string;
+    error?: string;
+    execution_time_ms: number;
+    success: boolean;
+  }> {
+    return apiRequest('/api/v1/playground/execute', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }, false); // No auth required for playground
+  },
+
+  // AI-powered code analysis
+  async analyzeCode(code: string, language: string = 'go'): Promise<{
+    complexity: number;
+    issues: Array<{ severity: string; message: string; line: number }>;
+    patterns: string[];
+    strengths: string[];
+    suggestions: Array<{ description: string; fix?: string }>;
+    functions: Array<{ name: string; params: string[]; returnType: string }>;
+    variables: Array<{ name: string; type: string; mutable: boolean }>;
+  }> {
+    return apiRequest('/api/v1/playground/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ code, language }),
+    }, false);
+  },
+
+  // AI code completion
+  async completeCode(code: string, position: number): Promise<{
+    completions: Array<{ text: string; type: string; documentation?: string }>;
+  }> {
+    return apiRequest('/api/v1/playground/complete', {
+      method: 'POST',
+      body: JSON.stringify({ code, position }),
+    }, false);
+  },
+
+  // AI error explanation
+  async explainError(code: string, error: string): Promise<{
+    explanations: Array<{ message: string; line?: number; fix?: string; learnMore?: string }>;
+  }> {
+    return apiRequest('/api/v1/playground/explain', {
+      method: 'POST',
+      body: JSON.stringify({ code, error }),
+    }, false);
+  },
+
+  // AI test generation
+  async generateTests(code: string): Promise<{
+    test_cases: Array<{ name: string; input: string; expected: string; description: string }>;
+  }> {
+    return apiRequest('/api/v1/playground/generate-tests', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }, false);
+  },
+
+  // Execute code with AI analysis
+  async executeWithAI(code: string, language: string = 'go', sessionId?: string): Promise<{
+    output: string;
+    error?: string;
+    execution_time_ms: number;
+    success: boolean;
+    ai_analysis?: {
+      complexity: number;
+      issues: Array<{ severity: string; message: string; line: number }>;
+      patterns: string[];
+      strengths: string[];
+      suggestions: Array<{ description: string; fix?: string }>;
+    };
+    test_results?: Array<{ testName: string; passed: boolean; expected: string; actual: string; error: string }>;
+  }> {
+    return apiRequest('/api/v1/playground/execute-ai', {
+      method: 'POST',
+      body: JSON.stringify({ code, language, session_id: sessionId }),
+    }, false);
+  },
+
+  // Session management
+  async createPlaygroundSession(): Promise<{ session_id: string }> {
+    return apiRequest('/api/v1/playground/sessions', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }, false);
+  },
+
+  async getPlaygroundSession(sessionId: string): Promise<{
+    session_id: string;
+    history?: Array<{ code: string; language: string; output: string; timestamp: string }>;
+  }> {
+    return apiRequest(`/api/v1/playground/sessions/${sessionId}`, {}, false);
+  },
+
+  async getSessionHistory(sessionId: string): Promise<{
+    history: Array<{ code: string; language: string; output: string; timestamp: string }>;
+  }> {
+    return apiRequest(`/api/v1/playground/sessions/${sessionId}/history`, {}, false);
+  },
 };
 
 export type {

@@ -89,6 +89,13 @@ func main() {
 	authHandler := handler.NewAuthHandler(appContainer.Services, applog, appContainer.Validator)
 	adminHandler := handler.NewAdminHandler(appContainer.Services, applog, appContainer.Validator)
 
+	// Initialize AI-powered playground handler if AgentPool is available
+	if appContainer.AgentPool != nil {
+		aiHandler := handler.NewPlaygroundAIHandler(appContainer.AgentPool, appContainer.Services.Executor, applog)
+		httpHandler.SetAIHandler(aiHandler)
+		applog.Info(ctx, "AI-powered playground handler initialized")
+	}
+
 	// Setup routes.
 	mux := http.NewServeMux()
 	httpHandler.RegisterRoutes(mux, authMiddleware)

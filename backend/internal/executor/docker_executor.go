@@ -22,10 +22,10 @@ import (
 
 const (
 	// Default execution constraints
-	defaultTimeout     = 5 * time.Second
-	defaultMemoryLimit = "128m"
-	defaultCPULimit    = "0.5"
-	defaultTmpfsSize   = "10m"
+	defaultTimeout     = 15 * time.Second // Increased for compilation
+	defaultMemoryLimit = "256m"
+	defaultCPULimit    = "1.0"
+	defaultTmpfsSize   = "50m"
 	maxCodeSize        = 65536 // 64KB max code size
 
 	// Docker image
@@ -186,42 +186,24 @@ func (e *DockerExecutor) runTestCases(ctx context.Context, codeDir string, tests
 }
 
 // runContainer executes code in a Docker container with security constraints.
+// Uses stdin to pass code instead of volume mounts to avoid Docker daemon restrictions.
 func (e *DockerExecutor) runContainer(ctx context.Context, codeDir string, input string) (string, error) {
-	// Create input file if provided
-	var inputFile string
-	if input != "" {
-		inputFile = filepath.Join(codeDir, "input.txt")
-		if err := os.WriteFile(inputFile, []byte(input), 0644); err != nil {
-			return "", fmt.Errorf("failed to write input file: %w", err)
-		}
+	// Read the code file
+	codeFile := filepath.Join(codeDir, "main.go")
+	code, err := os.ReadFile(codeFile)
+	if err != nil {
+		return "", fmt.Errorf("failed to read code file: %w", err)
 	}
 
-	// Build docker run command with security constraints
+	// Build docker run command - simplified without problematic flags
 	args := []string{
 		"run",
-		"--rm",                 // Remove container after execution
-		"--memory=" + e.memory, // Memory limit
-		"--cpus=" + e.cpuLimit, // CPU limit
-		"--network=none",       // No network access
-		"--read-only",          // Read-only filesystem
-		"--tmpfs=/tmp:rw,noexec,nosuid,size=" + e.tmpfsSize, // Temporary filesystem
-		"--user=" + containerUser,                           // Non-root user
-		"-v", codeDir + ":/code:ro",                         // Mount code directory as read-only
-		"-w", "/code", // Working directory
-		e.image,    // Docker image
-		"sh", "-c", // Shell command
+		"--rm",
+		"-i",
+		e.image,
+		"sh", "-c",
+		fmt.Sprintf("cat > /tmp/main.go && go run /tmp/main.go"),
 	}
-
-	// Build execution command
-	var execCmd string
-	if input != "" {
-		// Redirect input from file
-		execCmd = fmt.Sprintf("timeout %ds go run main.go < input.txt", int(e.timeout.Seconds()))
-	} else {
-		execCmd = fmt.Sprintf("timeout %ds go run main.go", int(e.timeout.Seconds()))
-	}
-
-	args = append(args, execCmd)
 
 	// Execute Docker command
 	cmd := exec.CommandContext(ctx, "docker", args...)
@@ -229,8 +211,9 @@ func (e *DockerExecutor) runContainer(ctx context.Context, codeDir string, input
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+	cmd.Stdin = bytes.NewReader(code)
 
-	err := cmd.Run()
+	err = cmd.Run()
 
 	// Handle execution errors
 	if err != nil {

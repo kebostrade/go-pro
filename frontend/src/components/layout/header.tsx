@@ -21,6 +21,7 @@ import {
   Brain,
   Sparkles,
   Bot,
+  Terminal,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
@@ -119,6 +120,7 @@ const Header = () => {
   const navigationItems: NavItem[] = [
     { title: "Learn", href: "/learn", description: "Interactive Go lessons and tutorials", icon: BookOpen },
     { title: "Practice", href: "/practice", description: "Coding exercises and challenges", icon: Code2 },
+    { title: "Playground", href: "/playground", description: "Write and run Go code online", icon: Terminal },
     { title: "Prompt Engineering", href: "/learn/prompt-engineering", description: "Master AI prompts and LLM techniques", icon: Sparkles },
     { title: "OpenClaw", href: "/learn/openclaw", description: "Build self-hosted AI agents", icon: Bot },
     { title: "Interviews", href: "/interviews", description: "Master coding interviews", icon: Brain },
