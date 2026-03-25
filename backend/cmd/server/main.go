@@ -118,6 +118,7 @@ func main() {
 		middleware.Timeout(30 * time.Second),
 		middleware.RateLimit(100, time.Minute),
 		middleware.Pagination(10, 100),
+		middleware.CSRF, // CSRF protection for state-changing operations
 	}
 
 	handler := middleware.Chain(mux, middlewares...)

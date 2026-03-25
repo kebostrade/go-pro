@@ -1,0 +1,191 @@
+# GraphQL Schema for Blog API
+# This schema demonstrates common GraphQL patterns
+
+# ============================================
+# Custom Scalars
+# ============================================
+
+scalar Time
+scalar Upload
+
+# ============================================
+# Types
+# ============================================
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  role: Role!
+  active: Boolean!
+  posts(limit: Int, offset: Int): [Post!]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  published: Boolean!
+  author: User!
+  authorId: ID!
+  tags: [String!]!
+  comments: [Comment!]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  author: User!
+  post: Post!
+  createdAt: Time!
+}
+
+# ============================================
+# Enums
+# ============================================
+
+enum Role {
+  ADMIN
+  USER
+  GUEST
+}
+
+enum PostSort {
+  CREATED_AT_ASC
+  CREATED_AT_DESC
+  UPDATED_AT_ASC
+  UPDATED_AT_DESC
+}
+
+# ============================================
+# Input Types
+# ============================================
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  password: String!
+  role: Role = USER
+}
+
+input UpdateUserInput {
+  username: String
+  email: String
+  active: Boolean
+  role: Role
+}
+
+input CreatePostInput {
+  title: String!
+  content: String!
+  published: Boolean = false
+  tags: [String!]
+}
+
+input UpdatePostInput {
+  title: String
+  content: String
+  published: Boolean
+  tags: [String!]
+}
+
+input CreateCommentInput {
+  content: String!
+  postId: ID!
+}
+
+# Pagination inputs
+input PageInput {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+# ============================================
+# Query Operations
+# ============================================
+
+type Query {
+  # User queries
+  user(id: ID!): User
+  users(
+    role: Role
+    active: Boolean
+    page: PageInput
+    sort: PostSort
+  ): [User!]!
+  me: User
+
+  # Post queries
+  post(id: ID!): Post
+  posts(
+    authorId: ID
+    published: Boolean
+    tags: [String!]
+    search: String
+    page: PageInput
+    sort: PostSort
+  ): [Post!]!
+
+  # Comment queries
+  comment(id: ID!): Comment
+  comments(postId: ID!): [Comment!]!
+
+  # Search
+  searchUsers(query: String!, limit: Int): [User!]!
+  searchPosts(query: String!, limit: Int): [Post!]!
+
+  # Statistics
+  stats: Stats!
+}
+
+# ============================================
+# Mutation Operations
+# ============================================
+
+type Mutation {
+  # User mutations
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
+  deactivateUser(id: ID!): Boolean!
+
+  # Post mutations
+  createPost(input: CreatePostInput!): Post!
+  updatePost(id: ID!, input: UpdatePostInput!): Post!
+  deletePost(id: ID!): Boolean!
+  publishPost(id: ID!): Post!
+  unpublishPost(id: ID!): Post!
+
+  # Comment mutations
+  createComment(input: CreateCommentInput!): Comment!
+  deleteComment(id: ID!): Boolean!
+
+  # Upload
+  uploadImage(file: Upload!): String!
+}
+
+# ============================================
+# Subscription Operations
+# ============================================
+
+type Subscription {
+  userCreated: User!
+  postCreated: Post!
+  postPublished: Post!
+  commentAdded(postId: ID!): Comment!
+}
+
+# ============================================
+# Response Types
+# ============================================
+
+type Stats {
+  users: Int!
+  posts: Int!
+  comments: Int!
+  publishedPosts: Int!
+}

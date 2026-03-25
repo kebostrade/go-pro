@@ -350,6 +350,17 @@ func (h *Handler) handleSubmitExercise(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate language
+	validLanguages := map[string]bool{
+		"go":         true,
+		"python":     true,
+		"javascript": true,
+	}
+	if !validLanguages[req.Language] {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("invalid language: must be one of: go, python, javascript"))
+		return
+	}
+
 	result, err := h.services.Exercise.SubmitExercise(r.Context(), id, &req)
 	if err != nil {
 		h.writeErrorResponse(w, r, err)

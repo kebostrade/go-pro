@@ -15,7 +15,7 @@ import (
 )
 
 func TestValidateCode(t *testing.T) {
-	executor := NewDockerExecutor().(*DockerExecutor)
+	executor := &LocalExecutor{timeout: defaultTimeout}
 
 	tests := []struct {
 		name    string
@@ -371,7 +371,7 @@ func main() {
 }
 
 func TestExtractErrorMessage(t *testing.T) {
-	executor := NewDockerExecutor().(*DockerExecutor)
+	executor := &LocalExecutor{timeout: defaultTimeout}
 
 	tests := []struct {
 		name   string
@@ -412,7 +412,7 @@ func TestExtractErrorMessage(t *testing.T) {
 }
 
 func TestFormatError(t *testing.T) {
-	executor := NewDockerExecutor().(*DockerExecutor)
+	executor := &LocalExecutor{timeout: defaultTimeout}
 
 	tests := []struct {
 		name    string

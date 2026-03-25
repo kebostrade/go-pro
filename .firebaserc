@@ -1,5 +1,15 @@
 {
   "projects": {
-    "default": "go-pro-platform"
-  }
+    "default": "gopro-425a7"
+  },
+  "targets": {
+    "gopro-425a7": {
+      "hosting": {
+        "gopro-425a7": [
+          "go-pro-frontend"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

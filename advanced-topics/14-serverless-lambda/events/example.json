@@ -1,0 +1,16 @@
+{
+  "httpMethod": "GET",
+  "path": "/hello",
+  "queryStringParameters": {
+    "name": "World"
+  },
+  "headers": {
+    "Content-Type": "application/json",
+    "User-Agent": "curl/7.68.0"
+  },
+  "body": "{\"name\":\"World\",\"message\":\"Hello\"}",
+  "requestContext": {
+    "requestId": "test-request-123",
+    "stage": "dev"
+  }
+}

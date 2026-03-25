@@ -450,14 +450,14 @@ func (e *DockerExecutor) runContainer(ctx context.Context, codeDir string, input
 		return "", fmt.Errorf("failed to read code file: %w", err)
 	}
 
-	// Build docker run command - simplified without problematic flags
+	// Build docker run command - code embedded via printf, input via stdin
 	args := []string{
 		"run",
 		"--rm",
 		"-i",
 		e.image,
 		"sh", "-c",
-		fmt.Sprintf("cat > /tmp/main.go && go run /tmp/main.go"),
+		fmt.Sprintf("printf '%%s' '%s' > /tmp/main.go && go run /tmp/main.go", strings.ReplaceAll(string(code), "'", "'\\''")),
 	}
 
 	// Execute Docker command
@@ -466,7 +466,7 @@ func (e *DockerExecutor) runContainer(ctx context.Context, codeDir string, input
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	cmd.Stdin = bytes.NewReader(code)
+	cmd.Stdin = bytes.NewReader([]byte(input))
 
 	err = cmd.Run()
 

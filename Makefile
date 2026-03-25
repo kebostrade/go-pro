@@ -188,7 +188,7 @@ dev-backend: ## Start backend only with hot reload
 dev-docker: ## Start development environment with Docker
 	$(call print_header,$(ICON_DOCKER) Docker Dev Environment)
 	$(call print_step,Building and starting containers...)
-	@docker-compose -f docker-compose.dev.yml up --build
+	@docker compose -f docker-compose.dev.yml up --build
 
 ##@ Build Commands
 
@@ -359,7 +359,7 @@ docker-run: docker-build ## Run Docker container locally
 docker-dev: ## Start full development environment
 	$(call print_header,$(ICON_DOCKER) Docker Dev Environment)
 	$(call print_step,Starting containers...)
-	@docker-compose -f docker/docker-compose.dev.yml up --build -d
+	@docker compose -f docker/docker-compose.dev.yml up --build -d
 	@printf "$(DIM)│$(NC)\n"
 	@printf "$(DIM)│$(NC)  $(BOLD)Services:$(NC)\n"
 	@printf "$(DIM)│$(NC)    $(GREEN)●$(NC) Backend API      $(DIM)→$(NC) http://localhost:8080\n"
@@ -380,16 +380,16 @@ docker-dev: ## Start full development environment
 docker-prod: ## Start production environment
 	$(call print_header,$(ICON_DOCKER) Production Environment)
 	$(call print_step,Starting production containers...)
-	@docker-compose -f docker-compose.prod.yml up -d
+	@docker compose -f docker-compose.prod.yml up -d
 	$(call print_success,Production environment running)
 	$(call print_done)
 
 docker-stop: ## Stop all Docker containers
 	$(call print_section,$(ICON_DOCKER) Stopping Containers)
 	$(call print_step,Stopping dev environment...)
-	@docker-compose -f docker-compose.dev.yml down 2>/dev/null || true
+	@docker compose -f docker-compose.dev.yml down 2>/dev/null || true
 	$(call print_step,Stopping prod environment...)
-	@docker-compose -f docker-compose.prod.yml down 2>/dev/null || true
+	@docker compose -f docker-compose.prod.yml down 2>/dev/null || true
 	$(call print_success,All containers stopped)
 	$(call print_done)
 
@@ -444,11 +444,11 @@ clean: ## Clean build artifacts and cache
 
 logs: ## Show application logs
 	$(call print_section,$(ICON_INFO) Dev Logs)
-	@docker-compose -f docker-compose.dev.yml logs -f go-pro-backend
+	@docker compose -f docker-compose.dev.yml logs -f go-pro-backend
 
 logs-prod: ## Show production logs
 	$(call print_section,$(ICON_INFO) Production Logs)
-	@docker-compose -f docker-compose.prod.yml logs -f go-pro-backend
+	@docker compose -f docker-compose.prod.yml logs -f go-pro-backend
 
 backup: ## Create backup of important data
 	$(call print_header,$(ICON_DB) Backup)

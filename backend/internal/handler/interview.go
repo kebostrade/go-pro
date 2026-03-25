@@ -7,6 +7,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -825,5 +826,5 @@ func getScoreValue(score *int) int {
 
 // errAs checks if error can be asserted to APIError.
 func errAs(err error, target interface{}) bool {
-	return false
+	return errors.As(err, target)
 }

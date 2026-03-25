@@ -161,10 +161,11 @@ func (c *Container) initializeRepositories() error {
 		// PostgreSQL repositories initialized successfully.
 
 		c.Repositories = &repository.Repositories{
-			Course:   pgRepos.Course,
-			Lesson:   pgRepos.Lesson,
-			Exercise: pgRepos.Exercise,
-			Progress: pgRepos.Progress,
+			Course:    pgRepos.Course,
+			Lesson:    pgRepos.Lesson,
+			Exercise:  pgRepos.Exercise,
+			Progress:  pgRepos.Progress,
+			Interview: repository.NewMemoryInterviewRepository(), // Use in-memory for interviews until postgres impl
 		}
 
 		c.addShutdownFunc(func() error {
