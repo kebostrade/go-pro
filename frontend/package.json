@@ -6,11 +6,10 @@
   "dev": "next dev --turbopack",
   "build": "next build",
   "build:firebase": "next build",
-  "export": "next export",
   "start": "next start",
   "lint": "next lint",
   "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-  "deploy:firebase": "bun run export && firebase deploy --only hosting",
+  "deploy:firebase": "bun run build && firebase deploy --only hosting --project gopro-425a7",
   "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
   "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
 },

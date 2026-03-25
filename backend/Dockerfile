@@ -24,6 +24,9 @@ RUN go mod download && go mod verify
 # Copy source code
 COPY . .
 
+# Run go mod tidy to fix go.mod version format for Go 1.25
+RUN go mod tidy
+
 # Build arguments for metadata
 ARG VERSION=dev
 ARG BUILD_DATE
@@ -42,7 +45,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
     -a -installsuffix cgo \
     -tags netgo,osusergo \
     -trimpath \
-    -o app ./cmd/server/main.go
+    -o app ./cmd/server
 
 # Compress binary with UPX (optional, can be disabled for debugging)
 RUN upx --best --lzma app || true

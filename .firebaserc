@@ -1,12 +1,13 @@
 {
   "projects": {
-    "default": "gopro-425a7"
+    "default": "go-pro-platform-1159b",
+    "production": "go-pro-platform-1159b"
   },
   "targets": {
-    "gopro-425a7": {
+    "go-pro-platform-1159b": {
       "hosting": {
-        "gopro-425a7": [
-          "go-pro-frontend"
+        "go-pro-platform-1159b": [
+          "go-pro-platform-1159b"
         ]
       }
     }
