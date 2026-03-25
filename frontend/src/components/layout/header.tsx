@@ -20,6 +20,7 @@ import {
   Settings,
   UserCircle,
   Brain,
+  UserCheck,
   Sparkles,
   Bot,
   Terminal,
@@ -56,6 +57,7 @@ const navigationItems: NavItem[] = [
   { title: "Tutorials", href: "/tutorials", description: "Comprehensive tutorials", icon: GraduationCap },
   { title: "Projects", href: "/projects", description: "Real-world Go applications", icon: Trophy },
   { title: "Community", href: "/community", description: "Connect with Go developers", icon: Users },
+  { title: "Customers", href: "/customers", description: "Manage your customers", icon: UserCheck },
 ];
 
 const Header = () => {
