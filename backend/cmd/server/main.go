@@ -171,14 +171,15 @@ func initializeSampleData(ctx context.Context, services *service.Services) error
 			"Learn Go's syntax, concurrency patterns, web development, testing, " +
 			"and best practices through hands-on exercises and real-world projects.",
 	}
-
 	course, err := services.Course.CreateCourse(ctx, courseReq)
 	if err != nil {
 		return err
 	}
 
-	// Add more sample data here as services are implemented.
-	_ = course // Prevent unused variable warning
+	// Create sample lessons for the course.
+	if err := initializeSampleLessons(ctx, services, course.ID); err != nil {
+		return err
+	}
 
 	return nil
 }

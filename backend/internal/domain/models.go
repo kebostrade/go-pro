@@ -184,6 +184,7 @@ type ExerciseSubmissionResult struct {
 	Score           int          `json:"score"`
 	Passed          bool         `json:"passed"`
 	Message         string       `json:"message"`
+	Feedback        string       `json:"feedback,omitempty"`
 	TestResults     []TestResult `json:"results,omitempty"` // Changed from test_results to results
 	ExecutionTimeMs int64        `json:"execution_time_ms"`
 	SubmittedAt     time.Time    `json:"submitted_at"`
