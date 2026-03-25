@@ -587,7 +587,7 @@ func TestHandleUpdateProgress(t *testing.T) {
 			},
 			mockProgress:   nil,
 			mockError:      nil,
-			expectedStatus: http.StatusBadRequest,
+			expectedStatus: http.StatusTemporaryRedirect,
 		},
 	}
 

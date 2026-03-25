@@ -10,8 +10,10 @@ import (
 	"fmt"
 	"time"
 
+	"go-pro-backend/internal/agents"
 	"go-pro-backend/internal/cache"
 	"go-pro-backend/internal/config"
+	"go-pro-backend/internal/executor"
 	"go-pro-backend/internal/messaging"
 	"go-pro-backend/internal/repository"
 	"go-pro-backend/internal/repository/postgres"
@@ -36,6 +38,9 @@ type Container struct {
 
 	// Services.
 	Services *service.Services
+
+	// AI Agent Pool for intelligent code analysis and assistance.
+	AgentPool *agents.AgentPool
 
 	// Lifecycle management.
 	shutdownFuncs []func() error
@@ -156,10 +161,11 @@ func (c *Container) initializeRepositories() error {
 		// PostgreSQL repositories initialized successfully.
 
 		c.Repositories = &repository.Repositories{
-			Course:   pgRepos.Course,
-			Lesson:   pgRepos.Lesson,
-			Exercise: pgRepos.Exercise,
-			Progress: pgRepos.Progress,
+			Course:    pgRepos.Course,
+			Lesson:    pgRepos.Lesson,
+			Exercise:  pgRepos.Exercise,
+			Progress:  pgRepos.Progress,
+			Interview: repository.NewMemoryInterviewRepository(), // Use in-memory for interviews until postgres impl
 		}
 
 		c.addShutdownFunc(func() error {
@@ -189,8 +195,16 @@ func (c *Container) initializeServices() error {
 		return fmt.Errorf("failed to create services: %w", err)
 	}
 
+	// Replace mock executor with real Docker executor for code execution
+	services.Executor = executor.NewDockerExecutor()
+	c.Logger.Info(context.Background(), "Docker executor initialized for code execution")
+
 	c.Services = services
 	c.Logger.Info(context.Background(), "Services initialized successfully")
+
+	// Initialize AI Agent Pool for intelligent code analysis
+	c.AgentPool = agents.NewAgentPool()
+	c.Logger.Info(context.Background(), "AI Agent Pool initialized for playground")
 
 	return nil
 }

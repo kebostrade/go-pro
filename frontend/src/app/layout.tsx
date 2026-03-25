@@ -16,21 +16,33 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'),
   title: "GO-PRO | Master Go Programming",
   description: "A comprehensive Go programming learning platform with interactive lessons, hands-on exercises, and real-world projects. Master Go from basics to microservices.",
   keywords: ["Go", "Golang", "Programming", "Learning", "Tutorial", "Exercises", "Backend", "API", "Microservices"],
   authors: [{ name: "GO-PRO Team" }],
   creator: "GO-PRO Learning Platform",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+  },
   openGraph: {
     title: "GO-PRO | Master Go Programming",
     description: "Learn Go programming through interactive lessons and hands-on projects",
     type: "website",
     locale: "en_US",
+    images: ["/icon.svg"],
   },
   twitter: {
     card: "summary_large_image",
     title: "GO-PRO | Master Go Programming",
     description: "Learn Go programming through interactive lessons and hands-on projects",
+    images: ["/icon.svg"],
   },
 };
 

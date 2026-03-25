@@ -138,4 +138,16 @@ type Repositories struct {
 	Submission         SubmissionRepository
 	SubmissionComment  SubmissionCommentRepository
 	PeerReview         PeerReviewRepository
+	Interview           InterviewRepository
+}
+
+// InterviewRepository defines interface for interview data operations.
+// Note: Session types are defined in handler/interview.go for MVP.
+// This interface uses interface{} to avoid circular dependency.
+type InterviewRepository interface {
+	Create(ctx context.Context, session interface{}) error
+	GetByID(ctx context.Context, id string) (interface{}, error)
+	GetByUserID(ctx context.Context, userID string) ([]interface{}, error)
+	Update(ctx context.Context, session interface{}) error
+	Delete(ctx context.Context, id string) error
 }

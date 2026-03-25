@@ -67,52 +67,91 @@ type UserStore interface {
 }
 
 // InMemoryUserStore is a simple in-memory implementation of UserStore.
+// WARNING: This should only be used for development/testing purposes.
+// For production, use DatabaseUserStore which persists to PostgreSQL.
 type InMemoryUserStore struct {
 	users  map[string]*User
 	emails map[string]string // email -> id mapping
 }
 
 // NewInMemoryUserStore creates a new in-memory user store.
+// NOTE: No default users are created. Users must be registered explicitly.
+// For testing, use NewTestUserStore() which creates test users with random credentials.
 func NewInMemoryUserStore() *InMemoryUserStore {
-	store := &InMemoryUserStore{
+	return &InMemoryUserStore{
 		users:  make(map[string]*User),
 		emails: make(map[string]string),
 	}
+}
 
-	// Create a default admin user for testing.
-	adminUser := &User{
-		ID:           "admin-user-001",
-		Email:        "admin@gopro.dev",
-		PasswordHash: hashPassword("admin123"),
-		Roles:        []string{"admin", "user"},
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-		IsActive:     true,
-		IsVerified:   true,
+// NewTestUserStore creates an in-memory user store with test users.
+// IMPORTANT: This function should ONLY be used in test environments.
+// Test user credentials are logged to stdout for test visibility.
+func NewTestUserStore() UserStore {
+	store := NewInMemoryUserStore()
+
+	// Generate random suffix for test credentials to prevent hardcoded defaults
+	randomSuffix := generateRandomSuffix()
+
+	testUsers := []struct {
+		email    string
+		password string
+		roles    []string
+	}{
+		{
+			email:    "admin-test-" + randomSuffix + "@test.gopro.dev",
+			password: generateRandomPassword(16),
+			roles:    []string{"admin", "user"},
+		},
+		{
+			email:    "user-test-" + randomSuffix + "@test.gopro.dev",
+			password: generateRandomPassword(16),
+			roles:    []string{"user"},
+		},
 	}
 
-	// Create a default regular user for testing.
-	regularUser := &User{
-		ID:           "demo-user-001",
-		Email:        "demo@gopro.dev",
-		PasswordHash: hashPassword("demo123"),
-		Roles:        []string{"user"},
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-		IsActive:     true,
-		IsVerified:   true,
-	}
+	for _, tu := range testUsers {
+		user := &User{
+			ID:           generateUserID(),
+			Email:        tu.email,
+			PasswordHash: hashPassword(tu.password),
+			Roles:        tu.roles,
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
+			IsActive:     true,
+			IsVerified:   true,
+		}
+		store.CreateUser(user)
 
-	if err := store.CreateUser(adminUser); err != nil {
-		// Log error but continue - this is for testing only
-		_ = err
-	}
-	if err := store.CreateUser(regularUser); err != nil {
-		// Log error but continue - this is for testing only
-		_ = err
+		// Log test credentials (only visible in test environment)
+		fmt.Printf("[TEST ONLY] Created test user: %s / %s\n", tu.email, tu.password)
 	}
 
 	return store
+}
+
+// generateRandomSuffix creates a random 8-character suffix for test users.
+func generateRandomSuffix() string {
+	bytes := make([]byte, 4)
+	if _, err := rand.Read(bytes); err != nil {
+		return fmt.Sprintf("%d", time.Now().Unix())
+	}
+	return hex.EncodeToString(bytes)
+}
+
+// generateRandomPassword creates a secure random password of specified length.
+func generateRandomPassword(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%"
+	bytes := make([]byte, length)
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to timestamp-based password
+		return fmt.Sprintf("Pwd%d!", time.Now().UnixNano())
+	}
+	result := make([]byte, length)
+	for i, b := range bytes {
+		result[i] = charset[int(b)%len(charset)]
+	}
+	return string(result)
 }
 
 func (s *InMemoryUserStore) CreateUser(user *User) error {

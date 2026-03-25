@@ -2,10 +2,10 @@ FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json bun.lockb* ./
+COPY frontend/package.json frontend/bun.lock* ./
 RUN bun install --frozen-lockfile
 
-COPY . .
+COPY frontend/ .
 
 FROM oven/bun:1-alpine
 

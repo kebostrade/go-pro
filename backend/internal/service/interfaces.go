@@ -105,7 +105,7 @@ func NewServices(repos *repository.Repositories, config *Config) (*Services, err
 		Progress:   NewProgressService(repos.Progress, config),
 		Curriculum: NewCurriculumService(config),
 		Health:     NewHealthService("1.0.0"), // TODO: Get version from config
-		Executor:   NewMockExecutorService(),  // Use mock for now, replace with Docker executor when ready
+		Executor:   NewMockExecutorService(), // Mock executor (replaced at container level with Docker)
 		Auth:       NewAuthService(repos.User, config),
 		User:       NewUserService(repos.User, config),
 	}, nil

@@ -6,20 +6,28 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "site": "go-pro-platform",
+    "site": "go-pro-frontend",
     "public": "frontend/out",
-    "cleanUrls": true,
-    "trailingSlashBehavior": "REMOVE",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
         "source": "**",
         "destination": "/index.html"
       }
     ],
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
+    "headers": [
+      {
+        "source": "/**",
+        "headers": [
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "X-Frame-Options", "value": "DENY" },
+          { "key": "X-XSS-Protection", "value": "1; mode=block" }
+        ]
+      }
     ]
   }
 }

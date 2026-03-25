@@ -89,6 +89,18 @@ func main() {
 	authHandler := handler.NewAuthHandler(appContainer.Services, applog, appContainer.Validator)
 	adminHandler := handler.NewAdminHandler(appContainer.Services, applog, appContainer.Validator)
 
+	// Initialize AI-powered playground handler if AgentPool is available
+	if appContainer.AgentPool != nil {
+		aiHandler := handler.NewPlaygroundAIHandler(appContainer.AgentPool, appContainer.Services.Executor, applog)
+		httpHandler.SetAIHandler(aiHandler)
+		applog.Info(ctx, "AI-powered playground handler initialized")
+	}
+
+	// Initialize interview handler
+	interviewHandler := handler.NewInterviewHandler(appContainer.Repositories.Interview, applog, appContainer.Validator)
+	httpHandler.SetInterviewHandler(interviewHandler)
+	applog.Info(ctx, "Interview handler initialized")
+
 	// Setup routes.
 	mux := http.NewServeMux()
 	httpHandler.RegisterRoutes(mux, authMiddleware)
@@ -106,6 +118,7 @@ func main() {
 		middleware.Timeout(30 * time.Second),
 		middleware.RateLimit(100, time.Minute),
 		middleware.Pagination(10, 100),
+		middleware.CSRF, // CSRF protection for state-changing operations
 	}
 
 	handler := middleware.Chain(mux, middlewares...)

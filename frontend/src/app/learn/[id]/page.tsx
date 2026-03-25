@@ -74,10 +74,17 @@ export default function LessonPage() {
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  const lessonId = parseInt((params?.id as string) || "1");
+  const lessonId = parseInt((params?.id as string) || "1", 10);
+  const isValidId = !isNaN(lessonId);
 
   // Load lesson data
   useEffect(() => {
+    if (!isValidId) {
+      setLoading(false);
+      setError("Invalid lesson ID");
+      return;
+    }
+
     const loadLessonData = async () => {
       setLoading(true);
       setError(null);
@@ -106,7 +113,7 @@ export default function LessonPage() {
     };
 
     loadLessonData();
-  }, [lessonId]);
+  }, [lessonId, isValidId]);
 
   // Time tracking
   useEffect(() => {

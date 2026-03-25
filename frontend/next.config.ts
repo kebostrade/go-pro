@@ -2,7 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'export',
-  distDir: '.next',
+  distDir: 'out',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
+  turbopack: {
+    root: require('path').resolve(__dirname),
+  },
   webpack: (config, { isServer }) => {
     config.resolve.alias['@'] = require('path').resolve(__dirname, 'src');
     return config;

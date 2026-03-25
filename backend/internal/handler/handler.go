@@ -33,6 +33,12 @@ type Handler struct {
 
 	// Rate limiting for exercise submissions (per-user).
 	submissionLimits map[string]*rateLimitState
+
+	// AI-powered playground handler (optional, set after initialization).
+	aiHandler *PlaygroundAIHandler
+
+	// Interview handler for mock interviews.
+	interviewHandler *InterviewHandler
 }
 
 // rateLimitState tracks submission rate limits per user.
@@ -49,6 +55,16 @@ func New(services *service.Services, logger logger.Logger, validator validator.V
 		validator:        validator,
 		submissionLimits: make(map[string]*rateLimitState),
 	}
+}
+
+// SetAIHandler sets the AI-powered playground handler.
+func (h *Handler) SetAIHandler(aiHandler *PlaygroundAIHandler) {
+	h.aiHandler = aiHandler
+}
+
+// SetInterviewHandler sets the interview handler.
+func (h *Handler) SetInterviewHandler(interviewHandler *InterviewHandler) {
+	h.interviewHandler = interviewHandler
 }
 
 // RegisterRoutes registers all API routes.
@@ -89,6 +105,26 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, authMiddleware *middleware.
 	// Curriculum.
 	mux.HandleFunc("GET /api/v1/curriculum", h.handleGetCurriculum)
 	mux.HandleFunc("GET /api/v1/curriculum/lesson/{id}", h.handleGetLessonDetail)
+
+	// Playground - code execution.
+	mux.HandleFunc("POST /api/v1/playground/execute", h.handlePlaygroundExecute)
+
+	// AI-powered playground endpoints (if AI handler is available).
+	if h.aiHandler != nil {
+		mux.HandleFunc("POST /api/v1/playground/analyze", h.aiHandler.HandleAnalyze)
+		mux.HandleFunc("POST /api/v1/playground/complete", h.aiHandler.HandleComplete)
+		mux.HandleFunc("POST /api/v1/playground/explain", h.aiHandler.HandleExplain)
+		mux.HandleFunc("POST /api/v1/playground/generate-tests", h.aiHandler.HandleGenerateTests)
+		mux.HandleFunc("POST /api/v1/playground/execute-ai", h.aiHandler.HandleExecuteWithAI)
+		mux.HandleFunc("POST /api/v1/playground/sessions", h.aiHandler.HandleCreateSession)
+		mux.HandleFunc("GET /api/v1/playground/sessions/{id}", h.aiHandler.HandleGetSession)
+		mux.HandleFunc("GET /api/v1/playground/sessions/{id}/history", h.aiHandler.HandleGetHistory)
+	}
+
+	// Interview endpoints (if interview handler is available).
+	if h.interviewHandler != nil {
+		h.interviewHandler.RegisterRoutes(mux)
+	}
 
 	// API documentation.
 	mux.HandleFunc("GET /", h.handleAPIDocumentation)
@@ -311,6 +347,17 @@ func (h *Handler) handleSubmitExercise(w http.ResponseWriter, r *http.Request) {
 	var req domain.SubmitExerciseRequest
 	if err := h.validator.ValidateJSON(r, &req); err != nil {
 		h.writeErrorResponse(w, r, err)
+		return
+	}
+
+	// Validate language
+	validLanguages := map[string]bool{
+		"go":         true,
+		"python":     true,
+		"javascript": true,
+	}
+	if !validLanguages[req.Language] {
+		h.writeErrorResponse(w, r, apierrors.NewBadRequestError("invalid language: must be one of: go, python, javascript"))
 		return
 	}
 

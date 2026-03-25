@@ -664,6 +664,248 @@ export const api = {
   async getSharedWorkspace(token: string): Promise<any> {
     return apiRequest(`/api/workspaces/shared/${token}`, {}, false);
   },
+
+  // ========== PLAYGROUND API METHODS ==========
+  // Code execution in playground
+
+  async executePlaygroundCode(code: string): Promise<{
+    output: string;
+    error?: string;
+    execution_time_ms: number;
+    success: boolean;
+  }> {
+    return apiRequest('/api/v1/playground/execute', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }, false); // No auth required for playground
+  },
+
+  // AI-powered code analysis
+  async analyzeCode(code: string, language: string = 'go'): Promise<{
+    complexity: number;
+    issues: Array<{ severity: string; message: string; line: number }>;
+    patterns: string[];
+    strengths: string[];
+    suggestions: Array<{ description: string; fix?: string }>;
+    functions: Array<{ name: string; params: string[]; returnType: string }>;
+    variables: Array<{ name: string; type: string; mutable: boolean }>;
+  }> {
+    return apiRequest('/api/v1/playground/analyze', {
+      method: 'POST',
+      body: JSON.stringify({ code, language }),
+    }, false);
+  },
+
+  // AI code completion
+  async completeCode(code: string, position: number): Promise<{
+    completions: Array<{ text: string; type: string; documentation?: string }>;
+  }> {
+    return apiRequest('/api/v1/playground/complete', {
+      method: 'POST',
+      body: JSON.stringify({ code, position }),
+    }, false);
+  },
+
+  // AI error explanation
+  async explainError(code: string, error: string): Promise<{
+    explanations: Array<{ message: string; line?: number; fix?: string; learnMore?: string }>;
+  }> {
+    return apiRequest('/api/v1/playground/explain', {
+      method: 'POST',
+      body: JSON.stringify({ code, error }),
+    }, false);
+  },
+
+  // AI test generation
+  async generateTests(code: string): Promise<{
+    test_cases: Array<{ name: string; input: string; expected: string; description: string }>;
+  }> {
+    return apiRequest('/api/v1/playground/generate-tests', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }, false);
+  },
+
+  // Execute code with AI analysis
+  async executeWithAI(code: string, language: string = 'go', sessionId?: string): Promise<{
+    output: string;
+    error?: string;
+    execution_time_ms: number;
+    success: boolean;
+    ai_analysis?: {
+      complexity: number;
+      issues: Array<{ severity: string; message: string; line: number }>;
+      patterns: string[];
+      strengths: string[];
+      suggestions: Array<{ description: string; fix?: string }>;
+    };
+    test_results?: Array<{ testName: string; passed: boolean; expected: string; actual: string; error: string }>;
+  }> {
+    return apiRequest('/api/v1/playground/execute-ai', {
+      method: 'POST',
+      body: JSON.stringify({ code, language, session_id: sessionId }),
+    }, false);
+  },
+
+  // Session management
+  async createPlaygroundSession(): Promise<{ session_id: string }> {
+    return apiRequest('/api/v1/playground/sessions', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }, false);
+  },
+
+  async getPlaygroundSession(sessionId: string): Promise<{
+    session_id: string;
+    history?: Array<{ code: string; language: string; output: string; timestamp: string }>;
+  }> {
+    return apiRequest(`/api/v1/playground/sessions/${sessionId}`, {}, false);
+  },
+
+  async getSessionHistory(sessionId: string): Promise<{
+    history: Array<{ code: string; language: string; output: string; timestamp: string }>;
+  }> {
+    return apiRequest(`/api/v1/playground/sessions/${sessionId}/history`, {}, false);
+  },
+
+  // ========== INTERVIEW API METHODS ==========
+  // AI-powered mock interviews
+
+  async startInterview(type: 'coding' | 'behavioral' | 'system_design', difficulty: 'beginner' | 'intermediate' | 'advanced'): Promise<{
+    session: {
+      id: string;
+      user_id: string;
+      type: string;
+      difficulty: string;
+      questions: Array<{
+        id: string;
+        content: string;
+        type: string;
+        difficulty: string;
+        expected_points?: string[];
+        time_limit: number;
+      }>;
+      current_index: number;
+      answers: Array<{
+        question_id: string;
+        content: string;
+        score?: number;
+        feedback?: string;
+        created_at: string;
+      }>;
+      status: string;
+      score?: number;
+      created_at: string;
+      completed_at?: string;
+    };
+    first_question: {
+      id: string;
+      content: string;
+      type: string;
+      difficulty: string;
+      expected_points?: string[];
+      time_limit: number;
+    };
+  }> {
+    return apiRequest('/api/v1/interview/start', {
+      method: 'POST',
+      body: JSON.stringify({ type, difficulty }),
+    }, true);
+  },
+
+  async submitInterviewAnswer(sessionId: string, answer: string): Promise<{
+    answer: {
+      question_id: string;
+      content: string;
+      score?: number;
+      feedback?: string;
+      created_at: string;
+    };
+    completed: boolean;
+    next_question?: {
+      id: string;
+      content: string;
+      type: string;
+      difficulty: string;
+      expected_points?: string[];
+      time_limit: number;
+    };
+    session?: {
+      id: string;
+      status: string;
+      score?: number;
+    };
+  }> {
+    return apiRequest('/api/v1/interview/answer', {
+      method: 'POST',
+      body: JSON.stringify({ session_id: sessionId, answer }),
+    }, true);
+  },
+
+  async getInterviewFeedback(sessionId: string): Promise<{
+    session_id: string;
+    overall_score: number;
+    strengths: string[];
+    improvements: string[];
+    detailed_feedback: Array<{
+      question_id: string;
+      score: number;
+      feedback: string;
+      strengths: string[];
+      missed: string[];
+    }>;
+  }> {
+    return apiRequest(`/api/v1/interview/feedback/${sessionId}`, {}, true);
+  },
+
+  async getInterviewSessions(): Promise<Array<{
+    id: string;
+    user_id?: string;
+    type: string;
+    difficulty: string;
+    questions?: Array<{
+      id: string;
+      content: string;
+      type: string;
+      difficulty: string;
+      time_limit: number;
+    }>;
+    status: string;
+    score?: number;
+    created_at: string;
+    completed_at?: string;
+  }>> {
+    return apiRequest('/api/v1/interview/sessions', {}, true);
+  },
+
+  async getInterviewSession(sessionId: string): Promise<{
+    id: string;
+    user_id: string;
+    type: string;
+    difficulty: string;
+    questions: Array<{
+      id: string;
+      content: string;
+      type: string;
+      difficulty: string;
+      expected_points?: string[];
+      time_limit: number;
+    }>;
+    current_index: number;
+    answers: Array<{
+      question_id: string;
+      content: string;
+      score?: number;
+      feedback?: string;
+      created_at: string;
+    }>;
+    status: string;
+    score?: number;
+    created_at: string;
+    completed_at?: string;
+  }> {
+    return apiRequest(`/api/v1/interview/sessions/${sessionId}`, {}, true);
+  },
 };
 
 export type {

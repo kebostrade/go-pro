@@ -678,6 +678,39 @@ type ExecutionLimits struct {
 	MemoryLimitMB     int `json:"memory_limit_mb" validate:"min=64,max=256"`
 }
 
+// ExecuteRequest represents a code execution request.
+type ExecuteRequest struct {
+	Code      string        `json:"code" validate:"required"`
+	Language string        `json:"language" validate:"required,oneof=go python javascript"`
+	Timeout   time.Duration `json:"timeout"`
+	TestCases []TestCase  `json:"test_cases" validate:"required,min=1"`
+}
+
+// ExecuteResult represents the result of code execution.
+type ExecuteResult struct {
+	Passed        bool              `json:"passed"`
+	Score         int              `json:"score"`
+	Results       []TestResult  `json:"results"`
+	ExecutionTime time.Duration `json:"execution_time"`
+	Error         error           `json:"error,omitempty"`
+}
+
+// TestCaseForExecution represents a test case for code execution.
+type TestCaseForExecution struct {
+	Name     string `json:"name" validate:"required"`
+	Input    string `json:"input"`
+	Expected string `json:"expected" validate:"required"`
+}
+
+// TestResultForExecution represents the result of a single test execution.
+type TestResultForExecution struct {
+	TestName string `json:"test_name"`
+	Passed   bool   `json:"passed"`
+	Expected string `json:"expected"`
+	Actual   string `json:"actual"`
+	Error    string `json:"error,omitempty"`
+}
+
 // ProjectAssignmentConfig represents project assignment configuration.
 type ProjectAssignmentConfig struct {
 	Deliverables     []string          `json:"deliverables" validate:"required,min=1"`

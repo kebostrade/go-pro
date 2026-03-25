@@ -1,5 +1,16 @@
 {
   "projects": {
-    "default": "go-pro-platform"
-  }
+    "default": "go-pro-platform-1159b",
+    "production": "go-pro-platform-1159b"
+  },
+  "targets": {
+    "go-pro-platform-1159b": {
+      "hosting": {
+        "go-pro-platform-1159b": [
+          "go-pro-platform-1159b"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
