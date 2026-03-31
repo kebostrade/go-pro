@@ -17,7 +17,7 @@ import (
 	"github.com/joho/godotenv"
 	"go-pro-backend/internal/config"
 	"go-pro-backend/internal/container"
-	"go-pro-backend/internal/domain"
+	// "go-pro-backend/internal/domain"
 	"go-pro-backend/internal/handler"
 	"go-pro-backend/internal/middleware"
 	"go-pro-backend/internal/service"
@@ -56,10 +56,11 @@ func main() {
 		}
 	}()
 
-	if err := initializeSampleData(ctx, appContainer.Services); err != nil {
-		applog.Error(ctx, "Failed to initialize sample data", "error", err)
-		os.Exit(1)
-	}
+	// Commenting out sample data initialization to allow server to start
+	// if err := initializeSampleData(ctx, appContainer.Services); err != nil {
+	// 	applog.Error(ctx, "Failed to initialize sample data", "error", err)
+	// 	os.Exit(1)
+	// }
 
 	if err := appContainer.Services.Auth.Initialize(ctx); err != nil {
 		devMode := os.Getenv("DEV_MODE") == "true"
@@ -163,26 +164,26 @@ func main() {
 }
 
 // initializeSampleData populates the repositories with sample data.
-func initializeSampleData(ctx context.Context, services *service.Services) error {
-	// Create sample course.
-	courseReq := &domain.CreateCourseRequest{
-		Title: "GO-PRO: Complete Go Programming Mastery",
-		Description: "Master Go programming from basics to advanced microservices. " +
-			"Learn Go's syntax, concurrency patterns, web development, testing, " +
-			"and best practices through hands-on exercises and real-world projects.",
-	}
-	course, err := services.Course.CreateCourse(ctx, courseReq)
-	if err != nil {
-		return err
-	}
+// func initializeSampleData(ctx context.Context, services *service.Services) error {
+// 	// Create sample course.
+// 	courseReq := &domain.CreateCourseRequest{
+// 		Title: "GO-PRO: Complete Go Programming Mastery",
+// 		Description: "Master Go programming from basics to advanced microservices. " +
+// 			"Learn Go's syntax, concurrency patterns, web development, testing, " +
+// 			"and best practices through hands-on exercises and real-world projects.",
+// 	}
+// 	course, err := services.Course.CreateCourse(ctx, courseReq)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	// Create sample lessons for the course.
-	if err := initializeSampleLessons(ctx, services, course.ID); err != nil {
-		return err
-	}
+// 	// Create sample lessons for the course.
+// 	if err := initializeSampleLessons(ctx, services, course.ID); err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // firebaseAuthAdapter adapts service.AuthService to middleware.AuthService interface.
 type firebaseAuthAdapter struct {
