@@ -451,9 +451,15 @@ func (e *DockerExecutor) runContainer(ctx context.Context, codeDir string, input
 	}
 
 	// Build docker run command - code embedded via printf, input via stdin
+	// Security: memory limit, no network, read-only filesystem, non-root user
 	args := []string{
 		"run",
 		"--rm",
+		"--memory=" + e.memory,
+		"--cpus=" + e.cpuLimit,
+		"--network=none",
+		"--read-only",
+		"--user=" + containerUser,
 		"-i",
 		e.image,
 		"sh", "-c",
