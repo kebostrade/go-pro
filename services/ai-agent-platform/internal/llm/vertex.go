@@ -7,6 +7,8 @@ import (
 
 	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/errors"
 	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
+
+	"cloud.google.com/go/vertexai/genai"
 )
 
 // VertexAIProvider implements LLMProvider for Google Vertex AI
@@ -15,6 +17,9 @@ type VertexAIProvider struct {
 	projectID string
 	location  string
 	model     string
+	apiKey    string
+	client    *genai.Client
+	genModel  *genai.GenerativeModel
 }
 
 // VertexAIConfig holds Vertex AI configuration
@@ -41,7 +46,7 @@ func NewVertexAIProvider(config VertexAIConfig) (*VertexAIProvider, error) {
 		config.Timeout = 60 * time.Second
 	}
 
-	return &VertexAIProvider{
+	provider := &VertexAIProvider{
 		BaseProvider: NewBaseProvider(ProviderConfig{
 			Provider:   "vertex",
 			Timeout:    config.Timeout,
@@ -51,12 +56,100 @@ func NewVertexAIProvider(config VertexAIConfig) (*VertexAIProvider, error) {
 		projectID: config.ProjectID,
 		location:  config.Location,
 		model:     config.Model,
-	}, nil
+		apiKey:    config.APIKey,
+	}
+
+	// Initialize client
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, config.ProjectID, config.Location)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create vertex client: %w", err)
+	}
+	provider.client = client
+	provider.genModel = client.GenerativeModel(config.Model)
+
+	return provider, nil
 }
 
 // Generate generates a completion for the given request
 func (p *VertexAIProvider) Generate(ctx context.Context, request types.LLMRequest) (*types.LLMResponse, error) {
-	return nil, fmt.Errorf("not implemented")
+	if err := ValidateRequest(request); err != nil {
+		return nil, err
+	}
+
+	startTime := time.Now()
+
+	// Convert messages to Vertex format
+	contents := make([]*genai.Content, 0, len(request.Messages))
+	for _, msg := range request.Messages {
+		role := "user"
+		if msg.Role == types.RoleSystem {
+			role = "system"
+		} else if msg.Role == types.RoleAssistant {
+			role = "model"
+		}
+		content := &genai.Content{
+			Role:  role,
+			Parts: []genai.Part{genai.Text(msg.Content)},
+		}
+		contents = append(contents, content)
+	}
+
+	// Build request
+	model := p.genModel
+	if request.Model != "" {
+		model = p.client.GenerativeModel(request.Model)
+	}
+
+	// Set generation config
+	if request.Temperature > 0 {
+		model.Temperature = genai.Ptr(request.Temperature)
+	}
+	if request.MaxTokens > 0 {
+		model.MaxOutputTokens = genai.Ptr(int32(request.MaxTokens))
+	}
+	if request.TopP > 0 {
+		model.TopP = genai.Ptr(request.TopP)
+	}
+
+	// Execute with retry
+	var resp *genai.GenerateContentResponse
+	err := p.WithRetry(ctx, func() error {
+		var err error
+		resp, err = model.GenerateContent(ctx, contents[0].Parts...)
+		return err
+	})
+	if err != nil {
+		return nil, errors.NewLLMProviderError("vertex", err)
+	}
+
+	// Parse response
+	if len(resp.Candidates) == 0 {
+		return nil, errors.NewLLMProviderError("vertex", fmt.Errorf("no candidates in response"))
+	}
+
+	candidate := resp.Candidates[0]
+	content := ""
+	if len(candidate.Content.Parts) > 0 {
+		content = string(candidate.Content.Parts[0].(genai.Text))
+	}
+
+	finishReason := string(candidate.FinishReason)
+	if finishReason == "FinishReasonUnspecified" {
+		finishReason = ""
+	}
+
+	return &types.LLMResponse{
+		Content:      content,
+		FinishReason: finishReason,
+		Usage: types.TokenUsage{
+			PromptTokens:     int(resp.UsageMetadata.PromptTokenCount),
+			CompletionTokens: int(resp.UsageMetadata.CandidatesTokenCount),
+			TotalTokens:      int(resp.UsageMetadata.TotalTokenCount),
+		},
+		Model:   p.model,
+		Latency: time.Since(startTime),
+	}, nil
 }
 
 // GenerateStream generates a completion and streams the response
