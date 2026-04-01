@@ -39,6 +39,9 @@ type Handler struct {
 
 	// Interview handler for mock interviews.
 	interviewHandler *InterviewHandler
+
+	// Docker handler for environment management.
+	dockerHandler *DockerHandler
 }
 
 // rateLimitState tracks submission rate limits per user.
@@ -65,6 +68,11 @@ func (h *Handler) SetAIHandler(aiHandler *PlaygroundAIHandler) {
 // SetInterviewHandler sets the interview handler.
 func (h *Handler) SetInterviewHandler(interviewHandler *InterviewHandler) {
 	h.interviewHandler = interviewHandler
+}
+
+// SetDockerHandler sets the Docker environment handler.
+func (h *Handler) SetDockerHandler(dockerHandler *DockerHandler) {
+	h.dockerHandler = dockerHandler
 }
 
 // RegisterRoutes registers all API routes.
@@ -127,6 +135,13 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, authMiddleware *middleware.
 	// Interview endpoints (if interview handler is available).
 	if h.interviewHandler != nil {
 		h.interviewHandler.RegisterRoutes(mux)
+	}
+
+	// Docker environment management endpoints.
+	if h.dockerHandler != nil {
+		mux.HandleFunc("POST /api/docker/up", h.dockerHandler.handleDockerUp)
+		mux.HandleFunc("POST /api/docker/down", h.dockerHandler.handleDockerDown)
+		mux.HandleFunc("GET /api/docker/status", h.dockerHandler.handleDockerStatus)
 	}
 
 	// API documentation.

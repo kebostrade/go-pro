@@ -102,6 +102,12 @@ func main() {
 	httpHandler.SetInterviewHandler(interviewHandler)
 	applog.Info(ctx, "Interview handler initialized")
 
+	// Initialize Docker environment handler
+	dockerService := service.NewDockerService("../..") // Point to repo root where basic/projects exists
+	dockerHandler := handler.NewDockerHandler(dockerService)
+	httpHandler.SetDockerHandler(dockerHandler)
+	applog.Info(ctx, "Docker environment handler initialized")
+
 	// Setup routes.
 	mux := http.NewServeMux()
 	httpHandler.RegisterRoutes(mux, authMiddleware)
