@@ -164,7 +164,7 @@ Phase 4: Specialized Domains
 
 ---
 
-## Phase 5: GraphQL & Integration 🔘 Pending
+## Phase 5: GraphQL & Integration ✅ Complete
 
 **Rationale:** Final API pattern completing the API design spectrum.
 
@@ -177,6 +177,10 @@ Phase 4: Specialized Domains
 Phase 5: GraphQL & Integration
 └── Task 16: Template - GraphQL (gqlgen, schema-first, relay)
 ```
+
+### Plans
+
+- [x] 05-01-PLAN.md — GraphQL API template (gqlgen v0.17+, chi v5, WebSocket subscriptions)
 
 ### Dependencies
 - Requires Phase 1 REST API patterns

@@ -13,11 +13,14 @@
 | Phase 2: Communication Patterns | ✅ Complete | 3/3 plans |
 | Phase 3: Distributed & Cloud | ✅ Complete | 3/3 plans |
 | Phase 4: Specialized Domains | ✅ Complete | 4/4 plans |
-| Phase 5: GraphQL & Integration | 🔘 Pending | 0/1 plans |
+| Phase 5: GraphQL & Integration | 🔘 In Progress | 1/1 plans |
 
 ## Current Focus
 
-**Phase 5: GraphQL & Integration** — 🔘 Pending (0/1 plans created)
+**Phase 5: GraphQL & Integration** — 🔘 In Progress (1/1 plans created)
+
+### Phase 5 Plans
+1. 🔘 05-01-PLAN.md — GraphQL API template (gqlgen v0.17+, chi v5, WebSocket subscriptions)
 
 ### Phase 4 Plans
 1. ✅ 04-01-PLAN.md — ML with Gorgonia template (gonum tensor ops, ONNX inference)
@@ -67,8 +70,8 @@
 
 | Task | Status | Notes |
 |------|--------|-------|
-| Research: GraphQL with gqlgen | 🔘 In Progress | Schema-first, resolvers, subscriptions |
-| Plan: GraphQL template (05-01) | ⏳ Pending | gqlgen, chi v5, JWT auth |
+| Research: GraphQL with gqlgen | ✅ Done | Schema-first, resolvers, subscriptions |
+| Plan: GraphQL template (05-01) | ✅ Done | gqlgen v0.17+, chi v5, WebSocket subscriptions |
 
 ## Milestones
 
@@ -143,3 +146,5 @@
 - 2026-04-01: Phase 5 STARTED — GraphQL & Integration (final phase)
   - 05-CONTEXT.md created — locked decisions for gqlgen template
   - 05-RESEARCH.md created — gqlgen patterns, schema-first development
+- 2026-04-01: Phase 5 PLANS created — 05-01 GraphQL API template
+  - 05-01 GraphQL: gqlgen v0.17+, chi v5, WebSocket subscriptions, JWT auth, data loaders
