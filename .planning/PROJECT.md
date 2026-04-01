@@ -1,14 +1,24 @@
-# Go Pro Learning Platform — Advanced Topics Expansion
+# Go Pro Learning Platform — Platform Enhancements
 
 ## What This Is
 
-A Go learning platform that teaches developers through progressive, production-grade project templates. The platform currently provides basic-to-intermediate Go tutorials, exercises, and an AI agent framework. This initiative expands it with 15 advanced Go project templates (REST APIs, microservices, blockchain, Kubernetes, etc.) and enhances the platform to serve, execute, and review code across all topics.
+A Go learning platform that teaches developers through progressive, production-grade project templates. The platform provides basic-to-advanced Go tutorials, exercises, 15 advanced project templates, and an AI agent framework. This milestone enhances the platform to serve, execute, and review code across all 15 topics — enabling learners to study reference code, run it in-browser, and submit exercises for review.
 
 Target audience: anyone wanting to master Go by building real things across diverse domains.
 
 ## Core Value
 
-Developers master Go through progressively harder, production-quality projects — each demonstrating real patterns used across 15 distinct Go application domains, with a platform that lets them study, run, and get feedback on their code.
+Developers master Go through progressively harder, production-quality projects — each demonstrating real patterns used across 15 distinct Go application domains, with a platform that lets them study reference code, execute it in-browser, and get AI-powered feedback on their exercises.
+
+## Current Milestone: v1.1 Platform Enhancements
+
+**Goal:** Enable learners to study, run, and submit exercises for all 15 advanced Go project templates through an integrated web platform.
+
+**Target features:**
+- Course curriculum integration for all 15 new topics (lesson pages, exercises, progress tracking)
+- In-browser code execution for each project (Go Playground-style)
+- One-click Docker environment setup per project topic
+- Code submission and review system for learner exercises
 
 ## Requirements
 
@@ -54,11 +64,11 @@ Developers master Go through progressively harder, production-quality projects �
 - [x] ✅ Production-grade project template: GraphQL APIs with Go and gqlgen (gqlgen v0.17+)
 - [x] ✅ Production-grade project template: System Design with Golang (clean architecture)
 
-**Platform Enhancements (Future Phases):**
-- [ ] Course curriculum integration for all 15 new topics (lesson pages, exercises, progress tracking)
-- [ ] In-browser code execution for each project (Go Playground-style)
-- [ ] One-click Docker environment setup per project topic
-- [ ] Code submission and review system for learner exercises
+**Platform Enhancements (v1.1 — In Progress):**
+- [ ] **CURR-01**: Course curriculum integration for all 15 topics (lesson pages, exercises, progress tracking)
+- [ ] **EXEC-01**: In-browser code execution for each project (Go Playground-style)
+- [ ] **DOCK-01**: One-click Docker environment setup per project topic
+- [ ] **REVIEW-01**: Code submission and review system for learner exercises
 
 ### Out of Scope
 
@@ -179,4 +189,5 @@ basic/projects/
 ```
 
 ---
-*Last updated: 2026-04-01 — MILESTONE COMPLETE*
+
+*Last updated: 2026-04-01 — Milestone v1.1 Started*
