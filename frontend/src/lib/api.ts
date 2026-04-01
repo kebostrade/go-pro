@@ -202,6 +202,24 @@ interface UpdateProgressPayload {
   score?: number;
 }
 
+// Review submission types
+interface ReviewSubmission {
+  id: string;
+  user_id: string;
+  topic_id: string;
+  exercise_id: string;
+  code: string;
+  feedback: string;
+  submitted_at: string;
+}
+
+interface SubmitReviewRequest {
+  user_id: string;
+  topic_id: string;
+  exercise_id: string;
+  code: string;
+}
+
 class APIError extends Error {
   constructor(
     message: string,
@@ -946,6 +964,20 @@ export const api = {
   }> {
     return apiRequest(`/api/v1/interview/sessions/${sessionId}`, {}, true);
   },
+
+  // ========== REVIEW API METHODS ==========
+  // AI code review endpoints
+
+  async submitReview(request: SubmitReviewRequest): Promise<ReviewSubmission> {
+    return apiRequest<ReviewSubmission>('/api/review/submit', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    }, true);
+  },
+
+  async getReviewHistory(userId: string): Promise<ReviewSubmission[]> {
+    return apiRequest<ReviewSubmission[]>(`/api/review/history?user_id=${userId}`);
+  },
 };
 
 export type {
@@ -968,6 +1000,8 @@ export type {
   BackendUser,
   AuthVerifyResponse,
   ProfileUpdatePayload,
+  ReviewSubmission,
+  SubmitReviewRequest,
 };
 
 export { APIError };
