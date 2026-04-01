@@ -55,7 +55,9 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 3. Code runs in an isolated sandbox (gVisor) with resource limits
 4. Infinite loops and resource abuse are prevented with 30s timeout
 
-**Plans**: TBD
+**Plans:** 2/2 planned
+- [ ] 07-01-PLAN.md — Backend execution API (POST /api/execute)
+- [ ] 07-02-PLAN.md — Frontend Monaco editor integration with execution
 
 ---
 
@@ -98,7 +100,7 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
 | 6. Curriculum Integration | 2/2 | Complete   | 2026-04-01 |
-| 7. Code Execution | TBD | Not started | - |
+| 7. Code Execution | 2/2 | Planned | - |
 | 8. Docker Environment | TBD | Not started | - |
 | 9. Code Review System | TBD | Not started | - |
 
