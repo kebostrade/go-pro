@@ -75,7 +75,7 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 3. User can see whether their environment is running or stopped
 
 **Plans:** 3/3 planned
-- [ ] 08-01-PLAN.md — Backend Docker API (Wave 1)
+- [x] 08-01-PLAN.md — Backend Docker API (Wave 1)
 - [ ] 08-02-PLAN.md — Frontend Docker Panel (Wave 2)
 - [ ] 08-03-PLAN.md — Topic Templates (Wave 3)
 

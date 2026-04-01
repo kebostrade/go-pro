@@ -18,9 +18,9 @@
 
 ### Docker Environment (DOCK)
 
-- [ ] **DOCK-01**: User can generate a docker-compose.yml tailored to each of the 15 topics
-- [ ] **DOCK-02**: User can start a topic-specific Docker environment with one click
-- [ ] **DOCK-03**: User can see the status of their Docker environment (running/stopped)
+- [x] **DOCK-01**: User can generate a docker-compose.yml tailored to each of the 15 topics
+- [x] **DOCK-02**: User can start a topic-specific Docker environment with one click
+- [x] **DOCK-03**: User can see the status of their Docker environment (running/stopped)
 
 ### Code Review (REVIEW)
 
@@ -59,9 +59,9 @@
 | EXEC-02 | Phase 7 | Pending |
 | EXEC-03 | Phase 7 | Pending |
 | EXEC-04 | Phase 7 | Pending |
-| DOCK-01 | Phase 8 | Pending |
-| DOCK-02 | Phase 8 | Pending |
-| DOCK-03 | Phase 8 | Pending |
+| DOCK-01 | Phase 8 | Complete |
+| DOCK-02 | Phase 8 | Complete |
+| DOCK-03 | Phase 8 | Complete |
 | REVIEW-01 | Phase 9 | Pending |
 | REVIEW-02 | Phase 9 | Pending |
 | REVIEW-03 | Phase 9 | Pending |
