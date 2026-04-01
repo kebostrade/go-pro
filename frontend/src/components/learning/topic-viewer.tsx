@@ -9,6 +9,7 @@ import {
 import Link from 'next/link';
 import ExerciseCard from './exercise-card';
 import CodeEditor from '../workspace/CodeEditor';
+import { DockerPanel } from './docker-panel';
 
 interface TopicViewerProps {
   topic: Topic;
@@ -247,6 +248,19 @@ const ContentTab: React.FC<{ topic: Topic }> = ({ topic }) => (
         <ExternalLink className="w-5 h-5" />
         <span className="font-medium text-gray-900 dark:text-white">View on GitHub</span>
       </a>
+    </div>
+
+    {/* Docker Environment Section */}
+    <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+        <Terminal className="w-5 h-5" />
+        Docker Environment
+      </h3>
+      <DockerPanel topicId={topic.id} />
+      <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+        Start a Docker environment with all services needed for this topic.
+        Make sure Docker Desktop is running before starting.
+      </p>
     </div>
   </div>
 );
