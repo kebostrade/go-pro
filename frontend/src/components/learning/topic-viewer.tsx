@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import ExerciseCard from './exercise-card';
+import CodeEditor from '../workspace/CodeEditor';
 
 interface TopicViewerProps {
   topic: Topic;
@@ -262,29 +263,42 @@ const PracticeTab: React.FC<PracticeTabProps> = ({
   onComplete 
 }) => (
   <div className="space-y-6">
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-2xl font-bold">Exercises</h2>
-      <span className="text-muted-foreground">
-        {completedExercises.size} of {topic.exercises.length} completed
-      </span>
+    {/* Code Editor Section */}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold">Practice</h2>
+      </div>
+      <CodeEditor 
+        topicId={topic.id} 
+        initialCode={`package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello, World!")
+}`}
+      />
     </div>
-    <div className="grid gap-4">
-      {topic.exercises.map((exercise, index) => (
-        <ExerciseCard 
-          key={exercise.id} 
-          exercise={exercise} 
-          index={index + 1}
-          completed={completedExercises.has(exercise.id)}
-          onComplete={onComplete}
-        />
-      ))}
-    </div>
-    {/* Placeholder for Phase 7 code execution */}
-    <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-      <Terminal className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-      <p className="text-gray-600 dark:text-gray-400">
-        Code execution coming in Phase 7. For now, view exercises and track progress.
-      </p>
+
+    {/* Exercise Cards */}
+    <div className="space-y-6 mt-8">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold">Exercises</h2>
+        <span className="text-muted-foreground">
+          {completedExercises.size} of {topic.exercises.length} completed
+        </span>
+      </div>
+      <div className="grid gap-4">
+        {topic.exercises.map((exercise, index) => (
+          <ExerciseCard 
+            key={exercise.id} 
+            exercise={exercise} 
+            index={index + 1}
+            completed={completedExercises.has(exercise.id)}
+            onComplete={onComplete}
+          />
+        ))}
+      </div>
     </div>
   </div>
 );
