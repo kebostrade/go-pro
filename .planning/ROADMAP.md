@@ -74,7 +74,10 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 2. User can start the Docker environment with a single button click
 3. User can see whether their environment is running or stopped
 
-**Plans**: TBD
+**Plans:** 3/3 planned
+- [ ] 08-01-PLAN.md — Backend Docker API (Wave 1)
+- [ ] 08-02-PLAN.md — Frontend Docker Panel (Wave 2)
+- [ ] 08-03-PLAN.md — Topic Templates (Wave 3)
 
 ---
 
@@ -101,7 +104,7 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 |-------|-------|--------|-----------|
 | 6. Curriculum Integration | 2/2 | Complete   | 2026-04-01 |
 | 7. Code Execution | 1/2 | In progress | - |
-| 8. Docker Environment | TBD | Not started | - |
+| 8. Docker Environment | 3/3 | Planned | - |
 | 9. Code Review System | TBD | Not started | - |
 
 ---
