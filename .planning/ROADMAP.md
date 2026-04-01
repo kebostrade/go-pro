@@ -58,7 +58,7 @@ Phase 1: Foundation Patterns
 
 ---
 
-## Phase 2: Communication Patterns 🔘 Pending
+## Phase 2: Communication Patterns 🔘 Active
 
 **Rationale:** After foundation, introduce modern Go communication patterns.
 
@@ -76,8 +76,19 @@ Phase 2: Communication Patterns
 └── Task 8: Template - gRPC (protobuf, streaming)
 ```
 
+### Plans
+
+- [ ] 02-01-PLAN.md — Microservices template (Docker Compose DNS, API Gateway)
+- [ ] 02-02-PLAN.md — WebSocket template (gorilla/websocket v1.5.3, hub pattern)
+- [ ] 02-03-PLAN.md — gRPC template (protobuf, streaming RPC)
+
 ### Dependencies
 - Requires Phase 1 CLI and REST API templates complete
+
+### Exit Criteria
+- All 3 templates pass CI
+- All 3 templates are runnable locally with Docker
+- Course module updated with lesson pages for all 3 topics
 
 ---
 
