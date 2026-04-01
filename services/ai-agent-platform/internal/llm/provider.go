@@ -3,6 +3,7 @@ package llm
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -91,6 +92,82 @@ func (pm *ProviderManager) List() []string {
 		names = append(names, name)
 	}
 	return names
+}
+
+// Generate delegates to the first registered provider
+func (pm *ProviderManager) Generate(ctx context.Context, request types.LLMRequest) (*types.LLMResponse, error) {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+
+	if len(pm.providers) == 0 {
+		return nil, errors.NewLLMProviderError("provider manager", fmt.Errorf("no providers registered"))
+	}
+
+	for _, provider := range pm.providers {
+		response, err := provider.Generate(ctx, request)
+		if err == nil {
+			return response, nil
+		}
+	}
+
+	return nil, errors.NewLLMProviderError("all providers", fmt.Errorf("all providers failed"))
+}
+
+// GenerateStream delegates streaming to the first registered provider
+func (pm *ProviderManager) GenerateStream(ctx context.Context, request types.LLMRequest) (<-chan types.LLMStreamChunk, error) {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+
+	if len(pm.providers) == 0 {
+		return nil, errors.NewLLMProviderError("provider manager", fmt.Errorf("no providers registered"))
+	}
+
+	for _, provider := range pm.providers {
+		if provider.SupportsStreaming() {
+			return provider.GenerateStream(ctx, request)
+		}
+	}
+
+	return nil, errors.NewLLMProviderError("all providers", fmt.Errorf("no provider supports streaming"))
+}
+
+// GetModelInfo returns info about the first registered provider
+func (pm *ProviderManager) GetModelInfo() types.ModelInfo {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+
+	for _, provider := range pm.providers {
+		return provider.GetModelInfo()
+	}
+
+	return types.ModelInfo{}
+}
+
+// GetProviderName returns the provider manager name
+func (pm *ProviderManager) GetProviderName() string {
+	return "provider-manager"
+}
+
+// SupportsStreaming returns whether the first registered provider supports streaming
+func (pm *ProviderManager) SupportsStreaming() bool {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+
+	for _, provider := range pm.providers {
+		return provider.SupportsStreaming()
+	}
+	return false
+}
+
+// SupportsFunctionCalling returns whether the first registered provider supports function calling
+func (pm *ProviderManager) SupportsFunctionCalling() bool {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+
+	for _, provider := range pm.providers {
+		return provider.SupportsFunctionCalling()
+	}
+	return false
 }
 
 // GenerateWithFallback tries multiple providers in order
@@ -211,7 +288,7 @@ func TruncateMessages(messages []types.Message, maxTokens int) []types.Message {
 	}
 
 	var result []types.Message
-	
+
 	// Always keep system message if present
 	if messages[0].Role == types.RoleSystem {
 		result = append(result, messages[0])
@@ -232,3 +309,25 @@ func TruncateMessages(messages []types.Message, maxTokens int) []types.Message {
 	return result
 }
 
+func getEnvOr(key, defaultVal string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return defaultVal
+}
+
+// GetVertexConfigFromEnv reads Vertex AI config from environment
+func GetVertexConfigFromEnv() (VertexAIConfig, bool) {
+	projectID := os.Getenv("VERTEX_PROJECT_ID")
+	if projectID == "" {
+		return VertexAIConfig{}, false
+	}
+
+	return VertexAIConfig{
+		ProjectID: projectID,
+		Location:  getEnvOr("VERTEX_LOCATION", "us-central1"),
+		Model:     getEnvOr("VERTEX_MODEL", "gemini-2.0-flash"),
+		APIKey:    os.Getenv("VERTEX_API_KEY"),
+		Timeout:   60 * time.Second,
+	}, true
+}

@@ -125,11 +125,35 @@ func loadConfig() Config {
 }
 
 // initializeLLM creates the LLM provider
-func initializeLLM(config Config) (types.LLMProvider, error) {
-	return llm.NewOpenAIProvider(llm.OpenAIConfig{
+func initializeLLM(config Config) (*llm.ProviderManager, error) {
+	providerManager := llm.NewProviderManager()
+
+	openAIProvider, err := llm.NewOpenAIProvider(llm.OpenAIConfig{
 		APIKey: config.LLMAPIKey,
 		Model:  config.LLMModel,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create OpenAI provider: %w", err)
+	}
+	if err := providerManager.Register("openai", openAIProvider); err != nil {
+		return nil, fmt.Errorf("failed to register OpenAI provider: %w", err)
+	}
+	log.Println("Registered OpenAI provider")
+
+	if vertexConfig, ok := llm.GetVertexConfigFromEnv(); ok {
+		vertexProvider, err := llm.NewVertexAIProvider(vertexConfig)
+		if err != nil {
+			log.Printf("Warning: failed to create Vertex AI provider: %v", err)
+		} else {
+			if err := providerManager.Register("vertex", vertexProvider); err != nil {
+				log.Printf("Warning: failed to register Vertex AI provider: %v", err)
+			} else {
+				log.Println("Registered Vertex AI provider")
+			}
+		}
+	}
+
+	return providerManager, nil
 }
 
 // initializeLanguages sets up language support
@@ -174,4 +198,3 @@ func initializeAgent(llmProvider types.LLMProvider, tools []types.Tool) *agent.C
 		SupportedLangs: []string{"Go", "Python", "JavaScript", "TypeScript", "Rust"},
 	})
 }
-
