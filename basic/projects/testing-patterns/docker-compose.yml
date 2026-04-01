@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  testing-patterns:
+    build: .
+    command: go test ./...
+    working_dir: /app
+    restart: "no"
