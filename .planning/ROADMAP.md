@@ -12,7 +12,7 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 
 ## Phases
 
-- [ ] **Phase 6: Curriculum Integration** - Lesson pages and exercise definitions for all 15 topics
+- [x] **Phase 6: Curriculum Integration** - Lesson pages and exercise definitions for all 15 topics (completed 2026-04-01)
 - [ ] **Phase 7: Code Execution** - In-browser Go code execution with sandbox
 - [ ] **Phase 8: Docker Environment** - One-click Docker setup per topic
 - [ ] **Phase 9: Code Review System** - AI-powered code submission and review
@@ -36,8 +36,8 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 4. User can navigate to any topic from a central course hub page
 
 **Plans:**
-1/2 plans executed
-- [ ] 06-02-PLAN.md — Topic pages with TutorialViewer pattern
+2/2 plans complete
+- [x] 06-02-PLAN.md — Topic pages with TutorialViewer pattern
 
 ---
 
@@ -97,7 +97,7 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 6. Curriculum Integration | 1/2 | In Progress|  |
+| 6. Curriculum Integration | 2/2 | Complete   | 2026-04-01 |
 | 7. Code Execution | TBD | Not started | - |
 | 8. Docker Environment | TBD | Not started | - |
 | 9. Code Review System | TBD | Not started | - |
