@@ -1,0 +1,120 @@
+# GraphQL Schema for Blog API
+# Schema-first GraphQL development
+
+scalar Time
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  role: Role!
+  active: Boolean!
+  posts: [Post!]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  published: Boolean!
+  author: User!
+  authorId: ID!
+  tags: [String!]!
+  comments: [Comment!]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  author: User!
+  authorId: ID!
+  post: Post!
+  postId: ID!
+  createdAt: Time!
+}
+
+enum Role {
+  ADMIN
+  USER
+  GUEST
+}
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  password: String!
+  role: Role = USER
+}
+
+input UpdateUserInput {
+  username: String
+  email: String
+  active: Boolean
+  role: Role
+}
+
+input CreatePostInput {
+  title: String!
+  content: String!
+  published: Boolean = false
+  tags: [String!]
+}
+
+input UpdatePostInput {
+  title: String
+  content: String
+  published: Boolean
+  tags: [String!]
+}
+
+input CreateCommentInput {
+  content: String!
+  postId: ID!
+}
+
+input PageInput {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+type Query {
+  user(id: ID!): User
+  users(role: Role, active: Boolean, page: PageInput): [User!]!
+  me: User
+  post(id: ID!): Post
+  posts(authorId: ID, published: Boolean, tags: [String!], search: String, page: PageInput): [Post!]!
+  comment(id: ID!): Comment
+  comments(postId: ID!): [Comment!]!
+  stats: Stats!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
+  deactivateUser(id: ID!): Boolean!
+  createPost(input: CreatePostInput!): Post!
+  updatePost(id: ID!, input: UpdatePostInput!): Post!
+  deletePost(id: ID!): Boolean!
+  publishPost(id: ID!): Post!
+  unpublishPost(id: ID!): Post!
+  createComment(input: CreateCommentInput!): Comment!
+  deleteComment(id: ID!): Boolean!
+}
+
+type Subscription {
+  userCreated: User!
+  postCreated: Post!
+  commentAdded(postId: ID!): Comment!
+}
+
+type Stats {
+  users: Int!
+  posts: Int!
+  comments: Int!
+  publishedPosts: Int!
+}
