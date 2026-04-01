@@ -1,0 +1,6 @@
+greeting:
+  default_name: "World"
+  default_times: 1
+server:
+  port: "8080"
+  host: "localhost"
