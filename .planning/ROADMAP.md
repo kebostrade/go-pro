@@ -92,7 +92,7 @@ Phase 2: Communication Patterns
 
 ---
 
-## Phase 3: Distributed & Cloud 🔘 Pending
+## Phase 3: Distributed & Cloud 🔘 Active
 
 **Rationale:** Move to cloud-native patterns and event-driven architecture.
 
@@ -110,9 +110,20 @@ Phase 3: Distributed & Cloud
 └── Task 11: Template - AWS Lambda (SAM, serverless.yaml)
 ```
 
+### Plans
+
+- [ ] 03-01-PLAN.md — Kubernetes template (K8s manifests, Helm chart, operator)
+- [ ] 03-02-PLAN.md — NATS Events template (JetStream, publisher/subscriber)
+- [ ] 03-03-PLAN.md — AWS Lambda template (SAM, Lambda URLs)
+
 ### Dependencies
 - Requires Phase 2 Microservices template
 - Leverages existing NATS infrastructure in `course/` module
+
+### Exit Criteria
+- All 3 templates pass CI
+- All 3 templates are deployable/runnable locally
+- Course module updated with lesson pages for all 3 topics
 
 ---
 
