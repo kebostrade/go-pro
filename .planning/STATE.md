@@ -9,7 +9,7 @@
 
 | Phase | Status | Progress |
 |-------|--------|----------|
-| Phase 1: Foundation Patterns | 🟡 Active | 0/4 topics |
+| Phase 1: Foundation Patterns | 🟡 Active | 0/4 plans |
 | Phase 2: Communication Patterns | 🔘 Pending | 0/3 topics |
 | Phase 3: Distributed & Cloud | 🔘 Pending | 0/3 topics |
 | Phase 4: Specialized Domains | 🔘 Pending | 0/4 topics |
@@ -19,21 +19,21 @@
 
 **Phase 1: Foundation Patterns** — Establishing core Go production patterns
 
-### Topics in Phase 1
-1. 🟡 RESTful APIs with Go
-2. 🔘 CLI Applications with Go
-3. 🔘 Testing and Debugging in Go
-4. 🔘 Web Applications with Go and Gin
+### Phase 1 Plans
+1. 🟡 01-01-PLAN.md — RESTful APIs with Go (chi v5)
+2. 🔘 01-02-PLAN.md — CLI Applications with Go (cobra)
+3. 🔘 01-03-PLAN.md — Testing and Debugging in Go (testify)
+4. 🔘 01-04-PLAN.md — Web Applications with Go and Gin (gin v1.12)
 
 ### Phase 1 Tasks
 
 | Task | Status | Notes |
 |------|--------|-------|
 | Research: Go REST API ecosystem 2026 | ✅ Done | chi v5 selected, testify confirmed |
-| Template: RESTful API project structure | 🔘 Todo | |
-| Template: CLI project structure | 🔘 Todo | |
-| Template: Testing patterns project | 🔘 Todo | |
-| Template: Gin Web App project | 🔘 Todo | |
+| Plan: RESTful API template (01-01) | ✅ Done | chi v5 router |
+| Plan: CLI template (01-02) | ✅ Done | cobra v1.8.0 |
+| Plan: Testing patterns template (01-03) | ✅ Done | testify v1.11.x |
+| Plan: Gin Web App template (01-04) | ✅ Done | gin v1.12.0 |
 
 ## Milestones
 
