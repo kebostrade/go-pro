@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/languages/common"
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/languages/golang"
 	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/internal/tools/programming"
 	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
 )
@@ -14,6 +15,13 @@ type CodeAnalysisTool = programming.CodeAnalysisTool
 
 // NewCodeAnalysisTool creates a new code analysis tool.
 func NewCodeAnalysisTool(registry *common.LanguageRegistry) *CodeAnalysisTool {
+	return programming.NewCodeAnalysisTool(registry)
+}
+
+// NewDefaultCodeAnalysisTool creates a new code analysis tool with Go language support.
+func NewDefaultCodeAnalysisTool() *CodeAnalysisTool {
+	registry := common.NewLanguageRegistry()
+	registry.Register(golang.NewProvider())
 	return programming.NewCodeAnalysisTool(registry)
 }
 

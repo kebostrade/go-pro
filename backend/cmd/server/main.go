@@ -22,6 +22,8 @@ import (
 	"go-pro-backend/internal/middleware"
 	"go-pro-backend/internal/service"
 	applogger "go-pro-backend/pkg/logger"
+
+	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/tools"
 )
 
 const version = "1.0.0"
@@ -107,6 +109,12 @@ func main() {
 	dockerHandler := handler.NewDockerHandler(dockerService)
 	httpHandler.SetDockerHandler(dockerHandler)
 	applog.Info(ctx, "Docker environment handler initialized")
+
+	// Initialize code review handler with code analysis tool
+	codeAnalysisTool := tools.NewDefaultCodeAnalysisTool()
+	reviewHandler := handler.NewReviewHandler(codeAnalysisTool, applog)
+	httpHandler.SetReviewHandler(reviewHandler)
+	applog.Info(ctx, "Code review handler initialized")
 
 	// Setup routes.
 	mux := http.NewServeMux()

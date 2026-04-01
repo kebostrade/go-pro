@@ -42,6 +42,9 @@ type Handler struct {
 
 	// Docker handler for environment management.
 	dockerHandler *DockerHandler
+
+	// Review handler for code review.
+	reviewHandler *ReviewHandler
 }
 
 // rateLimitState tracks submission rate limits per user.
@@ -73,6 +76,11 @@ func (h *Handler) SetInterviewHandler(interviewHandler *InterviewHandler) {
 // SetDockerHandler sets the Docker environment handler.
 func (h *Handler) SetDockerHandler(dockerHandler *DockerHandler) {
 	h.dockerHandler = dockerHandler
+}
+
+// SetReviewHandler sets the review handler.
+func (h *Handler) SetReviewHandler(reviewHandler *ReviewHandler) {
+	h.reviewHandler = reviewHandler
 }
 
 // RegisterRoutes registers all API routes.
@@ -142,6 +150,11 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, authMiddleware *middleware.
 		mux.HandleFunc("POST /api/docker/up", h.dockerHandler.handleDockerUp)
 		mux.HandleFunc("POST /api/docker/down", h.dockerHandler.handleDockerDown)
 		mux.HandleFunc("GET /api/docker/status", h.dockerHandler.handleDockerStatus)
+	}
+
+	// Code review endpoints.
+	if h.reviewHandler != nil {
+		h.reviewHandler.RegisterRoutes(mux)
 	}
 
 	// API documentation.
