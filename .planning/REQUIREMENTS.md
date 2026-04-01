@@ -4,10 +4,10 @@
 
 ### Curriculum Integration (CURR)
 
-- [ ] **CURR-01**: User can view lesson pages for all 15 advanced Go project topics
-- [ ] **CURR-02**: User can access structured exercise definitions per topic
+- [x] **CURR-01**: User can view lesson pages for all 15 advanced Go project topics
+- [x] **CURR-02**: User can access structured exercise definitions per topic
 - [ ] **CURR-03**: User progress is tracked per topic and per exercise
-- [ ] **CURR-04**: User can navigate between all 15 topics from a central hub
+- [x] **CURR-04**: User can navigate between all 15 topics from a central hub
 
 ### Code Execution (EXEC)
 
@@ -51,10 +51,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CURR-01 | Phase 6 | Pending |
-| CURR-02 | Phase 6 | Pending |
+| CURR-01 | Phase 6 | Complete |
+| CURR-02 | Phase 6 | Complete |
 | CURR-03 | Phase 6 | Pending |
-| CURR-04 | Phase 6 | Pending |
+| CURR-04 | Phase 6 | Complete |
 | EXEC-01 | Phase 7 | Pending |
 | EXEC-02 | Phase 7 | Pending |
 | EXEC-03 | Phase 7 | Pending |

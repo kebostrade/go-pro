@@ -36,7 +36,7 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 4. User can navigate to any topic from a central course hub page
 
 **Plans:**
-- [ ] 06-01-PLAN.md — Topic data structure and curriculum hub integration
+1/2 plans executed
 - [ ] 06-02-PLAN.md — Topic pages with TutorialViewer pattern
 
 ---
@@ -97,7 +97,7 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 6. Curriculum Integration | TBD | Not started | - |
+| 6. Curriculum Integration | 1/2 | In Progress|  |
 | 7. Code Execution | TBD | Not started | - |
 | 8. Docker Environment | TBD | Not started | - |
 | 9. Code Review System | TBD | Not started | - |
