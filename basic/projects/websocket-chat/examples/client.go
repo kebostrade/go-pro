@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -114,4 +113,3 @@ func main() {
 		}
 	}
 }
-

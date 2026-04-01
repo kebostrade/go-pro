@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Go Pro Learning Platform - Serverless Lambda Template
+
+Globals:
+  Function:
+    Runtime: go1.x
+    MemorySize: 256
+    Timeout: 30
+    Architectures:
+      - x86_64
+
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - production
+    Description: Deployment environment
+
+Resources:
+  # Main Lambda Function with URL
+  GoProFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: gopro-handler
+      CodeUri: ./cmd/handler
+      Handler: handler
+      AutoPublishAlias: live
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: BUFFERED
+      Environment:
+        Variables:
+          APP_ENV: !Ref Environment
+          LOG_LEVEL: info
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - CloudWatchLogsFullAccess
+    Metadata:
+      BuildMethod: go1.x
+
+  # Lambda Function URL
+  GoProFunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionName: !Ref GoProFunction
+      AuthType: NONE
+      InvokeMode: BUFFERED
+
+Outputs:
+  FunctionUrl:
+    Description: Lambda Function URL for GoProFunction
+    Value: !GetAtt GoProFunctionUrl.FunctionUrl
+
+  FunctionName:
+    Description: Lambda Function Name
+    Value: !Ref GoProFunction
+
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt GoProFunction.Arn

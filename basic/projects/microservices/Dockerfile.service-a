@@ -1,0 +1,31 @@
+FROM golang:1.23-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies for building
+RUN apk add --no-cache git
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
+
+# Build service-a
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o service-a ./cmd/service-a
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates wget
+
+WORKDIR /app
+
+COPY --from=builder /app/service-a /service-a
+
+EXPOSE 8001
+
+ENV SERVICE_PORT=8001
+
+CMD ["/service-a"]

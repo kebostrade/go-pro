@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  nats:
+    image: nats:2.10-alpine
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # Monitoring
+      - "6222:6222"  # Cluster port
+    command: ["-js"]  # Enable JetStream
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nats-events
+
+networks:
+  nats-events:
+    driver: bridge

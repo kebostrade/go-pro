@@ -1,0 +1,13 @@
+# Patterns to exclude from Helm chart packaging
+.git
+.gitignore
+.helmignore
+README.md
+LICENSE
+Makefile
+*.md
+.go
+*.sum
+vendor/
+tmp/
+.helm/

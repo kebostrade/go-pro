@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gopro
+  labels:
+    app.kubernetes.io/name: gopro
+    app.kubernetes.io/managed-by: kubectl

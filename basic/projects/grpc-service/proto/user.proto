@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./proto";
+
+// UserService demonstrates all gRPC streaming patterns.
+service UserService {
+  // Unary RPC - simple request/response
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  
+  // Server streaming - multiple responses for one request
+  rpc ListUsers(ListUsersRequest) returns (stream User);
+  
+  // Client streaming - multiple requests for one response
+  rpc CreateUsers(stream CreateUserRequest) returns (CreateUsersResponse);
+  
+  // Bidirectional streaming - multiple requests and responses
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+}
+
+// User represents a user entity.
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  int32 age = 4;
+  repeated string tags = 5;
+}
+
+// GetUserRequest is the request for getting a single user.
+message GetUserRequest {
+  string id = 1;
+}
+
+// GetUserResponse is the response containing a single user.
+message GetUserResponse {
+  User user = 1;
+}
+
+// ListUsersRequest is the request for listing users.
+message ListUsersRequest {
+  int32 limit = 1;  // Maximum number of users to return
+}
+
+// CreateUserRequest is a single user creation request (client streaming).
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+  int32 age = 3;
+  repeated string tags = 4;
+}
+
+// CreateUsersResponse is the response after creating multiple users.
+message CreateUsersResponse {
+  repeated User users = 1;
+  int32 count = 2;
+}
+
+// ChatMessage is a message in the bidirectional chat stream.
+message ChatMessage {
+  string user_id = 1;
+  string message = 2;
+  int64 timestamp = 3;
+}

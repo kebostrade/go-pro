@@ -1,0 +1,33 @@
+FROM golang:1.23-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies for building
+RUN apk add --no-cache git
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
+
+# Build gateway
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o gateway ./cmd/gateway
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates wget
+
+WORKDIR /app
+
+COPY --from=builder /app/gateway /gateway
+
+EXPOSE 8080
+
+ENV GATEWAY_PORT=8080
+ENV USER_SERVICE_URL=http://service-a:8001
+ENV ORDER_SERVICE_URL=http://service-b:8002
+
+CMD ["/gateway"]

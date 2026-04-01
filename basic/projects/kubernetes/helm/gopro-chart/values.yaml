@@ -1,0 +1,65 @@
+# Default values for gopro-chart
+# This file is used as a base for helm template rendering
+
+replicaCount: 3
+
+image:
+  repository: gopro-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+  name: http
+
+config:
+  env:
+    APP_ENV: production
+    LOG_LEVEL: info
+    PORT: "8080"
+    HEALTH_LIVE_PATH: /health/live
+    HEALTH_READY_PATH: /health/ready
+
+resources:
+  requests:
+    memory: 64Mi
+    cpu: 250m
+  limits:
+    memory: 128Mi
+    cpu: 500m
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+probes:
+  liveness:
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  startup:
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 30
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+podLabels:
+  app: gopro-app
+
+namespace: gopro

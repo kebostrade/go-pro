@@ -1,0 +1,16 @@
+apiVersion: v2
+name: gopro-chart
+description: A Helm chart for Go Pro Learning Platform - Kubernetes deployment
+type: application
+version: 0.1.0
+appVersion: "1.0"
+keywords:
+  - go
+  - kubernetes
+  - learning
+home: https://github.com/go-pro/gopro
+sources:
+  - https://github.com/go-pro/gopro
+maintainers:
+  - name: Go Pro Team
+    email: team@gopro.example.com

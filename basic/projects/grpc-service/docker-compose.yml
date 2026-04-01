@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  grpc-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    networks:
+      - grpc-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "50051"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  grpc-network:
+    driver: bridge
