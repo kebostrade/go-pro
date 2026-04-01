@@ -127,7 +127,7 @@ Phase 3: Distributed & Cloud
 
 ---
 
-## Phase 4: Specialized Domains 🔘 Pending
+## Phase 4: Specialized Domains 🟡 Active
 
 **Rationale:** Cover specialized application domains with unique requirements.
 
@@ -147,8 +147,20 @@ Phase 4: Specialized Domains
 └── Task 15: Template - System Design (architecture patterns, case studies)
 ```
 
+### Plans
+
+- [ ] 04-01-PLAN.md — ML with Gorgonia template (tensor ops, ONNX inference)
+- [ ] 04-02-PLAN.md — Blockchain with Ethereum template (smart contracts, wallet)
+- [ ] 04-03-PLAN.md — IoT with MQTT template (device, gateway, broker)
+- [ ] 04-04-PLAN.md — System Design template (clean architecture, patterns)
+
 ### Dependencies
 - Requires Phase 3 cloud infrastructure patterns
+
+### Exit Criteria
+- All 4 templates pass CI
+- All 4 templates are runnable locally with Docker
+- Course module updated with lesson pages for all 4 topics
 
 ---
 
