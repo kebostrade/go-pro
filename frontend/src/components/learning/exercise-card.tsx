@@ -1,13 +1,16 @@
 'use client';
 
-import { type Exercise } from '@/lib/topics-data';
-import { CheckCircle, ChevronRight, Terminal, Lightbulb, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { type Exercise, type Topic } from '@/lib/topics-data';
+import { CheckCircle, ChevronRight, Terminal, Lightbulb, AlertCircle, Loader2, Sparkles, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { api } from '@/lib/api';
 
 interface ExerciseCardProps {
   exercise: Exercise;
+  topic: Topic;
   index: number;
   completed?: boolean;
   onComplete?: (id: string) => void;
@@ -21,10 +24,32 @@ const difficultyColors = {
 
 export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   exercise,
+  topic,
   index,
   completed = false,
   onComplete,
 }) => {
+  const [isReviewing, setIsReviewing] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  const handleSubmitReview = async () => {
+    setIsReviewing(true);
+    try {
+      const result = await api.submitReview({
+        user_id: 'current-user',
+        topic_id: topic.id,
+        exercise_id: exercise.id,
+        code: exercise.starterCode || '',
+      });
+      setFeedback(result.feedback);
+      setShowFeedback(true);
+    } catch (err) {
+      console.error('Review failed:', err);
+    } finally {
+      setIsReviewing(false);
+    }
+  };
   return (
     <Card className={completed ? 'border-green-500 bg-green-50/50 dark:bg-green-900/10' : ''}>
       <CardHeader className="pb-3">
@@ -84,6 +109,23 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
             <Terminal className="w-4 h-4 mr-2" />
             View Starter Code
           </Button>
+          <button
+            onClick={handleSubmitReview}
+            disabled={isReviewing}
+            className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            {isReviewing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Submit for Review
+              </>
+            )}
+          </button>
           {!completed && (
             <Button 
               size="sm" 
@@ -93,6 +135,23 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
             </Button>
           )}
         </div>
+
+        {showFeedback && feedback && (
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-semibold text-sm">AI Feedback</h4>
+              <button
+                onClick={() => setShowFeedback(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              {feedback}
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

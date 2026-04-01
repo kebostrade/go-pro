@@ -306,7 +306,8 @@ func main() {
         {topic.exercises.map((exercise, index) => (
           <ExerciseCard 
             key={exercise.id} 
-            exercise={exercise} 
+            exercise={exercise}
+            topic={topic}
             index={index + 1}
             completed={completedExercises.has(exercise.id)}
             onComplete={onComplete}
