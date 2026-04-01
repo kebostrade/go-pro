@@ -23,7 +23,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { api, type Curriculum, type CurriculumPhase, type CurriculumLesson, type Project } from "@/lib/api";
+import { api, type Curriculum, type Project } from "@/lib/api";
+import { topics, getTopicsByPhase, phaseMetadata, type Topic } from "@/lib/topics-data";
 
 // Icon mapping for phases
 const iconMap: Record<string, any> = {
@@ -91,9 +92,25 @@ const EmptyState = memo(function EmptyState() {
   );
 });
 
+// Extended lesson type that includes topicId for linking
+interface LessonWithTopicId {
+  id: number;
+  topicId: string;
+  title: string;
+  description: string;
+  duration: string;
+  exercises: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  completed: boolean;
+  locked: boolean;
+  order: number;
+  icon: string;
+  color: string;
+}
+
 // Lesson card component - Memoized to prevent re-rendering unchanged lessons
 // Performance optimization: Only re-renders when lesson data changes
-const LessonCard = memo(function LessonCard({ lesson }: { lesson: CurriculumLesson }) {
+const LessonCard = memo(function LessonCard({ lesson }: { lesson: LessonWithTopicId }) {
   return (
     <Card className={`lesson-card ${lesson.locked ? 'opacity-60' : ''}`}>
       <CardHeader className="pb-3">
@@ -101,7 +118,7 @@ const LessonCard = memo(function LessonCard({ lesson }: { lesson: CurriculumLess
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">
               <Badge variant="outline" className="text-xs">
-                Lesson {lesson.id}
+                Topic {lesson.order}
               </Badge>
               <Badge variant={getDifficultyVariant(lesson.difficulty)} className="text-xs">
                 {lesson.difficulty.charAt(0).toUpperCase() + lesson.difficulty.slice(1)}
@@ -136,7 +153,7 @@ const LessonCard = memo(function LessonCard({ lesson }: { lesson: CurriculumLess
             </div>
           </div>
         </div>
-        <Link href={lesson.locked ? "#" : `/learn/${lesson.id}`}>
+        <Link href={lesson.locked ? "#" : `/learn/${lesson.topicId}`}>
           <Button
             className="w-full"
             variant={lesson.completed ? "outline" : "default"}
@@ -145,7 +162,7 @@ const LessonCard = memo(function LessonCard({ lesson }: { lesson: CurriculumLess
             {lesson.completed ? (
               <>
                 <CheckCircle className="mr-2 h-4 w-4" />
-                Review Lesson
+                Review Topic
               </>
             ) : lesson.locked ? (
               <>
@@ -155,7 +172,7 @@ const LessonCard = memo(function LessonCard({ lesson }: { lesson: CurriculumLess
             ) : (
               <>
                 <Play className="mr-2 h-4 w-4" />
-                Start Lesson
+                Start Topic
                 <ArrowRight className="ml-2 h-4 w-4" />
               </>
             )}
@@ -193,6 +210,40 @@ export default function CurriculumPage() {
     fetchCurriculum();
   }, []);
 
+  // Build topic groups from local topics data
+  const topicGroups = useMemo(() => getTopicsByPhase(), []);
+
+  // Build curriculum phases from topic data
+  const curriculumPhases = useMemo(() => {
+    return phaseMetadata.map(meta => {
+      const phaseTopics = topicGroups[meta.phase] || [];
+      return {
+        id: `phase-${meta.phase}`,
+        title: meta.title,
+        description: `${phaseTopics.length} topics`,
+        weeks: '',
+        icon: meta.icon,
+        color: meta.color,
+        order: meta.phase,
+        progress: 0,
+        lessons: phaseTopics.map(topic => ({
+          id: topic.order,
+          topicId: topic.id,
+          title: topic.title,
+          description: topic.description,
+          duration: topic.duration,
+          exercises: topic.exercises.length,
+          difficulty: topic.difficulty,
+          completed: false,
+          locked: false,
+          order: topic.order,
+          icon: topic.icon,
+          color: topic.color,
+        })) as LessonWithTopicId[],
+      };
+    });
+  }, [topicGroups]);
+
   // Performance optimization: useMemo for expensive calculations
   // MUST be called before any conditional returns to follow Rules of Hooks
   // Prevents recalculation on every render unless curriculum changes
@@ -229,6 +280,13 @@ export default function CurriculumPage() {
 
   // Extract for easier use (safe to have undefined values during loading/error states)
   const { overallProgress, totalLessons, totalExercises, totalWeeks, totalXP } = stats || {};
+
+  // Calculate topic-based stats
+  const topicStats = useMemo(() => {
+    const totalTopics = topics.length;
+    const totalTopicExercises = topics.reduce((sum, t) => sum + t.exercises.length, 0);
+    return { totalTopics, totalTopicExercises };
+  }, []);
 
   if (loading) {
     return (
@@ -299,8 +357,8 @@ export default function CurriculumPage() {
                   <div className="p-3 rounded-xl bg-blue-500/10 w-fit mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <BookOpen className="h-6 w-6 lg:h-7 lg:w-7 text-blue-500" />
                   </div>
-                  <div className="text-2xl lg:text-3xl font-bold mb-1">{totalLessons}</div>
-                  <div className="text-xs lg:text-sm text-muted-foreground">Lessons</div>
+                  <div className="text-2xl lg:text-3xl font-bold mb-1">{topicStats.totalTopics}</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Topics</div>
                 </CardContent>
               </Card>
               <Card className="glass-card border-2 hover:border-primary/50 transition-all duration-300 group">
@@ -317,8 +375,8 @@ export default function CurriculumPage() {
                   <div className="p-3 rounded-xl bg-green-500/10 w-fit mx-auto mb-3 group-hover:scale-110 transition-transform">
                     <Clock className="h-6 w-6 lg:h-7 lg:w-7 text-green-500" />
                   </div>
-                  <div className="text-2xl lg:text-3xl font-bold mb-1">{totalWeeks}</div>
-                  <div className="text-xs lg:text-sm text-muted-foreground">Weeks</div>
+                  <div className="text-2xl lg:text-3xl font-bold mb-1">{topicStats.totalTopicExercises}</div>
+                  <div className="text-xs lg:text-sm text-muted-foreground">Exercises</div>
                 </CardContent>
               </Card>
               <Card className="glass-card border-2 hover:border-primary/50 transition-all duration-300 group">
@@ -344,8 +402,8 @@ export default function CurriculumPage() {
 
         {/* Learning Path */}
         <Tabs value={activePhase} onValueChange={setActivePhase} className="space-y-6 animate-in fade-in duration-1000">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg p-1">
-            {curriculum.phases.map((phase) => {
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 bg-card/50 backdrop-blur-sm border border-border/50 shadow-lg p-1">
+            {curriculumPhases.map((phase) => {
               const PhaseIcon = iconMap[phase.icon.toLowerCase()] || Code2;
               return (
                 <TabsTrigger
@@ -354,8 +412,8 @@ export default function CurriculumPage() {
                   className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                 >
                   <PhaseIcon className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">{phase.title}</span>
-                  <span className="sm:hidden">{phase.title.slice(0, 4)}</span>
+                  <span className="hidden sm:inline">{phase.title.split(' ')[0]}</span>
+                  <span className="sm:hidden">{phase.title.slice(0, 3)}</span>
                 </TabsTrigger>
               );
             })}
@@ -369,7 +427,7 @@ export default function CurriculumPage() {
           </TabsList>
 
           {/* Phase Content */}
-          {curriculum.phases.map((phase) => {
+          {curriculumPhases.map((phase) => {
             const PhaseIcon = iconMap[phase.icon.toLowerCase()] || Code2;
             return (
               <TabsContent key={phase.id} value={phase.id} className="space-y-6">
@@ -383,7 +441,7 @@ export default function CurriculumPage() {
                         <div>
                           <CardTitle className="text-2xl">{phase.title}</CardTitle>
                           <CardDescription className="text-base">
-                            {phase.description} • {phase.weeks}
+                            {phase.description}
                           </CardDescription>
                         </div>
                       </div>
@@ -398,7 +456,7 @@ export default function CurriculumPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-responsive">
                       {/* Performance optimization: Use memoized LessonCard component */}
                       {phase.lessons.map((lesson) => (
-                        <LessonCard key={lesson.id} lesson={lesson} />
+                        <LessonCard key={lesson.topicId} lesson={lesson} />
                       ))}
                     </div>
                   </CardContent>
@@ -511,14 +569,14 @@ export default function CurriculumPage() {
             <h3 className="text-2xl font-bold mb-4">Ready to Start Your Go Journey?</h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
               Begin with the foundations and work your way up to building production-ready microservices.
-              Each lesson builds upon the previous one, ensuring you develop a solid understanding of Go.
+              Each topic builds upon the previous one, ensuring you develop a solid understanding of Go.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {curriculum.phases.length > 0 && curriculum.phases[0].lessons.length > 0 && (
-                <Link href={`/learn/${curriculum.phases[0].lessons[0].id}`}>
+              {curriculumPhases.length > 0 && curriculumPhases[0].lessons.length > 0 && (
+                <Link href={`/learn/${curriculumPhases[0].lessons[0].topicId}`}>
                   <Button size="lg" className="go-gradient text-white">
                     <Play className="mr-2 h-5 w-5" />
-                    Start First Lesson
+                    Start First Topic
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>

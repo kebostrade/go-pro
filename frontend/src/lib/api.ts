@@ -92,6 +92,37 @@ interface Project {
   order: number;
 }
 
+// Topic types for curriculum integration
+interface Exercise {
+  id: string;
+  title: string;
+  description: string;
+  requirements: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  starterCode: string;
+  solutionHint: string;
+  completionMethod: 'code_review' | 'test' | 'manual';
+}
+
+interface Topic {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  icon: string;
+  color: string;
+  projectPath: string;
+  phase: number;
+  phaseName: string;
+  order: number;
+  topics: string[];
+  learningOutcomes: string[];
+  prerequisites: string[];
+  exercises: Exercise[];
+  githubUrl: string;
+}
+
 interface LessonDetail {
   id: number;
   title: string;
@@ -355,6 +386,15 @@ export const api = {
 
   async getLessonDetail(lessonId: number): Promise<LessonDetail> {
     return apiRequest(`/api/v1/curriculum/lesson/${lessonId}`);
+  },
+
+  async getTopic(topicId: string): Promise<Topic> {
+    // For now, import from topics-data for local topic data
+    // Later: return apiRequest(`/api/v1/topics/${topicId}`);
+    const { getTopicById } = await import('./topics-data');
+    const topic = getTopicById(topicId);
+    if (!topic) throw new APIError('Topic not found', 404);
+    return topic;
   },
 
   // Courses
@@ -913,6 +953,8 @@ export type {
   CurriculumPhase,
   CurriculumLesson,
   Project,
+  Topic,
+  Exercise,
   LessonDetail,
   LessonExercise,
   APIResponse,
