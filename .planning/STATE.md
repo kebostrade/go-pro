@@ -17,7 +17,7 @@
 
 ## Current Focus
 
-**Phase 4: Specialized Domains** — ✅ Complete (4/4 plans created)
+**Phase 5: GraphQL & Integration** — 🔘 Pending (0/1 plans created)
 
 ### Phase 4 Plans
 1. ✅ 04-01-PLAN.md — ML with Gorgonia template (gonum tensor ops, ONNX inference)
@@ -62,6 +62,13 @@
 | Plan: Blockchain template (04-02) | ✅ Done | go-ethereum, wallet, smart contracts |
 | Plan: IoT-MQTT template (04-03) | ✅ Done | paho.mqtt, mosquitto, device/gateway |
 | Plan: System Design template (04-04) | ✅ Done | Clean architecture, circuit breaker, worker pool |
+
+### Phase 5 Tasks
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Research: GraphQL with gqlgen | 🔘 In Progress | Schema-first, resolvers, subscriptions |
+| Plan: GraphQL template (05-01) | ⏳ Pending | gqlgen, chi v5, JWT auth |
 
 ## Milestones
 
@@ -133,3 +140,6 @@
   - 04-02 Blockchain: go-ethereum v1.15.0, wallet, smart contracts, SimpleStorage ABI
   - 04-03 IoT-MQTT: eclipse/paho.mqtt.golang v1.4.3, mosquitto, device/gateway
   - 04-04 System Design: gobreaker circuit breaker, clean architecture, worker pool, cache
+- 2026-04-01: Phase 5 STARTED — GraphQL & Integration (final phase)
+  - 05-CONTEXT.md created — locked decisions for gqlgen template
+  - 05-RESEARCH.md created — gqlgen patterns, schema-first development
