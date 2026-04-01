@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  ganache:
+    image: trufflesuite/ganache:latest
+    ports:
+      - "8545:8545"
+    networks:
+      - blockchain
+
+  wallet:
+    build: .
+    command: go run ./cmd/wallet/main.go balance
+    depends_on:
+      - ganache
+    environment:
+      - ETH_RPC_URL=http://ganache:8545
+      - PRIVATE_KEY=0x0000000000000000000000000000000000000000000000000000000000000001
+    networks:
+      - blockchain
+
+networks:
+  blockchain:
+    driver: bridge

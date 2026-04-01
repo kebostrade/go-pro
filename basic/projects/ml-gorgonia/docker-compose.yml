@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  server:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - MODEL_PATH=/models/model.onnx
+    volumes:
+      - ./models:/models:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  example:
+    build: .
+    command: go run ./examples/mnist.go
+    depends_on:
+      - server

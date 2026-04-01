@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: iot-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./broker_config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/#", "-C", "1", "-i", "healthcheck", "-W", "3"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  gateway:
+    build: .
+    command: go run ./cmd/gateway/main.go
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    environment:
+      - BROKER_URL=tcp://mosquitto:1883
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    networks:
+      - iot-network
+
+  device:
+    build: .
+    command: go run ./cmd/device/main.go
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    environment:
+      - BROKER_URL=tcp://mosquitto:1883
+      - DEVICE_ID=device-001
+      - INTERVAL=30s
+    networks:
+      - iot-network
+
+volumes:
+  mosquitto_data:
+
+networks:
+  iot-network:
+    driver: bridge
