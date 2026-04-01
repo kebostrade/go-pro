@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{.Title}}</h1>
+            <nav>
+                <a href="/">Home</a> | <a href="/about">About</a>
+            </nav>
+        </header>
+        <main>
+            <h2>About This Project</h2>
+            <p>This is a production-ready Gin web application template for the Go Pro Learning Platform.</p>
+            <div class="card">
+                <h3>Technology Stack</h3>
+                <ul>
+                    <li><strong>Go 1.23+</strong> - Modern Go with latest features</li>
+                    <li><strong>Gin v1.12</strong> - High-performance HTTP web framework</li>
+                    <li><strong>HTML Templates</strong> - Go's html/template package</li>
+                    <li><strong>Docker</strong> - Multi-stage builds for small images</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Project Structure</h3>
+                <pre>
+basic/projects/gin-web/
+├── cmd/server/main.go        # Application entry point
+├── internal/
+│   ├── handler/              # HTTP handlers
+│   ├── middleware/           # Custom middleware
+│   └── views/                # HTML templates
+├── static/                   # CSS and JS assets
+├── Dockerfile
+└── docker-compose.yml
+                </pre>
+            </div>
+        </main>
+        <footer>
+            <p>&copy; {{.Year}} Go Pro Learning Platform</p>
+        </footer>
+    </div>
+</body>
+</html>

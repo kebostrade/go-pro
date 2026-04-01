@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{.Title}}</h1>
+            <nav>
+                <a href="/">Home</a> | <a href="/about">About</a>
+            </nav>
+        </header>
+        <main>
+            <p>Welcome to the Gin Web App!</p>
+            <p>This is a production-ready web application template using Go and Gin.</p>
+            <div class="card">
+                <h3>Features</h3>
+                <ul>
+                    <li>Middleware stack (CORS, Request ID, Error handling)</li>
+                    <li>HTML template rendering</li>
+                    <li>Static file serving</li>
+                    <li>RESTful API endpoints</li>
+                    <li>Docker support</li>
+                </ul>
+            </div>
+            <div class="api-status">
+                <h3>API Status</h3>
+                <p id="api-status">Checking...</p>
+            </div>
+        </main>
+        <footer>
+            <p>&copy; {{.Year}} Go Pro Learning Platform</p>
+        </footer>
+    </div>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
