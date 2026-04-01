@@ -35,7 +35,9 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 3. User's progress (exercises completed) persists across sessions
 4. User can navigate to any topic from a central course hub page
 
-**Plans**: TBD
+**Plans:**
+- [ ] 06-01-PLAN.md — Topic data structure and curriculum hub integration
+- [ ] 06-02-PLAN.md — Topic pages with TutorialViewer pattern
 
 ---
 
