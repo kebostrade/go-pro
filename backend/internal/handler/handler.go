@@ -109,6 +109,9 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, authMiddleware *middleware.
 	// Playground - code execution.
 	mux.HandleFunc("POST /api/v1/playground/execute", h.handlePlaygroundExecute)
 
+	// Code execution endpoint for topic-based exercises.
+	mux.HandleFunc("POST /api/execute", h.ExecuteCode)
+
 	// AI-powered playground endpoints (if AI handler is available).
 	if h.aiHandler != nil {
 		mux.HandleFunc("POST /api/v1/playground/analyze", h.aiHandler.HandleAnalyze)
