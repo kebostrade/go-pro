@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
+import CodeEditor from './code-editor';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -14,6 +15,7 @@ interface ExerciseCardProps {
   index: number;
   completed?: boolean;
   onComplete?: (id: string) => void;
+  onCodeChange?: (code: string) => void;
 }
 
 const difficultyColors = {
@@ -28,10 +30,17 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   index,
   completed = false,
   onComplete,
+  onCodeChange,
 }) => {
   const [isReviewing, setIsReviewing] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [userCode, setUserCode] = useState<string>(exercise.starterCode || '');
+
+  const handleCodeChange = (code: string) => {
+    setUserCode(code);
+    onCodeChange?.(code);
+  };
 
   const handleSubmitReview = async () => {
     setIsReviewing(true);
@@ -40,7 +49,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
         user_id: 'current-user',
         topic_id: topic.id,
         exercise_id: exercise.id,
-        code: exercise.starterCode || '',
+        code: userCode,
       });
       setFeedback(result.feedback);
       setShowFeedback(true);
@@ -102,6 +111,18 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
             </div>
           </div>
         </div>
+        
+        {/* Code Editor */}
+        {exercise.starterCode && (
+          <div className="mb-4">
+            <CodeEditor
+              title={exercise.title}
+              description="Edit your code below"
+              initialCode={exercise.starterCode}
+              onCodeChange={handleCodeChange}
+            />
+          </div>
+        )}
         
         {/* Actions */}
         <div className="flex gap-2">
