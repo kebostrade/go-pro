@@ -94,11 +94,11 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 2. AI agent analyzes the code and provides structured feedback
 3. User can view history of past submissions and their review results
 
-**Plans**: 4/4 planned
+**Plans**: 4/4 complete
 - [x] 09-01-PLAN.md — Backend API (Wave 1)
 - [x] 09-02-PLAN.md — Frontend Submit Button (Wave 2)
-- [ ] 09-03-PLAN.md — Fix code capture for REVIEW-01 (Wave 3)
-- [ ] 09-04-PLAN.md — History storage + UI for REVIEW-03 (Wave 4)
+- [x] 09-03-PLAN.md — Fix code capture for REVIEW-01 (Wave 3)
+- [x] 09-04-PLAN.md — History storage + UI for REVIEW-03 (Wave 4)
 
 ---
 
@@ -107,9 +107,9 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
 | 6. Curriculum Integration | 2/2 | Complete   | 2026-04-01 |
-| 7. Code Execution | 1/2 | In progress | - |
-| 8. Docker Environment | 3/3 | Planned | - |
-| 9. Code Review System | TBD | Not started | - |
+| 7. Code Execution | 2/2 | Complete | - |
+| 8. Docker Environment | 3/3 | Complete | - |
+| 9. Code Review System | 4/4 | Complete | 2026-04-02 |
 
 ---
 
