@@ -1,26 +1,52 @@
 # Project Milestones: Go Pro Learning Platform
 
-## v1.1 Platform Enhancements (In Progress)
+## v1.2 AI-Powered Mock Interviews (In Progress)
 
-**Delivered:** Platform enhancements for 15 advanced Go project templates
+**Delivered:** AI-powered mock interview feature with LLM question selection and feedback
 
-**Phases:** 6-9 (planning)
+**Phases:** 10-12 (planning)
 
 **Target features:**
-- Course curriculum integration for all 15 topics
-- In-browser code execution (Go Playground-style)
-- One-click Docker environment setup
-- Code submission and review system
+- AI question bank with 50+ curated questions
+- LLM question selection based on user profile
+- AI interviewer persona with follow-up questions
+- Real-time answer analysis
+- Detailed AI feedback with improvement suggestions
+- Progress tracking dashboard with trends
 
 **Stats:**
 - [TBD] files to be created/modified
 - [TBD] lines of code
-- 4 phases, [TBD] plans
+- 3 phases, [TBD] plans
 - [TBD] days
 
-**Git range:** feat(advanced-topics) → TBD
+**Git range:** feat(platform-enhancements) → TBD
 
-**What's next:** Platform enhancement features implementation
+**What's next:** Phase 10 implementation - AI Question Bank
+
+---
+
+## v1.1 Platform Enhancements (Shipped: 2026-04-02)
+
+**Delivered:** Platform enhancements for 15 advanced Go project templates
+
+**Phases completed:** 6-9 (11 plans total)
+
+**Key accomplishments:**
+- Course curriculum integration for all 15 topics
+- In-browser code execution (Go Playground-style)
+- One-click Docker environment setup
+- Code submission and review system with AI feedback
+
+**Stats:**
+- 20+ files created/modified
+- ~2,000 lines of code
+- 4 phases, 11 plans
+- 2 days from start to ship
+
+**Git range:** `adb6303` → `fc68f9`
+
+**What's next:** AI-Powered Mock Interviews (v1.2)
 
 ---
 

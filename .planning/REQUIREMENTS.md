@@ -1,49 +1,70 @@
-# Requirements: Platform Enhancements v1.1
+# Requirements: AI-Powered Mock Interviews v1.2
 
-## v1 Requirements (This Milestone)
+## Overview
 
-### Curriculum Integration (CURR)
+Upgrade the existing mock interview feature to use AI/LLM for question generation and feedback. This milestone focuses on making the interview practice experience more dynamic and personalized through AI.
 
-- [x] **CURR-01**: User can view lesson pages for all 15 advanced Go project topics
-- [x] **CURR-02**: User can access structured exercise definitions per topic
-- [ ] **CURR-03**: User progress is tracked per topic and per exercise
-- [x] **CURR-04**: User can navigate between all 15 topics from a central hub
+## v1.2 Requirements (This Milestone)
 
-### Code Execution (EXEC)
+### AI Question Bank (INTW-01)
 
-- [ ] **EXEC-01**: User can write and edit Go code in an in-browser editor (Monaco)
-- [ ] **EXEC-02**: User can execute code and see output in real-time (streaming)
-- [ ] **EXEC-03**: User code runs in a secure sandbox with resource limits (CPU, memory, time)
-- [ ] **EXEC-04**: Execution supports topic-specific requirements (e.g., external packages per template)
+- [ ] **INTW-01a**: Create database schema for interview questions (coding, behavioral, system design)
+- [ ] **INTW-01b**: Store questions with tags, difficulty levels, and expected concepts
+- [ ] **INTW-01c**: API endpoint to query questions by type, difficulty, and tags
 
-### Docker Environment (DOCK)
+### LLM Question Selection (INTW-02)
 
-- [x] **DOCK-01**: User can generate a docker-compose.yml tailored to each of the 15 topics
-- [x] **DOCK-02**: User can start a topic-specific Docker environment with one click
-- [x] **DOCK-03**: User can see the status of their Docker environment (running/stopped)
+- [ ] **INTW-02a**: LLM selects 3-5 questions per interview session
+- [ ] **INTW-02b**: Selection considers user's past performance and target role
+- [ ] **INTW-02c**: Questions have clear expected concepts for scoring
 
-### Code Review (REVIEW)
+### AI Interviewer Persona (INTW-03)
 
-- [ ] **REVIEW-01**: User can submit code exercises for review
-- [ ] **REVIEW-02**: AI agent analyzes submitted code and provides structured feedback
-- [ ] **REVIEW-03**: User can view submission history and past review feedback
+- [ ] **INTW-03a**: Generate contextual intro explaining interview type and expectations
+- [ ] **INTW-03b**: Present questions in natural language with hints if needed
+- [ ] **INTW-03c**: Ask follow-up questions based on user answers
+
+### Real-Time Answer Analysis (INTW-04)
+
+- [ ] **INTW-04a**: Immediate validation of answer completeness
+- [ ] **INTW-04b**: Identify mentioned concepts vs expected concepts
+- [ ] **INTW-04c**: Generate instant feedback on answer quality
+
+### Detailed AI Feedback (INTW-05)
+
+- [ ] **INTW-05a**: Overall score with breakdown by question
+- [ ] **INTW-05b**: Strengths identified in user's answers
+- [ ] **INTW-05c**: Areas for improvement with specific suggestions
+- [ ] **INTW-05d**: Personalized study recommendations based on gaps
+
+### Progress Tracking Dashboard (INTW-06)
+
+- [ ] **INTW-06a**: Store all interview sessions with scores
+- [ ] **INTW-06b**: Calculate improvement trends over time
+- [ ] **INTW-06c**: Show breakdown by interview type (coding, behavioral, system design)
+- [ ] **INTW-06d**: Display weak areas needing more practice
+
+### Leaderboard and Community (INTW-07) — Nice to Have
+
+- [ ] **INTW-07a**: Anonymized leaderboard by interview type
+- [ ] **INTW-07b**: Percentile ranking for user
 
 ---
 
 ## Future Requirements (v1.x)
 
-- REVIEW-04: User can request human code review (scheduling system)
-- EXEC-05: User can enable CGO for packages requiring C bindings
-- CURR-05: User can earn certificates upon topic completion
+- INTW-08: Integration with code execution for live coding interviews
+- INTW-09: Behavioral interview practice with STAR method guidance
+- INTW-10: Mock system design interviews with diagram support
 
 ---
 
 ## Out of Scope
 
-- Video content integration — platform focuses on text/code learning
-- Real-time collaborative editing — async code review model
-- Mobile native app — responsive web is sufficient
-- Payment/billing — free tier only for v1
+- Video/audio interview simulation
+- Real-time coding environment during interviews
+- Integration with external interview platforms (HackerRank, LeetCode)
+- Mobile app support for interviews
 
 ---
 
@@ -51,22 +72,30 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CURR-01 | Phase 6 | Complete |
-| CURR-02 | Phase 6 | Complete |
-| CURR-03 | Phase 6 | Pending |
-| CURR-04 | Phase 6 | Complete |
-| EXEC-01 | Phase 7 | Pending |
-| EXEC-02 | Phase 7 | Pending |
-| EXEC-03 | Phase 7 | Pending |
-| EXEC-04 | Phase 7 | Pending |
-| DOCK-01 | Phase 8 | Complete |
-| DOCK-02 | Phase 8 | Complete |
-| DOCK-03 | Phase 8 | Complete |
-| REVIEW-01 | Phase 9 | Pending |
-| REVIEW-02 | Phase 9 | Pending |
-| REVIEW-03 | Phase 9 | Pending |
+| INTW-01a | Phase 10 | Pending |
+| INTW-01b | Phase 10 | Pending |
+| INTW-01c | Phase 10 | Pending |
+| INTW-02a | Phase 11 | Pending |
+| INTW-02b | Phase 11 | Pending |
+| INTW-02c | Phase 11 | Pending |
+| INTW-03a | Phase 11 | Pending |
+| INTW-03b | Phase 11 | Pending |
+| INTW-03c | Phase 11 | Pending |
+| INTW-04a | Phase 11 | Pending |
+| INTW-04b | Phase 11 | Pending |
+| INTW-04c | Phase 11 | Pending |
+| INTW-05a | Phase 12 | Pending |
+| INTW-05b | Phase 12 | Pending |
+| INTW-05c | Phase 12 | Pending |
+| INTW-05d | Phase 12 | Pending |
+| INTW-06a | Phase 12 | Pending |
+| INTW-06b | Phase 12 | Pending |
+| INTW-06c | Phase 12 | Pending |
+| INTW-06d | Phase 12 | Pending |
+| INTW-07a | Phase 12 | Pending |
+| INTW-07b | Phase 12 | Pending |
 
 ---
 
-*Requirements defined: 2026-04-01*
-*Milestone: v1.1 Platform Enhancements*
+*Requirements defined: 2026-04-02*
+*Milestone: v1.2 AI-Powered Mock Interviews*

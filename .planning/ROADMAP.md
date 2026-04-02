@@ -1,104 +1,81 @@
-# Roadmap: Go Pro Platform Enhancements v1.1
+# Roadmap: AI-Powered Mock Interviews v1.2
 
 ## Overview
 
-Platform enhancements to enable learners to study, run, and submit exercises for all 15 advanced Go project templates through an integrated web platform.
+Upgrade existing mock interview feature to use AI/LLM for question generation and personalized feedback. Users practice coding, behavioral, and system design interviews with AI that adapts to their skill level.
 
 ## Milestones
 
 - ✅ **v1.0 Advanced Topics Expansion** - Phases 1-5 (shipped 2026-04-01)
-- 🚧 **v1.1 Platform Enhancements** - Phases 6-9 (in progress)
-- 📋 **v2.0** - Phases 10+ (planned)
+- ✅ **v1.1 Platform Enhancements** - Phases 6-9 (shipped 2026-04-02)
+- 🚧 **v1.2 AI-Powered Mock Interviews** - Phases 10-12 (in progress)
 
 ## Phases
 
-- [x] **Phase 6: Curriculum Integration** - Lesson pages and exercise definitions for all 15 topics (completed 2026-04-01)
-- [ ] **Phase 7: Code Execution** - In-browser Go code execution with sandbox
-- [ ] **Phase 8: Docker Environment** - One-click Docker setup per topic
-- [ ] **Phase 9: Code Review System** - AI-powered code submission and review
+- [ ] **Phase 10: AI Question Bank** - Database schema and question repository
+- [ ] **Phase 11: AI Interview Session** - LLM-powered interview flow
+- [ ] **Phase 12: AI Feedback & Progress** - Detailed feedback and progress tracking
 
 ---
 
 ## Phase Details
 
-### Phase 6: Curriculum Integration
+### Phase 10: AI Question Bank
 
-**Goal**: Users can access lesson pages and exercises for all 15 advanced Go project topics
+**Goal**: Store and manage curated interview questions that the LLM can select from
 
 **Depends on**: Nothing (first phase of new milestone)
 
-**Requirements**: CURR-01, CURR-02, CURR-03, CURR-04
+**Requirements**: INTW-01a, INTW-01b, INTW-01c
 
 **Success Criteria** (what must be TRUE):
-1. User can view a lesson page for each of the 15 topics (REST API, CLI, Microservices, etc.)
-2. User can see structured exercise definitions with expected behavior and hints
-3. User's progress (exercises completed) persists across sessions
-4. User can navigate to any topic from a central course hub page
+1. User has access to a database of 50+ interview questions across types
+2. Questions are tagged with difficulty, concepts, and categories
+3. API can query questions by type, difficulty, and tags
 
-**Plans:**
-2/2 plans complete
-- [x] 06-02-PLAN.md — Topic pages with TutorialViewer pattern
+**Plans**: TBD
+
+**UI hint**: no
 
 ---
 
-### Phase 7: Code Execution
+### Phase 11: AI Interview Session
 
-**Goal**: Users can write and execute Go code in-browser with secure sandboxing
+**Goal**: LLM-powered interview experience with dynamic question selection and real-time analysis
 
-**Depends on**: Phase 6
+**Depends on**: Phase 10
 
-**Requirements**: EXEC-01, EXEC-02, EXEC-03, EXEC-04
+**Requirements**: INTW-02a, INTW-02b, INTW-02c, INTW-03a, INTW-03b, INTW-03c, INTW-04a, INTW-04b, INTW-04c
 
 **Success Criteria** (what must be TRUE):
-1. User can write Go code in Monaco editor embedded in the platform
-2. User can execute code and see output streamed in real-time
-3. Code runs in an isolated sandbox (gVisor) with resource limits
-4. Infinite loops and resource abuse are prevented with 30s timeout
+1. User starts interview and receives AI-selected questions
+2. AI interviewer presents questions naturally with context
+3. User answers and receives immediate analysis
+4. AI asks follow-up questions based on answers
 
-**Plans:** 1/2 complete
-- [x] 07-01-PLAN.md — Backend execution API (POST /api/execute)
-- [ ] 07-02-PLAN.md — Frontend Monaco editor integration with execution
+**Plans**: TBD
+
+**UI hint**: yes
 
 ---
 
-### Phase 8: Docker Environment
+### Phase 12: AI Feedback & Progress
 
-**Goal**: Users can launch a complete Docker environment for each project topic with one click
+**Goal**: Comprehensive AI feedback after interviews with progress tracking
 
-**Depends on**: Phase 6 (needs curriculum context)
+**Depends on**: Phase 11
 
-**Requirements**: DOCK-01, DOCK-02, DOCK-03
-
-**Success Criteria** (what must be TRUE):
-1. User can generate a docker-compose.yml tailored to the current topic
-2. User can start the Docker environment with a single button click
-3. User can see whether their environment is running or stopped
-
-**Plans:** 3/3 planned
-- [x] 08-01-PLAN.md — Backend Docker API (Wave 1)
-- [ ] 08-02-PLAN.md — Frontend Docker Panel (Wave 2)
-- [ ] 08-03-PLAN.md — Topic Templates (Wave 3)
-
----
-
-### Phase 9: Code Review System
-
-**Goal**: Users can submit code exercises and receive AI-powered feedback
-
-**Depends on**: Phase 7 (needs execution to run tests)
-
-**Requirements**: REVIEW-01, REVIEW-02, REVIEW-03
+**Requirements**: INTW-05a, INTW-05b, INTW-05c, INTW-05d, INTW-06a, INTW-06b, INTW-06c, INTW-06d, INTW-07a, INTW-07b
 
 **Success Criteria** (what must be TRUE):
-1. User can submit their code exercise for review
-2. AI agent analyzes the code and provides structured feedback
-3. User can view history of past submissions and their review results
+1. User receives detailed feedback with strengths and improvements
+2. User sees personalized study recommendations
+3. User can view progress over time with trends
+4. User can see how they rank on leaderboard (nice to have)
 
-**Plans**: 4/4 complete
-- [x] 09-01-PLAN.md — Backend API (Wave 1)
-- [x] 09-02-PLAN.md — Frontend Submit Button (Wave 2)
-- [x] 09-03-PLAN.md — Fix code capture for REVIEW-01 (Wave 3)
-- [x] 09-04-PLAN.md — History storage + UI for REVIEW-03 (Wave 4)
+**Plans**: TBD
+
+**UI hint**: yes
 
 ---
 
@@ -106,34 +83,31 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 6. Curriculum Integration | 2/2 | Complete   | 2026-04-01 |
-| 7. Code Execution | 2/2 | Complete | - |
-| 8. Docker Environment | 3/3 | Complete | - |
-| 9. Code Review System | 4/4 | Complete | 2026-04-02 |
+| 10. AI Question Bank | 0/3 | Not started | - |
+| 11. AI Interview Session | 0/9 | Not started | - |
+| 12. AI Feedback & Progress | 0/10 | Not started | - |
 
 ---
 
 ## Implementation Notes
 
-### Phase 6: Curriculum Integration
-- Leverage existing `course/` module structure
-- Define exercise schema in YAML/JSON, decoupled from template structure
-- Extend existing progress tracking API
+### Phase 10: AI Question Bank
+- Extend existing `memory_interview.go` repository
+- Create new Question table/schema
+- Add API endpoints for CRUD on questions
+- Seed initial 50+ questions across types
 
-### Phase 7: Code Execution
-- Use gVisor (runsc) for sandbox isolation
-- Implement WebSocket for streaming output
-- Build on existing `executor/` infrastructure
+### Phase 11: AI Interview Session
+- Leverage existing interview handler (`backend/internal/handler/interview.go`)
+- Integrate with AI Agent Platform for LLM calls
+- Update question selection to use LLM
+- Add real-time answer analysis
 
-### Phase 8: Docker Environment
-- Generate docker-compose.yml from template metadata
-- Use existing Docker Compose infrastructure
-- Add status polling for environment state
-
-### Phase 9: Code Review System
-- Integrate with existing `services/ai-agent-platform/`
-- Implement async submission queue
-- Create structured feedback format
+### Phase 12: AI Feedback & Progress
+- Generate detailed feedback using LLM
+- Extend session storage to include feedback
+- Create progress dashboard UI
+- Add leaderboard calculation
 
 ---
 
@@ -143,4 +117,5 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 |------|-------|--------|
 | 2026-04-01 | 1-5 | ✅ MILESTONE COMPLETE — 15 project templates |
 | 2026-04-01 | 6-9 | 🚧 MILESTONE STARTED — Platform Enhancements |
-| 2026-04-01 | 7 | 🚧 07-01 COMPLETE — POST /api/execute endpoint |
+| 2026-04-02 | 6-9 | ✅ MILESTONE COMPLETE — Platform Enhancements |
+| 2026-04-02 | 10-12 | 🚧 MILESTONE STARTED — AI-Powered Mock Interviews |

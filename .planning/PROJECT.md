@@ -2,25 +2,27 @@
 
 ## What This Is
 
-A Go learning platform that teaches developers through progressive, production-grade project templates. The platform provides basic-to-advanced Go tutorials, exercises, 15 advanced project templates, and an AI agent framework. This milestone enhances the platform to serve, execute, and review code across all 15 topics — enabling learners to study reference code, run it in-browser, and submit exercises for review.
+A Go learning platform that teaches developers through progressive, production-grade project templates. The platform provides basic-to-advanced Go tutorials, exercises, 15 advanced project templates, and an AI agent framework. This milestone enhances the platform with AI-powered mock interviews — enabling learners to practice technical interviews with dynamic AI-generated questions and personalized feedback.
 
 Target audience: anyone wanting to master Go by building real things across diverse domains.
 
 ## Core Value
 
-Developers master Go through progressively harder, production-quality projects — each demonstrating real patterns used across 15 distinct Go application domains, with a platform that lets them study reference code, execute it in-browser, and get AI-powered feedback on their exercises.
+Developers master Go through progressively harder, production-quality projects — each demonstrating real patterns used across 15 distinct Go application domains, with a platform that lets them study reference code, execute it in-browser, get AI-powered feedback on their exercises, and practice technical interviews with AI.
 
-## Current Milestone: v1.1 Platform Enhancements
+## Current Milestone: v1.2 AI-Powered Mock Interviews
 
-**Goal:** Enable learners to study, run, and submit exercises for all 15 advanced Go project templates through an integrated web platform.
+**Goal:** Upgrade existing mock interview feature to use AI/LLM for question generation and personalized feedback
 
-**Status:** ✅ COMPLETE (2026-04-02)
+**Status:** 🚧 In Progress (2026-04-02)
 
-**Completed features:**
-- Course curriculum integration for all 15 new topics (lesson pages, exercises)
-- In-browser code execution for each project (Monaco editor + /api/execute)
-- One-click Docker environment setup per project topic
-- Code submission and review system for learner exercises with AI feedback
+**Planned features:**
+- AI-powered question bank with 50+ curated questions
+- LLM question selection based on user profile
+- AI interviewer persona with follow-up questions
+- Real-time answer analysis
+- Detailed AI feedback with improvement suggestions
+- Progress tracking dashboard with trends
 
 ## Requirements
 
@@ -47,25 +49,6 @@ Developers master Go through progressively harder, production-quality projects �
 
 ### Active
 
-<!-- All 15 advanced project templates are now complete -->
-
-**Project Templates (15 topics) — ALL COMPLETE:**
-- [x] ✅ Production-grade project template: RESTful APIs with Go (chi v5)
-- [x] ✅ Production-grade project template: CLI Applications with Go (cobra v1.8.0)
-- [x] ✅ Production-grade project template: Testing and Debugging in Go (testify)
-- [x] ✅ Production-grade project template: Web Applications with Go and Gin (gin v1.12)
-- [x] ✅ Production-grade project template: Microservices with Go and Docker (Docker Compose)
-- [x] ✅ Production-grade project template: Real-time Applications with Go and WebSockets (gorilla/websocket)
-- [x] ✅ Production-grade project template: Distributed Systems with Go and gRPC (protobuf)
-- [x] ✅ Production-grade project template: Cloud-Native Applications with Go and Kubernetes (K8s/Helm)
-- [x] ✅ Production-grade project template: Event-Driven Applications with Go and NATS (JetStream)
-- [x] ✅ Production-grade project template: Machine Learning Applications with Go (gonum)
-- [x] ✅ Production-grade project template: Blockchain Applications with Go and Ethereum (go-ethereum)
-- [x] ✅ Production-grade project template: IoT Applications with Go and MQTT (paho.mqtt)
-- [x] ✅ Production-grade project template: Serverless Applications with Go and AWS Lambda (SAM)
-- [x] ✅ Production-grade project template: GraphQL APIs with Go and gqlgen (gqlgen v0.17+)
-- [x] ✅ Production-grade project template: System Design with Golang (clean architecture)
-
 **Platform Enhancements (v1.1 — COMPLETE):**
 - [x] **CURR-01**: Course curriculum integration for all 15 topics (lesson pages, exercises)
 - [x] **CURR-02**: User can access structured exercise definitions per topic
@@ -81,6 +64,28 @@ Developers master Go through progressively harder, production-quality projects �
 - [x] **REVIEW-01**: Code submission and review system for learner exercises
 - [x] **REVIEW-02**: AI agent analyzes submitted code and provides structured feedback
 - [x] **REVIEW-03**: User can view submission history and past review feedback
+
+**AI-Powered Mock Interviews (v1.2 — IN PROGRESS):**
+- [ ] **INTW-01a**: Create database schema for interview questions
+- [ ] **INTW-01b**: Store questions with tags, difficulty levels, and expected concepts
+- [ ] **INTW-01c**: API endpoint to query questions by type, difficulty, and tags
+- [ ] **INTW-02a**: LLM selects 3-5 questions per interview session
+- [ ] **INTW-02b**: Selection considers user's past performance and target role
+- [ ] **INTW-02c**: Questions have clear expected concepts for scoring
+- [ ] **INTW-03a**: Generate contextual intro explaining interview type and expectations
+- [ ] **INTW-03b**: Present questions in natural language with hints if needed
+- [ ] **INTW-03c**: Ask follow-up questions based on user answers
+- [ ] **INTW-04a**: Immediate validation of answer completeness
+- [ ] **INTW-04b**: Identify mentioned concepts vs expected concepts
+- [ ] **INTW-04c**: Generate instant feedback on answer quality
+- [ ] **INTW-05a**: Overall score with breakdown by question
+- [ ] **INTW-05b**: Strengths identified in user's answers
+- [ ] **INTW-05c**: Areas for improvement with specific suggestions
+- [ ] **INTW-05d**: Personalized study recommendations based on gaps
+- [ ] **INTW-06a**: Store all interview sessions with scores
+- [ ] **INTW-06b**: Calculate improvement trends over time
+- [ ] **INTW-06c**: Show breakdown by interview type
+- [ ] **INTW-06d**: Display weak areas needing more practice
 
 ### Out of Scope
 
