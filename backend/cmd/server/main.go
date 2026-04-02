@@ -112,7 +112,7 @@ func main() {
 
 	// Initialize code review handler with code analysis tool
 	codeAnalysisTool := tools.NewDefaultCodeAnalysisTool()
-	reviewHandler := handler.NewReviewHandler(codeAnalysisTool, applog)
+	reviewHandler := handler.NewReviewHandler(codeAnalysisTool, appContainer.Repositories.Review, applog)
 	httpHandler.SetReviewHandler(reviewHandler)
 	applog.Info(ctx, "Code review handler initialized")
 

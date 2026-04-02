@@ -166,6 +166,7 @@ func (c *Container) initializeRepositories() error {
 			Exercise:  pgRepos.Exercise,
 			Progress:  pgRepos.Progress,
 			Interview: repository.NewMemoryInterviewRepository(), // Use in-memory for interviews until postgres impl
+			Review:    repository.NewInMemoryReviewRepository(),
 		}
 
 		c.addShutdownFunc(func() error {

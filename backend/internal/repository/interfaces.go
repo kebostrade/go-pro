@@ -127,18 +127,19 @@ type PeerReviewRepository interface {
 
 // Repositories aggregates all repository interfaces.
 type Repositories struct {
-	Course             CourseRepository
-	Lesson             LessonRepository
-	Exercise           ExerciseRepository
-	Progress           ProgressRepository
-	User               UserRepository
-	Streak             StreakRepository
-	Assessment         AssessmentRepository
-	Question           QuestionRepository
-	Submission         SubmissionRepository
-	SubmissionComment  SubmissionCommentRepository
-	PeerReview         PeerReviewRepository
-	Interview           InterviewRepository
+	Course            CourseRepository
+	Lesson            LessonRepository
+	Exercise          ExerciseRepository
+	Progress          ProgressRepository
+	User              UserRepository
+	Streak            StreakRepository
+	Assessment        AssessmentRepository
+	Question          QuestionRepository
+	Submission        SubmissionRepository
+	SubmissionComment SubmissionCommentRepository
+	PeerReview        PeerReviewRepository
+	Interview         InterviewRepository
+	Review            ReviewRepository
 }
 
 // InterviewRepository defines interface for interview data operations.
@@ -149,5 +150,15 @@ type InterviewRepository interface {
 	GetByID(ctx context.Context, id string) (interface{}, error)
 	GetByUserID(ctx context.Context, userID string) ([]interface{}, error)
 	Update(ctx context.Context, session interface{}) error
+	Delete(ctx context.Context, id string) error
+}
+
+// ReviewRepository defines the interface for code review submission data operations.
+type ReviewRepository interface {
+	Create(ctx context.Context, review *domain.Review) error
+	GetByID(ctx context.Context, id string) (*domain.Review, error)
+	GetByUserID(ctx context.Context, userID string) ([]*domain.Review, error)
+	GetByUserAndExercise(ctx context.Context, userID, exerciseID string) ([]*domain.Review, error)
+	Update(ctx context.Context, review *domain.Review) error
 	Delete(ctx context.Context, id string) error
 }

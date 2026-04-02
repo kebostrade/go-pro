@@ -14,20 +14,24 @@ import (
 
 	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/tools"
 	"github.com/DimaJoyti/go-pro/services/ai-agent-platform/pkg/types"
+	"go-pro-backend/internal/domain"
 	apierrors "go-pro-backend/internal/errors"
+	"go-pro-backend/internal/repository"
 	"go-pro-backend/pkg/logger"
 )
 
 // ReviewHandler handles code review requests.
 type ReviewHandler struct {
 	codeAnalysisTool *tools.CodeAnalysisTool
+	repo             repository.ReviewRepository
 	logger           logger.Logger
 }
 
 // NewReviewHandler creates a new review handler.
-func NewReviewHandler(codeAnalysisTool *tools.CodeAnalysisTool, logger logger.Logger) *ReviewHandler {
+func NewReviewHandler(codeAnalysisTool *tools.CodeAnalysisTool, repo repository.ReviewRepository, logger logger.Logger) *ReviewHandler {
 	return &ReviewHandler{
 		codeAnalysisTool: codeAnalysisTool,
+		repo:             repo,
 		logger:           logger,
 	}
 }
@@ -84,14 +88,32 @@ func (h *ReviewHandler) handleSubmitReview(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	// Create review record
+	review := &domain.Review{
+		UserID:     req.UserID,
+		TopicID:    req.TopicID,
+		ExerciseID: req.ExerciseID,
+		Code:       req.Code,
+		Feedback:   feedback,
+	}
+
+	// Store in repository
+	if h.repo != nil {
+		if err := h.repo.Create(ctx, review); err != nil {
+			h.logger.Error(ctx, "Failed to save review", "error", err)
+			h.writeErrorResponse(w, r, apierrors.NewInternalError("failed to save review", err))
+			return
+		}
+	}
+
 	response := ReviewResponse{
-		ID:          generateReviewID(),
-		UserID:      req.UserID,
-		TopicID:     req.TopicID,
-		ExerciseID:  req.ExerciseID,
-		Code:        req.Code,
-		Feedback:    feedback,
-		SubmittedAt: time.Now(),
+		ID:          review.ID,
+		UserID:      review.UserID,
+		TopicID:     review.TopicID,
+		ExerciseID:  review.ExerciseID,
+		Code:        review.Code,
+		Feedback:    review.Feedback,
+		SubmittedAt: review.SubmittedAt,
 	}
 
 	h.writeSuccessResponse(w, r, response, "code review submitted successfully")
@@ -105,8 +127,34 @@ func (h *ReviewHandler) handleGetReviewHistory(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	response := []ReviewResponse{}
+	// Fetch from repository if available
+	if h.repo != nil {
+		reviews, err := h.repo.GetByUserID(r.Context(), userID)
+		if err != nil {
+			h.logger.Error(r.Context(), "Failed to fetch review history", "error", err)
+			h.writeErrorResponse(w, r, apierrors.NewInternalError("failed to fetch review history", err))
+			return
+		}
 
+		response := make([]ReviewResponse, 0, len(reviews))
+		for _, review := range reviews {
+			response = append(response, ReviewResponse{
+				ID:          review.ID,
+				UserID:      review.UserID,
+				TopicID:     review.TopicID,
+				ExerciseID:  review.ExerciseID,
+				Code:        review.Code,
+				Feedback:    review.Feedback,
+				SubmittedAt: review.SubmittedAt,
+			})
+		}
+
+		h.writeSuccessResponse(w, r, response, "review history retrieved successfully")
+		return
+	}
+
+	// Fallback if no repository
+	response := []ReviewResponse{}
 	h.writeSuccessResponse(w, r, response, "review history retrieved successfully")
 }
 

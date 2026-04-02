@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"go-pro-backend/internal/domain"
 	"go-pro-backend/internal/errors"
 )
@@ -612,5 +613,87 @@ func NewRepositoriesSimple() *Repositories {
 		Progress:  NewMemoryProgressRepository(),
 		Exercise:  NewMemoryExerciseRepository(),
 		Interview: NewMemoryInterviewRepository(),
+		Review:    NewInMemoryReviewRepository(),
 	}
+}
+
+// InMemoryReviewRepository implements ReviewRepository using in-memory storage.
+type InMemoryReviewRepository struct {
+	reviews map[string]*domain.Review
+	mu      sync.RWMutex
+}
+
+// NewInMemoryReviewRepository creates a new in-memory review repository.
+func NewInMemoryReviewRepository() *InMemoryReviewRepository {
+	return &InMemoryReviewRepository{
+		reviews: make(map[string]*domain.Review),
+	}
+}
+
+// Create implements ReviewRepository.Create.
+func (r *InMemoryReviewRepository) Create(ctx context.Context, review *domain.Review) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	review.ID = uuid.New().String()
+	review.SubmittedAt = time.Now()
+	review.UpdatedAt = time.Now()
+	r.reviews[review.ID] = review
+	return nil
+}
+
+// GetByID implements ReviewRepository.GetByID.
+func (r *InMemoryReviewRepository) GetByID(ctx context.Context, id string) (*domain.Review, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if review, ok := r.reviews[id]; ok {
+		return review, nil
+	}
+	return nil, nil
+}
+
+// GetByUserID implements ReviewRepository.GetByUserID.
+func (r *InMemoryReviewRepository) GetByUserID(ctx context.Context, userID string) ([]*domain.Review, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	var result []*domain.Review
+	for _, review := range r.reviews {
+		if review.UserID == userID {
+			result = append(result, review)
+		}
+	}
+	// Sort by SubmittedAt descending
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].SubmittedAt.After(result[j].SubmittedAt)
+	})
+	return result, nil
+}
+
+// GetByUserAndExercise implements ReviewRepository.GetByUserAndExercise.
+func (r *InMemoryReviewRepository) GetByUserAndExercise(ctx context.Context, userID, exerciseID string) ([]*domain.Review, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	var result []*domain.Review
+	for _, review := range r.reviews {
+		if review.UserID == userID && review.ExerciseID == exerciseID {
+			result = append(result, review)
+		}
+	}
+	return result, nil
+}
+
+// Update implements ReviewRepository.Update.
+func (r *InMemoryReviewRepository) Update(ctx context.Context, review *domain.Review) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	review.UpdatedAt = time.Now()
+	r.reviews[review.ID] = review
+	return nil
+}
+
+// Delete implements ReviewRepository.Delete.
+func (r *InMemoryReviewRepository) Delete(ctx context.Context, id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.reviews, id)
+	return nil
 }
