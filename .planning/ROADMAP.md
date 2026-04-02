@@ -94,7 +94,11 @@ Platform enhancements to enable learners to study, run, and submit exercises for
 2. AI agent analyzes the code and provides structured feedback
 3. User can view history of past submissions and their review results
 
-**Plans**: TBD
+**Plans**: 4/4 planned
+- [x] 09-01-PLAN.md — Backend API (Wave 1)
+- [x] 09-02-PLAN.md — Frontend Submit Button (Wave 2)
+- [ ] 09-03-PLAN.md — Fix code capture for REVIEW-01 (Wave 3)
+- [ ] 09-04-PLAN.md — History storage + UI for REVIEW-03 (Wave 4)
 
 ---
 
