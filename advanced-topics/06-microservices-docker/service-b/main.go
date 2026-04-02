@@ -1,13 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,11 +31,15 @@ func main() {
 	dbConnStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		dbHost, dbPort, dbUser, dbPassword, dbName)
 
-	db, err := pq.ConnectDB(dbConnStr)
+	db, err := sql.Open("postgres", dbConnStr)
 	if err != nil {
 		log.WithError(err).Fatal("Failed to connect to database")
 	}
 	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		log.WithError(err).Fatal("Failed to ping database")
+	}
 
 	log.Info("Database connected successfully")
 

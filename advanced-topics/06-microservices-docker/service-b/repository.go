@@ -6,15 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 )
 
 // Repository handles data access operations for orders
 type Repository struct {
-	db              *sql.DB
-	userServiceURL  string
-	log             *logrus.Logger
+	db             *sql.DB
+	userServiceURL string
+	log            *logrus.Logger
 }
 
 // NewRepository creates a new repository instance
